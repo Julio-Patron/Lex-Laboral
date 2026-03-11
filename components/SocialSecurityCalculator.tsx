@@ -99,11 +99,20 @@ export const SocialSecurityCalculator: React.FC<{
     const empRiesgo = (sbc * (riskClass / 100)) * days;
     const empRetiro = (sbc * 0.02) * days;
     
-    // Cesantía y Vejez Patronal (Simplified progressive scale - using a mid-range average for simulation)
-    // Real scale depends on SBC/UMA ratio (3.15% to 4.24% approx in 2024)
+    // Cesantía y Vejez Patronal (Tabla Progresiva 2026 - Art. 168 LSS)
     const ratio = sbc / UMA;
-    let cesantiaRate = 0.0315;
-    if (ratio > 4) cesantiaRate = 0.0424;
+    let cesantiaRate = 0.0315; // Base para Salario Mínimo
+    
+    if (sbc > MIN_WAGE) {
+      if (ratio <= 1.50) cesantiaRate = 0.03899;
+      else if (ratio <= 2.00) cesantiaRate = 0.04246;
+      else if (ratio <= 2.50) cesantiaRate = 0.04593;
+      else if (ratio <= 3.00) cesantiaRate = 0.04939;
+      else if (ratio <= 3.50) cesantiaRate = 0.05286;
+      else if (ratio <= 4.00) cesantiaRate = 0.05633;
+      else cesantiaRate = 0.06326; // Tope para > 4.01 UMA en 2026
+    }
+    
     const empCesantia = (sbc * cesantiaRate) * days;
     
     const empInfonavit = (sbc * 0.05) * days;
