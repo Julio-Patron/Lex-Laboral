@@ -1,20 +1,27 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ⚖️ Lexi Laboral - Inteligencia Jurídica Laboral
 
-# Run and deploy your AI Studio app
+Lexi Laboral es una plataforma avanzada impulsada por inteligencia artificial (Gemini) diseñada para asistir a profesionales del derecho y trabajadores en la gestión de asuntos laborales. Ofrece herramientas de análisis, cálculo y redacción automatizada para optimizar procesos legales complejos.
 
-This contains everything you need to run your app locally.
+![Lexi Laboral Banner](https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6)
 
-View your app in AI Studio: https://ai.studio/apps/4353916c-00cc-4238-85c4-d59d45ef8383
+## 🚀 Funcionalidades Principales
 
-## Run Locally
+*   **💬 Chat Jurídico Inteligente:** Interfaz conversacional especializada en derecho laboral para resolver dudas y obtener orientación legal inmediata.
+*   **📄 Analizador de Documentos:** Herramienta de carga y procesamiento de archivos (PDF/Docs) para extraer cláusulas clave, detectar irregularidades y resumir contratos.
+*   **🖋️ Redactor Legal Automatizado (Drafter):** Generación de borradores de demandas, contratos, cartas de despido y otros documentos legales con estructura profesional.
+*   **🧮 Calculadora Laboral Completa:** Motor de cálculo para finiquitos, indemnizaciones por despido, horas extra y salarios.
+*   **🏥 Calculadora de Seguridad Social:** Estimación precisa de aportaciones, cuotas y beneficios de seguridad social.
+*   **🔔 Centro de Notificaciones:** Sistema integrado para el seguimiento de cambios legislativos o alertas relevantes.
 
-**Prerequisites:**  Node.js
+## 🛠️ Tecnologías
 
+*   **Frontend:** React con TypeScript y Vite.
+*   **IA:** Google Gemini API para el procesamiento de lenguaje natural.
+*   **Despliegue:** Optimizado para Vercel.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 📜 Licencia
+
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+*Lexi Laboral: La tecnología al servicio de la justicia laboral.*
