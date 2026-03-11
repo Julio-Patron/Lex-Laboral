@@ -44,7 +44,7 @@ export const LaborCalculator: React.FC<{
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
   const [dismissalType, setDismissalType] = useState<DismissalType>('injustificado');
-  const [minWage, setMinWage] = useState<number>(248.93); // Salario Mínimo General 2024/2025 aprox
+  const [minWage, setMinWage] = useState<number>(312.41); // Salario Mínimo General Vigente 2026 (Proyectado)
 
   const [results, setResults] = useState<{
     aguinaldo: number;

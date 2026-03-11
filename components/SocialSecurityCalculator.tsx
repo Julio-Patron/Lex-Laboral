@@ -46,8 +46,8 @@ export const SocialSecurityCalculator: React.FC<{
   const [n_workers, setN_workers] = useState<number>(1); // Trabajadores expuestos
   const [m_min, setM_min] = useState<number>(0.0050); // Prima mínima
   
-  const UMA = 108.57;
-  const MIN_WAGE = 248.93;
+  const UMA = 119.35; // Valor UMA Vigente 2026 (Proyectado)
+  const MIN_WAGE = 312.41; // Salario Mínimo General Vigente 2026 (Proyectado)
 
   const [results, setResults] = useState<{
     employer: {
