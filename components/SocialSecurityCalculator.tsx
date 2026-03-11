@@ -399,7 +399,7 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
             <div className="p-5 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3">
               <AlertCircle className="text-amber-500 shrink-0" size={20} />
               <p className="text-[11px] text-amber-800 leading-relaxed">
-                <strong>Referencia 2024:</strong> UMA: ${UMA.toFixed(2)}. Los cálculos de Cesantía Patronal utilizan las nuevas tablas progresivas vigentes.
+                <strong>Referencia 2026:</strong> UMA: ${UMA.toFixed(2)}. Los cálculos de Cesantía Patronal utilizan las nuevas tablas progresivas vigentes.
               </p>
             </div>
           </div>
