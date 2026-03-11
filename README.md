@@ -4,8 +4,6 @@ Lexi Laboral es una plataforma avanzada impulsada por inteligencia artificial (G
 
 **🌐 Accede a la aplicación:** [https://lexi-laboral.vercel.app/](https://lexi-laboral.vercel.app/)
 
-![Lexi Laboral Banner](https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6)
-
 ## 🚀 Funcionalidades Principales
 
 *   **💬 Chat Jurídico Inteligente:** Interfaz conversacional especializada en derecho laboral para resolver dudas y obtener orientación legal inmediata.
