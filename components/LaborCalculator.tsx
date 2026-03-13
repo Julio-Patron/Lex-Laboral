@@ -39,6 +39,14 @@ export const LaborCalculator: React.FC<{
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
   const [isSdiCalculated, setIsSdiCalculated] = useState(false);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [yearsOfService, setYearsOfService] = useState<number>(0);
+  const [daysOfService, setDaysOfService] = useState<number>(0);
+  const [vacationDays, setVacationDays] = useState<number>(12);
+  const [vacationPremium, setVacationPremium] = useState<number>(25);
+  const [aguinaldoDays, setAguinaldoDays] = useState<number>(15);
+  const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
 
   React.useEffect(() => {
     if (baseSalary > 0) {
@@ -54,14 +62,6 @@ export const LaborCalculator: React.FC<{
       setIsSdiCalculated(true);
     }
   }, [baseSalary, salaryPeriod, aguinaldoDays, vacationDays, vacationPremium]);
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [yearsOfService, setYearsOfService] = useState<number>(0);
-  const [daysOfService, setDaysOfService] = useState<number>(0);
-  const [vacationDays, setVacationDays] = useState<number>(12);
-  const [vacationPremium, setVacationPremium] = useState<number>(25);
-  const [aguinaldoDays, setAguinaldoDays] = useState<number>(15);
-  const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
   const [dismissalType, setDismissalType] = useState<DismissalType>('injustificado');
