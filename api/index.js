@@ -10,6 +10,7 @@ dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
+let db;
 
 app.use(cors({
   origin: process.env.CLIENT_URL || '*',
@@ -32,10 +33,13 @@ if (!admin.apps.length) {
     }
     
     admin.initializeApp(config);
+    db = admin.firestore();
     console.log('Firebase Admin initialized');
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
   }
+} else {
+  db = admin.firestore();
 }
 
 // Webhook handling needs raw body
@@ -67,7 +71,6 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     expiresAt.setMonth(expiresAt.getMonth() + months);
 
     try {
-      const db = admin.firestore();
       const userRef = db.collection('users').doc(userId);
       await userRef.set({ 
         isPremium: true, 
@@ -157,7 +160,6 @@ No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio ent
 `;
 
 async function checkUsage(userId, type) {
-  const db = admin.firestore();
   const userRef = db.collection('users').doc(userId);
   const userDoc = await userRef.get();
   
