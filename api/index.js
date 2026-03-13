@@ -11,7 +11,10 @@ dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*',
+  optionsSuccessStatus: 200
+}));
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -197,14 +200,17 @@ app.post('/api/legal/analyze', async (req, res) => {
     await checkUsage(userId, 'audits');
     
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-pro",
+      systemInstruction: SYSTEM_INSTRUCTION
+    });
 
     const parts = files.map(file => ({
       inlineData: { mimeType: file.mimeType, data: file.base64 }
     }));
 
     parts.push({
-      text: `${SYSTEM_INSTRUCTION}\n\nRealice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. Petición técnica: ${prompt}`
+      text: `Realice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. Petición técnica: ${prompt}`
     });
 
     const result = await model.generateContent(parts);
@@ -224,28 +230,15 @@ app.post('/api/legal/draft', async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-pro",
-      systemInstruction: `${SYSTEM_INSTRUCTION}\n\nTAREA: Proyecte el instrumento jurídico formal completo siguiendo la técnica legislativa y contractual mexicana.`
+      systemInstruction: SYSTEM_INSTRUCTION
     });
 
-    const result = await model.generateContent(requirements);
+    const promptText = `TAREA: Proyecte el instrumento jurídico formal completo siguiendo la técnica legislativa y contractual mexicana.\n\nRequerimientos: ${requirements}`;
+    const result = await model.generateContent(promptText);
     const response = await result.response;
     res.json({ text: response.text() });
   } catch (error) {
     res.status(error.message.includes('Límite') ? 403 : 500).json({ error: error.message });
-  }
-});
-
-app.post('/api/gemini', async (req, res) => {
-  const { prompt } = req.body;
-  
-  try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    res.json({ text: response.text() });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 });
 
