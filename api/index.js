@@ -47,7 +47,7 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error(`Webhook Error: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook Error: Invalid signature');
   }
 
   if (event.type === 'checkout.session.completed') {
@@ -115,7 +115,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
     res.json({ id: session.id });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Checkout error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -189,7 +190,8 @@ app.post('/api/legal/chat', async (req, res) => {
     const response = await result.response;
     res.json({ text: response.text() });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -217,7 +219,11 @@ app.post('/api/legal/analyze', async (req, res) => {
     const response = await result.response;
     res.json({ text: response.text() });
   } catch (error) {
-    res.status(error.message.includes('Límite') ? 403 : 500).json({ error: error.message });
+    console.error('Analysis error:', error);
+    if (error.message.includes('Límite') || error.message.includes('licencia') || error.message.includes('Usuario')) {
+      return res.status(error.message.includes('Límite') ? 403 : 401).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -238,7 +244,11 @@ app.post('/api/legal/draft', async (req, res) => {
     const response = await result.response;
     res.json({ text: response.text() });
   } catch (error) {
-    res.status(error.message.includes('Límite') ? 403 : 500).json({ error: error.message });
+    console.error('Draft error:', error);
+    if (error.message.includes('Límite') || error.message.includes('licencia') || error.message.includes('Usuario')) {
+      return res.status(error.message.includes('Límite') ? 403 : 401).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
