@@ -8,18 +8,20 @@ export const streamLegalChat = async (
   history: ChatMessage[],
   newMessage: string,
   useThinking: boolean,
-  userId: string,
+  idToken: string,
   focusMode?: 'standard' | 'individual' | 'collective' | 'procedural',
   analysisHistory: AnalyzedDocumentHistory[] = []
 ) => {
   const response = await fetch(`${BACKEND_URL}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
     body: JSON.stringify({ 
       history, 
       message: newMessage, 
       useThinking, 
-      userId,
       focusMode,
       analysisHistory 
     })
@@ -41,12 +43,15 @@ export const streamLegalChat = async (
 export const analyzeLegalDocument = async (
   files: { base64: string; mimeType: string; name: string }[],
   prompt: string,
-  userId: string
+  idToken: string
 ) => {
   const response = await fetch(`${BACKEND_URL}/analyze`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ files, prompt, userId })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+    body: JSON.stringify({ files, prompt })
   });
 
   if (!response.ok) throw new Error('Error al analizar el documento');
@@ -54,11 +59,14 @@ export const analyzeLegalDocument = async (
   return data.text;
 };
 
-export const draftLegalDocument = async (requirements: string, userId: string) => {
+export const draftLegalDocument = async (requirements: string, idToken: string) => {
   const response = await fetch(`${BACKEND_URL}/draft`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requirements, userId })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+    body: JSON.stringify({ requirements })
   });
 
   if (!response.ok) throw new Error('Error al generar el borrador');

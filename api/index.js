@@ -91,6 +91,23 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 
 app.use(express.json());
 
+const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  const idToken = authHeader.split('Bearer ')[1];
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
 app.post('/api/create-checkout-session', async (req, res) => {
   const { userEmail, userId, priceId } = req.body;
 
@@ -168,8 +185,9 @@ async function checkUsage(userId, type) {
   });
 }
 
-app.post('/api/legal/chat', async (req, res) => {
-  const { history, message, useThinking, focusMode, userId } = req.body;
+app.post('/api/legal/chat', authenticateUser, async (req, res) => {
+  const { history, message, useThinking, focusMode } = req.body;
+  const userId = req.user.uid;
   
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -195,8 +213,9 @@ app.post('/api/legal/chat', async (req, res) => {
   }
 });
 
-app.post('/api/legal/analyze', async (req, res) => {
-  const { files, prompt, userId } = req.body;
+app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
+  const { files, prompt } = req.body;
+  const userId = req.user.uid;
   
   try {
     await checkUsage(userId, 'audits');
@@ -227,8 +246,9 @@ app.post('/api/legal/analyze', async (req, res) => {
   }
 });
 
-app.post('/api/legal/draft', async (req, res) => {
-  const { requirements, userId } = req.body;
+app.post('/api/legal/draft', authenticateUser, async (req, res) => {
+  const { requirements } = req.body;
+  const userId = req.user.uid;
   
   try {
     await checkUsage(userId, 'generations');

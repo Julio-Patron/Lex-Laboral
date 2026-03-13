@@ -57,8 +57,9 @@ export const DocumentAnalyzer: React.FC<{
         return;
       }
       notify("Iniciando auditoría documental...", "info");
+      const idToken = await user.getIdToken();
       const filesPayload = files.map(f => ({ base64: f.fileBase64, mimeType: f.mimeType, name: f.fileName }));
-      const response = await analyzeLegalDocument(filesPayload, customInstruction, user.uid);
+      const response = await analyzeLegalDocument(filesPayload, customInstruction, idToken);
       const cleanJson = response.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed: AnalysisResult = JSON.parse(cleanJson);
       setResult(parsed);
