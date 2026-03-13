@@ -30,9 +30,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onTryCalculator }) => 
           <Scale className="text-slate-900" size={40} />
         </motion.div>
         
-        <h1 className="text-4xl font-serif font-bold text-white mb-12 tracking-tight">
+        <h1 className="text-4xl font-serif font-bold text-white mb-2 tracking-tight">
           Lex Laboral
         </h1>
+        <p className="text-legal-gold/60 text-sm font-medium mb-12 uppercase tracking-[0.1em]">
+          Ecosistema de Inteligencia Jurídica y Cálculos LFT 2026
+        </p>
         
         <button 
           onClick={() => onTryCalculator('labor')}

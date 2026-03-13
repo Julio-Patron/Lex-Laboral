@@ -66,6 +66,7 @@ export const LaborCalculator: React.FC<{
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
   const [dismissalType, setDismissalType] = useState<DismissalType>('injustificado');
   const [minWage, setMinWage] = useState<number>(312.41); // Salario Mínimo General Vigente 2026 (Proyectado)
+  const [showErrors, setShowErrors] = useState(false);
 
   const [results, setResults] = useState<{
     aguinaldo: number;
@@ -82,10 +83,12 @@ export const LaborCalculator: React.FC<{
 
   const calculate = () => {
     // Validaciones preventivas
-    if (dailySalary <= 0) {
-      notify("Ingrese un Salario Diario Integrado válido (mayor a 0)", "warning");
+    if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
+      setShowErrors(true);
+      notify("Complete los campos obligatorios marcados para generar el cálculo", "warning");
       return;
     }
+    setShowErrors(false);
     
     // Cálculo de antigüedad exacta promediada
     // Se usa 365.25 para considerar el ciclo bisiesto en proporciones de larga duración
@@ -308,7 +311,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
               <button
                 key={type}
                 onClick={() => setDismissalType(type)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all ${
                   dismissalType === type 
                     ? 'bg-legal-950 text-legal-gold shadow-md' 
                     : 'text-slate-400 hover:text-slate-600'
@@ -406,13 +409,16 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         setDailySalary(Number(e.target.value));
                         setIsSdiCalculated(true);
                       }}
-                      className={`w-full pl-8 pr-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
-                        dailySalary < 0 
-                          ? 'border-red-500 focus:ring-red-500/20' 
+                      className={`w-full pl-8 pr-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                        (showErrors && dailySalary <= 0) || dailySalary < 0
+                          ? 'border-red-500 ring-1 ring-red-500/20' 
                           : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
                       }`}
                       placeholder="0.00"
                     />
+                    {showErrors && dailySalary <= 0 && (
+                      <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 right-0">Ingrese un salario</span>
+                    )}
                   </div>
                   {dailySalary < 0 && (
                     <p className="text-[10px] text-red-500 font-bold animate-pulse">El salario no puede ser negativo</p>
@@ -420,20 +426,23 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                 </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Años</label>
                       <input 
                         type="number" 
                         min="0"
                         value={yearsOfService || ''} 
                         onChange={(e) => setYearsOfService(Number(e.target.value))}
-                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
-                          yearsOfService < 0 
-                            ? 'border-red-500 focus:ring-red-500/20' 
+                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                          (showErrors && yearsOfService <= 0 && daysOfService <= 0) || yearsOfService < 0 
+                            ? 'border-red-500 ring-1 ring-red-500/20' 
                             : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
                         }`}
                         placeholder="0"
                       />
+                      {showErrors && yearsOfService <= 0 && daysOfService <= 0 && (
+                        <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 left-0 text-nowrap">Ingrese antigüedad</span>
+                      )}
                       {yearsOfService < 0 && (
                         <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
                       )}
@@ -446,7 +455,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         value={daysOfService || ''} 
                         onChange={(e) => setDaysOfService(Number(e.target.value))}
                         className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
-                          daysOfService < 0 
+                          (showErrors && yearsOfService <= 0 && daysOfService <= 0) || daysOfService < 0 
                             ? 'border-red-500 focus:ring-red-500/20' 
                             : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
                         }`}
@@ -669,12 +678,28 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between text-xs text-slate-500">
-                              <span>Indemnización 90 días</span>
+                              <div className="flex items-center gap-1.5">
+                                <span>Indemnización 90 días</span>
+                                <div className="group relative">
+                                  <Info size={10} className="text-slate-300 hover:text-legal-gold cursor-help" />
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl">
+                                    Compensación constitucional por despido injustificado (Art. 48 LFT).
+                                  </div>
+                                </div>
+                              </div>
                               <span>${results.indemnity90.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             {results.indemnity20 > 0 && (
                               <div className="flex justify-between text-xs text-slate-500 bg-legal-gold/5 p-1 rounded">
-                                <span className="font-bold">Indemnización 20 días/año</span>
+                                <div className="flex items-center gap-1.5 font-bold">
+                                  <span>Indemnización 20 días/año</span>
+                                  <div className="group relative">
+                                    <Info size={10} className="text-legal-gold/50 hover:text-legal-gold cursor-help" />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-normal">
+                                      Pago adicional en casos de rescisión o negativa de reinstalación (Art. 50 LFT).
+                                    </div>
+                                  </div>
+                                </div>
                                 <span className="font-bold">${results.indemnity20.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                               </div>
                             )}

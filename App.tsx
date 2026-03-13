@@ -145,10 +145,10 @@ function App() {
               )}
               {isGuestMode && (
                 <button 
-                  onClick={() => setIsGuestMode(false)}
+                  onClick={() => setCurrentView(AppView.CALCULATOR)}
                   className="text-slate-500 text-sm font-semibold py-2 hover:text-slate-800 transition-colors"
                 >
-                  Volver al Inicio
+                  Regresar a la Herramienta
                 </button>
               )}
             </div>
