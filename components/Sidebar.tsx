@@ -34,7 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
     if (!user) return;
     try {
       if (notify) notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      const { id: sessionId } = await createCheckoutSession(user.email || '', user.uid, 'price_placeholder'); 
+      const { id: sessionId } = await createCheckoutSession(user.email || '', user.uid, '3-months'); 
       await redirectToCheckout(sessionId);
     } catch (error) {
       console.error('Stripe error:', error);
