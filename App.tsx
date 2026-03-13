@@ -1,14 +1,16 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { ChatInterface } from './components/ChatInterface';
-import { DocumentAnalyzer } from './components/DocumentAnalyzer';
-import { Drafter } from './components/Drafter';
-import { LaborCalculator } from './components/LaborCalculator';
-import { SocialSecurityCalculator } from './components/SocialSecurityCalculator';
 import { NotificationHub } from './components/NotificationHub';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
+
+// Code Splitting for Performance - Lazy loading large components
+const ChatInterface = lazy(() => import('./components/ChatInterface').then(module => ({ default: module.ChatInterface })));
+const DocumentAnalyzer = lazy(() => import('./components/DocumentAnalyzer').then(module => ({ default: module.DocumentAnalyzer })));
+const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
+const LaborCalculator = lazy(() => import('./components/LaborCalculator').then(module => ({ default: module.LaborCalculator })));
+const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityCalculator').then(module => ({ default: module.SocialSecurityCalculator })));
 import { auth, db } from './firebase.config';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -110,40 +112,33 @@ function App() {
   const renderView = () => {
     const isProtected = [AppView.CHAT, AppView.DOCUMENT_ANALYSIS, AppView.DRAFTING].includes(currentView);
     
-    if (isProtected && (!user || !userData?.isPremium)) {
+    // TEMPORARY LOGIC: Any registered user (user != null) has full access today without paying
+    // isPremium check is bypassed for now to allow full access upon registration.
+    if (isProtected && !user) {
       return (
         <div className="h-full w-full flex items-center justify-center p-4 md:p-6 text-center animate-fade-in">
           <div className="max-w-md w-full bg-white p-6 md:p-10 rounded-3xl shadow-xl border border-slate-100">
             <div className="w-16 h-16 bg-legal-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Shield className="text-legal-gold" size={32} />
             </div>
-            <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-900 mb-4">Acceso por Licencia</h3>
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-900 mb-4">Acceso Reservado</h3>
             <p className="text-sm md:text-base text-slate-600 mb-8 leading-relaxed">
-              Esta herramienta avanzada requiere una Licencia de Acceso Completo activa. 
-              {user ? 'Adquiera su licencia para continuar.' : 'Inicie sesión o regístrese para continuar.'}
+              El día de hoy, esta herramienta avanzada está disponible en su totalidad de forma gratuita para todos los usuarios registrados.
+              Inicie sesión o regístrese para continuar.
             </p>
             <div className="flex flex-col space-y-3">
-              {!user ? (
-                <button 
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="bg-legal-950 text-white py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
-                >
-                  Identificarse
-                </button>
-              ) : (
-                <button 
-                  onClick={() => setCurrentView(AppView.CHAT)}
-                  className="bg-legal-gold hover:bg-legal-gold/90 text-legal-950 py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
-                >
-                  Adquirir Licencia
-                </button>
-              )}
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-legal-950 text-white py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
+              >
+                Identificarse o Registrarse
+              </button>
               {isGuestMode && (
                 <button 
                   onClick={() => setCurrentView(AppView.CALCULATOR)}
                   className="text-slate-500 text-xs md:text-sm font-semibold py-2 hover:text-slate-800 transition-colors"
                 >
-                  Regresar a la Herramienta
+                  Regresar a la Calculadora
                 </button>
               )}
             </div>
@@ -154,33 +149,42 @@ function App() {
 
     return (
       <div className="h-full w-full animate-fade-in relative overflow-y-auto">
-        {(() => {
-          switch (currentView) {
-            case AppView.CHAT:
-              return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
-            case AppView.DOCUMENT_ANALYSIS:
-              return <DocumentAnalyzer 
-                state={documentAnalysisState} 
-                setState={setDocumentAnalysisState} 
-                onAddAnalysis={handleAddAnalysis}
-                notify={notify}
-                user={user}
-              />;
-            case AppView.DRAFTING:
-              return <Drafter 
-                state={draftingState} 
-                setState={setDraftingState} 
-                notify={notify}
-                user={user}
-              />;
-            case AppView.CALCULATOR:
-              return <LaborCalculator notify={notify} />;
-            case AppView.SOCIAL_SECURITY:
-              return <SocialSecurityCalculator notify={notify} />;
-            default:
-              return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} />;
-          }
-        })()}
+        <Suspense fallback={
+          <div className="h-full w-full flex items-center justify-center">
+             <div className="flex flex-col items-center">
+                <div className="w-10 h-10 border-4 border-legal-gold/20 border-t-legal-gold rounded-full animate-spin mb-3"></div>
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Cargando Módulo...</span>
+             </div>
+          </div>
+        }>
+          {(() => {
+            switch (currentView) {
+              case AppView.CHAT:
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
+              case AppView.DOCUMENT_ANALYSIS:
+                return <DocumentAnalyzer
+                  state={documentAnalysisState}
+                  setState={setDocumentAnalysisState}
+                  onAddAnalysis={handleAddAnalysis}
+                  notify={notify}
+                  user={user}
+                />;
+              case AppView.DRAFTING:
+                return <Drafter
+                  state={draftingState}
+                  setState={setDraftingState}
+                  notify={notify}
+                  user={user}
+                />;
+              case AppView.CALCULATOR:
+                return <LaborCalculator notify={notify} />;
+              case AppView.SOCIAL_SECURITY:
+                return <SocialSecurityCalculator notify={notify} />;
+              default:
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} />;
+            }
+          })()}
+        </Suspense>
       </div>
     );
   };
