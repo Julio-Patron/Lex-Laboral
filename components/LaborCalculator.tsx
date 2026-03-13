@@ -11,11 +11,13 @@ import {
   Zap, 
   AlertCircle,
   ChevronRight,
+  ChevronDown,
   TrendingUp,
   FileText,
   User,
   FileDown,
-  CheckCircle2
+  CheckCircle2,
+  Settings2
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -47,6 +49,8 @@ export const LaborCalculator: React.FC<{
   const [vacationPremium, setVacationPremium] = useState<number>(25);
   const [aguinaldoDays, setAguinaldoDays] = useState<number>(15);
   const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [expandedBreakdown, setExpandedBreakdown] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (baseSalary > 0) {
@@ -101,6 +105,15 @@ export const LaborCalculator: React.FC<{
     total: number;
     finiquito: number;
     liquidacion: number;
+    formulas: {
+      aguinaldo: string;
+      vacations: string;
+      vacationPremium: string;
+      indemnity90: string;
+      indemnity20: string;
+      seniorityPremium: string;
+      overtime: string;
+    };
   } | null>(null);
 
   const calculate = () => {
@@ -165,10 +178,19 @@ export const LaborCalculator: React.FC<{
       overtime: round(totalOvertime),
       finiquito: round(finiquito),
       liquidacion: round(liquidacion),
-      total: round(finiquito + liquidacion)
+      total: round(finiquito + liquidacion),
+      formulas: {
+        aguinaldo: `Salario Diario: $${dailySalary.toFixed(2)}\nDías de aguinaldo: ${aguinaldoDays}\nProporción del año: ${(proportionOfYear).toFixed(2)}\n$${dailySalary.toFixed(2)} × ${aguinaldoDays} × ${(proportionOfYear).toFixed(2)} = $${round(aguinaldo).toFixed(2)}`,
+        vacations: `Salario Diario: $${dailySalary.toFixed(2)}\nDías de vacaciones: ${vacationDays}\nProporción del año: ${(proportionOfYear).toFixed(2)}\n$${dailySalary.toFixed(2)} × ${vacationDays} × ${(proportionOfYear).toFixed(2)} = $${round(vacations).toFixed(2)}`,
+        vacationPremium: `Monto vacaciones: $${round(vacations).toFixed(2)}\nPorcentaje de prima: ${vacationPremium}%\n$${round(vacations).toFixed(2)} × ${(vacationPremium / 100).toFixed(2)} = $${round(vPremium).toFixed(2)}`,
+        indemnity90: `Salario Diario: $${dailySalary.toFixed(2)}\nDías de indemnización: 90\n$${dailySalary.toFixed(2)} × 90 = $${round(indemnity90).toFixed(2)}`,
+        indemnity20: `Salario Diario: $${dailySalary.toFixed(2)}\nDías por año: 20\nAños laborados (exactos): ${totalYears.toFixed(2)}\n$${dailySalary.toFixed(2)} × 20 × ${totalYears.toFixed(2)} = $${round(indemnity20).toFixed(2)}`,
+        seniorityPremium: `Salario Topado (Max 2 SMG): $${cappedSalary.toFixed(2)}\nDías por año: 12\nAños laborados (exactos): ${totalYears.toFixed(2)}\n$${cappedSalary.toFixed(2)} × 12 × ${totalYears.toFixed(2)} = $${round(seniorityPremium).toFixed(2)}`,
+        overtime: `Salario por hora: $${hourlyRate.toFixed(2)}\nHoras dobles: ${doubleOvertimeHours} ($${(hourlyRate * 2).toFixed(2)}/hr)\nHoras triples: ${tripleOvertimeHours} ($${(hourlyRate * 3).toFixed(2)}/hr)\n($${hourlyRate.toFixed(2)} × 2 × ${doubleOvertimeHours}) + ($${hourlyRate.toFixed(2)} × 3 × ${tripleOvertimeHours}) = $${round(totalOvertime).toFixed(2)}`,
+      }
     });
     
-    notify("Dictamen técnico generado con precisión actualizada", "success");
+    notify("Cálculo generado", "success");
   };
 
   // Auto-recálculo cuando cambian parámetros clave y ya hay resultados
@@ -510,87 +532,120 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                   ) : null}
               </div>
 
-              <div className="pt-8 border-t border-slate-100 space-y-6">
-                <div className="flex items-center gap-2 text-slate-900 mb-2">
-                  <FileText size={18} className="text-legal-gold" />
-                  <h3 className="text-sm font-bold uppercase tracking-wider">Prestaciones</h3>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Aguinaldo (Días)</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={aguinaldoDays} 
-                      onChange={(e) => setAguinaldoDays(Number(e.target.value))}
-                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
-                        aguinaldoDays < 0 
-                          ? 'border-red-500 ring-4 ring-red-500/10'
-                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
-                      }`}
-                    />
-                    {aguinaldoDays < 0 && (
-                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
-                    )}
+              <div className="pt-2">
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Settings2 size={18} className="text-legal-gold" />
+                    <div className="text-left">
+                      <span className="block text-sm font-bold text-slate-900">Ajustar prestaciones y detalles</span>
+                      <span className="block text-[11px] text-slate-500">Modo avanzado</span>
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vacaciones (Días)</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={vacationDays} 
-                      onChange={(e) => setVacationDays(Number(e.target.value))}
-                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
-                        vacationDays < 0 
-                          ? 'border-red-500 ring-4 ring-red-500/10'
-                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
-                      }`}
-                    />
-                    {vacationDays < 0 && (
-                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Prima Vacacional (%)</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={vacationPremium} 
-                      onChange={(e) => setVacationPremium(Number(e.target.value))}
-                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
-                        vacationPremium < 0 
-                          ? 'border-red-500 ring-4 ring-red-500/10'
-                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
-                      }`}
-                    />
-                    {vacationPremium < 0 && (
-                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
-                    )}
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Horas Extras</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={doubleOvertimeHours || ''} 
-                      onChange={(e) => setDoubleOvertimeHours(Number(e.target.value))}
-                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
-                        doubleOvertimeHours < 0 
-                          ? 'border-red-500 ring-4 ring-red-500/10'
-                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
-                      }`}
-                      placeholder="0"
-                    />
-                    {doubleOvertimeHours < 0 && (
-                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
-                    )}
-                  </div>
-                </div>
+                  <ChevronDown size={18} className={`text-slate-400 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                </button>
               </div>
+
+              <AnimatePresence>
+                {showAdvanced && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 border-t border-slate-100 space-y-6">
+                      <div className="flex items-center gap-2 text-slate-900 mb-2">
+                        <FileText size={18} className="text-legal-gold" />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">Prestaciones</h3>
+                      </div>
+
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+                        <p className="text-[11px] text-slate-500 mb-4">
+                          Valores prellenados con los mínimos de ley (LFT). Puedes ajustarlos si tu empresa ofrece prestaciones superiores.
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-5 mb-5">
+                          <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Aguinaldo (Días)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={aguinaldoDays}
+                              onChange={(e) => setAguinaldoDays(Number(e.target.value))}
+                              className={`w-full px-4 py-3.5 bg-white border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                                aguinaldoDays < 0
+                                  ? 'border-red-500 ring-4 ring-red-500/10'
+                                  : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold'
+                              }`}
+                            />
+                            {aguinaldoDays < 0 && (
+                              <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
+                            )}
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vacaciones (Días)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={vacationDays}
+                              onChange={(e) => setVacationDays(Number(e.target.value))}
+                              className={`w-full px-4 py-3.5 bg-white border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                                vacationDays < 0
+                                  ? 'border-red-500 ring-4 ring-red-500/10'
+                                  : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold'
+                              }`}
+                            />
+                            {vacationDays < 0 && (
+                              <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-5">
+                          <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Prima Vacacional (%)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={vacationPremium}
+                              onChange={(e) => setVacationPremium(Number(e.target.value))}
+                              className={`w-full px-4 py-3.5 bg-white border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                                vacationPremium < 0
+                                  ? 'border-red-500 ring-4 ring-red-500/10'
+                                  : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold'
+                              }`}
+                            />
+                            {vacationPremium < 0 && (
+                              <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
+                            )}
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Horas Extras</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={doubleOvertimeHours || ''}
+                              onChange={(e) => setDoubleOvertimeHours(Number(e.target.value))}
+                              className={`w-full px-4 py-3.5 bg-white border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                                doubleOvertimeHours < 0
+                                  ? 'border-red-500 ring-4 ring-red-500/10'
+                                  : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold'
+                              }`}
+                              placeholder="0"
+                            />
+                            {doubleOvertimeHours < 0 && (
+                              <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <button 
                 onClick={calculate}
@@ -718,82 +773,81 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         </div>
                       </div>
 
-                      {/* Desglose Detallado */}
-                      <div className="p-8 space-y-6">
-                        <div>
-                          <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Finiquito</h4>
-                            <span className="text-sm font-bold text-slate-900">${results.finiquito.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-xs text-slate-500">
-                              <span>Aguinaldo y Vacaciones</span>
-                              <span>${(results.aguinaldo + results.vacations + results.vacationPremium).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="flex justify-between text-xs text-slate-500">
-                              <span>Horas Extras</span>
-                              <span>${results.overtime.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            </div>
-                          </div>
+                      {/* Desglose Detallado con Fórmulas */}
+                      <div className="p-8 space-y-6 max-h-[500px] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Desglose del cálculo</h4>
                         </div>
 
-                        <div className="pt-6 border-t border-slate-100">
-                          <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Liquidación</h4>
-                            <span className="text-sm font-bold text-legal-950">${results.liquidacion.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-xs text-slate-500">
-                              <div className="flex items-center gap-1.5">
-                                <span>Indemnización 90 días</span>
-                                <div className="group relative">
-                                  <Info size={10} className="text-slate-300 hover:text-legal-gold cursor-help" />
-                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl">
-                                    Compensación constitucional por despido injustificado (Art. 48 LFT).
-                                  </div>
+                        <div className="space-y-3">
+                          {[
+                            { key: 'aguinaldo', label: 'Aguinaldo proporcional', value: results.aguinaldo, formula: results.formulas.aguinaldo },
+                            { key: 'vacations', label: 'Vacaciones proporcionales', value: results.vacations, formula: results.formulas.vacations },
+                            { key: 'vacationPremium', label: 'Prima vacacional', value: results.vacationPremium, formula: results.formulas.vacationPremium },
+                            { key: 'indemnity90', label: '3 meses de indemnización', value: results.indemnity90, formula: results.formulas.indemnity90 },
+                            { key: 'indemnity20', label: '20 días por año trabajado', value: results.indemnity20, formula: results.formulas.indemnity20 },
+                            { key: 'seniorityPremium', label: 'Prima de antigüedad', value: results.seniorityPremium, formula: results.formulas.seniorityPremium },
+                            { key: 'overtime', label: 'Horas extras', value: results.overtime, formula: results.formulas.overtime }
+                          ].filter(item => item.value > 0).map((item) => (
+                            <div key={item.key} className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden transition-all">
+                              <button
+                                onClick={() => setExpandedBreakdown(expandedBreakdown === item.key ? null : item.key)}
+                                className="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors text-left"
+                              >
+                                <div>
+                                  <span className="block text-sm font-bold text-slate-800">{item.label}</span>
+                                  <span className="text-[10px] font-medium text-legal-gold flex items-center gap-1 mt-0.5">
+                                    Ver cálculo <ChevronDown size={12} className={`transition-transform ${expandedBreakdown === item.key ? 'rotate-180' : ''}`} />
+                                  </span>
                                 </div>
-                              </div>
-                              <span>${results.indemnity90.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            </div>
-                            {results.indemnity20 > 0 && (
-                              <div className="flex justify-between text-xs text-slate-500 bg-legal-gold/5 p-1 rounded">
-                                <div className="flex items-center gap-1.5 font-bold">
-                                  <span>Indemnización 20 días/año</span>
-                                  <div className="group relative">
-                                    <Info size={10} className="text-legal-gold/50 hover:text-legal-gold cursor-help" />
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-normal">
-                                      Pago adicional en casos de rescisión o negativa de reinstalación (Art. 50 LFT).
+                                <span className="font-bold text-slate-900">
+                                  ${item.value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              </button>
+
+                              <AnimatePresence>
+                                {expandedBreakdown === item.key && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="border-t border-slate-200 bg-white"
+                                  >
+                                    <div className="p-4 bg-slate-50/50">
+                                      <pre className="text-[11px] text-slate-600 font-mono whitespace-pre-wrap leading-relaxed">
+                                        {item.formula}
+                                      </pre>
                                     </div>
-                                  </div>
-                                </div>
-                                <span className="font-bold">${results.indemnity20.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                              </div>
-                            )}
-                            <div className="flex justify-between text-xs text-slate-500">
-                              <span>Prima de Antigüedad</span>
-                              <span>${results.seniorityPremium.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </div>
-                          </div>
+                          ))}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tarjetas de Fundamentación */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                      { title: "Indemnización", art: "Art. 48 LFT", desc: "90 días de salario integrado por despido injustificado." },
-                      { title: "Antigüedad", art: "Art. 162 LFT", desc: "12 días por año laborado, topado a 2 salarios mínimos." },
-                      { title: "Finiquito", art: "Art. 76/87 LFT", desc: "Parte proporcional de aguinaldo y vacaciones devengadas." },
-                    ].map((item, i) => (
-                      <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                          <h5 className="text-xs font-bold text-slate-900">{item.title}</h5>
-                          <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{item.art}</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 leading-relaxed">{item.desc}</p>
+                  {/* Trust / Credibility Footer */}
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-legal-gold/10 flex items-center justify-center">
+                        <Scale size={20} className="text-legal-gold" />
                       </div>
-                    ))}
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">Basado en la Ley Federal del Trabajo de México</p>
+                        <p className="text-[11px] text-slate-500">Estimación informativa, no sustituye asesoría legal oficial.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <button className="flex-1 md:flex-none px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                        Analizar contrato
+                      </button>
+                      <button className="flex-1 md:flex-none px-4 py-2.5 bg-legal-950 text-legal-gold text-xs font-bold rounded-xl hover:bg-legal-900 shadow-sm transition-colors flex items-center justify-center gap-2">
+                        Preguntar a Lexi
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
