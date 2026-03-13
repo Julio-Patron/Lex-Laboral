@@ -84,7 +84,7 @@ function App() {
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([{ 
     role: 'model', 
-    text: 'Sistema LexLaboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?' 
+    text: 'Sistema Lex Laboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?' 
   }]);
   const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });

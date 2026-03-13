@@ -1,6 +1,6 @@
 # ⚖️ Lex Laboral - Inteligencia Jurídica Laboral
 
-Lexi Laboral es una plataforma avanzada impulsada por inteligencia artificial  diseñada para asistir a profesionales del derecho y trabajadores en la gestión de asuntos laborales en México. Ofrece herramientas de análisis, cálculo y redacción automatizada para optimizar procesos legales complejos con parámetros vigentes a **Marzo de 2026**.
+Lex Laboral es una plataforma avanzada impulsada por inteligencia artificial (Gemini) diseñada para asistir a profesionales del derecho y trabajadores en la gestión de asuntos laborales en México. Ofrece herramientas de análisis, cálculo y redacción automatizada para optimizar procesos legales complejos con parámetros vigentes a **Marzo de 2026**.
 
 **🌐 Accede a la aplicación:** [https://lexi-laboral.vercel.app/](https://lexi-laboral.vercel.app/)
 
@@ -24,4 +24,4 @@ Lexi Laboral es una plataforma avanzada impulsada por inteligencia artificial  d
 Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
-*Lexi Laboral: La tecnología al servicio de la justicia laboral.*
+*Lex Laboral: La tecnología al servicio de la justicia laboral.*

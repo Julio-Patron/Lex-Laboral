@@ -202,7 +202,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
                       <div className="flex items-start gap-3 px-1">
                         <input type="checkbox" required className="mt-1 accent-legal-gold" />
                         <p className="text-[10px] text-slate-500 leading-tight">
-                          Acepto los <a href="#" className="underline font-bold text-slate-700">Términos y Condiciones</a> y el <a href="#" className="underline font-bold text-slate-700">Aviso de Privacidad</a> de Lexi Laboral.
+                          Acepto los <a href="#" className="underline font-bold text-slate-700">Términos y Condiciones</a> y el <a href="#" className="underline font-bold text-slate-700">Aviso de Privacidad</a> de Lex Laboral.
                         </p>
                       </div>
                     )}

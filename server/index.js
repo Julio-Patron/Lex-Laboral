@@ -101,7 +101,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
 
 const SYSTEM_INSTRUCTION = `
-Eres "Lexi Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano.
+Eres "Lex Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano.
 
 ÁREAS DE EXPERTISE:
 1. Relaciones Individuales de Trabajo: Dominio total de la Ley Federal del Trabajo (LFT). Especialista en contratos individuales, jornadas, salarios, prestaciones (aguinaldo, vacaciones, prima vacacional) y rescisiones.

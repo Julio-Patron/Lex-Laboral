@@ -59,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
           <div className="p-2.5 bg-gradient-to-br from-legal-gold to-legal-goldhover rounded-xl shadow-lg shadow-legal-gold/20 flex items-center justify-center">
             <Scale className="text-legal-950" size={24} />
           </div>
-          <h1 className="font-serif font-bold text-xl tracking-tight text-white">Lexi Laboral</h1>
+          <h1 className="font-serif font-bold text-xl tracking-tight text-white">Lex Laboral</h1>
         </div>
       </div>
       
