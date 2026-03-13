@@ -51,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
   ];
 
   return (
-    <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative overflow-hidden shadow-2xl no-print">
+    <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.05),transparent_50%)] pointer-events-none" />
       
       <div className="p-8 pt-10 relative">
@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
         </div>
       </div>
       
-      <nav className="mt-8 px-4 flex-1">
+      <nav className="mt-8 px-4 flex-1 overflow-y-auto custom-scrollbar">
         <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Capacidades</p>
         <ul className="space-y-2">
           {navItems.map((item) => (
@@ -87,6 +87,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
             </li>
           ))}
         </ul>
+
+        <div className="mt-10 mb-6 px-5 space-y-4">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Información Legal</p>
+          <button className="block text-[11px] font-bold text-slate-400 hover:text-legal-gold transition-colors text-left uppercase tracking-tighter">
+            Términos y Condiciones
+          </button>
+          <button className="block text-[11px] font-bold text-slate-400 hover:text-legal-gold transition-colors text-left uppercase tracking-tighter">
+            Aviso de Privacidad
+          </button>
+        </div>
       </nav>
 
       <div className="p-6 mt-auto space-y-4 border-t border-white/5 bg-black/10">
@@ -140,20 +150,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
         <div className="bg-white/5 rounded-2xl p-5 mt-2 border border-white/5">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Soporte Técnico</p>
           <div className="space-y-4">
-            <a 
-              href="https://wa.me/521234567890" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center space-x-3 text-slate-400 hover:text-white transition-all group bg-white/0 hover:bg-emerald-500/10 p-2.5 rounded-xl border border-transparent hover:border-emerald-500/20"
-            >
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-all shadow-sm">
-                <MessageSquare size={16} className="text-emerald-500" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] font-bold uppercase tracking-wider">WhatsApp</span>
-                <span className="text-[9px] text-slate-500 group-hover:text-emerald-400 transition-colors">Atención Inmediata</span>
-              </div>
-            </a>
             <a 
               href="mailto:soporte@lexilaboral.com" 
               className="flex items-center space-x-3 text-slate-400 hover:text-white transition-all group bg-white/0 hover:bg-legal-gold/10 p-2.5 rounded-xl border border-transparent hover:border-legal-gold/20"

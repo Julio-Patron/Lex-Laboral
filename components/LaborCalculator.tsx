@@ -14,7 +14,8 @@ import {
   TrendingUp,
   FileText,
   User,
-  FileDown
+  FileDown,
+  CheckCircle2
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -35,6 +36,26 @@ export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
   const [dailySalary, setDailySalary] = useState<number>(0);
+  const [baseSalary, setBaseSalary] = useState<number>(0);
+  const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
+  const [isSdiCalculated, setIsSdiCalculated] = useState(false);
+
+  const calculateSDI = () => {
+    let daily = 0;
+    if (salaryPeriod === 'daily') daily = baseSalary;
+    else if (salaryPeriod === 'weekly') daily = baseSalary / 7;
+    else if (salaryPeriod === 'biweekly') daily = baseSalary / 15;
+    else if (salaryPeriod === 'monthly') daily = baseSalary / 30;
+
+    // Integración base (Ley Federal del Trabajo):
+    // Aguinaldo (15 días) + Prima Vacacional (25% de 12 días mínimo)
+    // Factor = 1 + (15/365) + (12 * 0.25 / 365) = 1.0493
+    const factor = 1 + (aguinaldoDays / 365.25) + (vacationDays * (vacationPremium / 100) / 365.25);
+    const sdi = daily * factor;
+    setDailySalary(Math.round(sdi * 100) / 100);
+    setIsSdiCalculated(true);
+    notify(`Salario Integrado calculado: $${sdi.toFixed(2)}`, "info");
+  };
   const [yearsOfService, setYearsOfService] = useState<number>(0);
   const [daysOfService, setDaysOfService] = useState<number>(0);
   const [vacationDays, setVacationDays] = useState<number>(12);
@@ -309,15 +330,82 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
               </div>
 
               <div className="space-y-4">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                   <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Asistente de Salario Base</label>
+                      <button 
+                         onClick={() => setIsSdiCalculated(false)} 
+                         className="text-[9px] font-bold text-legal-gold hover:text-legal-800 uppercase tracking-tighter"
+                      >
+                         Reiniciar
+                      </button>
+                   </div>
+                   
+                   {!isSdiCalculated ? (
+                      <div className="space-y-3">
+                         <div className="flex bg-white p-0.5 rounded-lg border border-slate-200">
+                            {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
+                               <button 
+                                  key={p}
+                                  onClick={() => setSalaryPeriod(p)}
+                                  className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                               >
+                                  {p === 'daily' ? 'Día' : p === 'weekly' ? 'Sem' : p === 'biweekly' ? 'Quinc' : 'Mes'}
+                               </button>
+                            ))}
+                         </div>
+                         <div className="flex gap-2">
+                            <div className="relative flex-1">
+                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs">$</span>
+                               <input 
+                                  type="number" 
+                                  placeholder="Monto"
+                                  value={baseSalary || ''}
+                                  onChange={(e) => setBaseSalary(Number(e.target.value))}
+                                  className="w-full pl-7 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-legal-gold/20"
+                               />
+                            </div>
+                            <button 
+                               onClick={calculateSDI}
+                               disabled={baseSalary <= 0}
+                               className="px-3 py-2 bg-legal-gold text-legal-950 rounded-lg text-[10px] font-bold hover:bg-legal-goldhover transition-all disabled:opacity-50"
+                            >
+                               Integrar
+                            </button>
+                         </div>
+                         <p className="text-[9px] text-slate-400 italic">Escriba su salario antes de impuestos.</p>
+                      </div>
+                   ) : (
+                      <div className="bg-white p-3 rounded-xl border border-legal-gold/20 flex items-center justify-between">
+                         <div>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SDI Calculado</p>
+                            <p className="text-lg font-serif font-bold text-legal-950">${dailySalary.toFixed(2)}</p>
+                         </div>
+                         <CheckCircle2 className="text-emerald-500" size={20} />
+                      </div>
+                   )}
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Salario Diario Integrado (SDI)</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Salario Diario Integrado Final</label>
+                    <div className="group relative">
+                      <Info size={12} className="text-slate-300 hover:text-legal-gold cursor-help" />
+                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                        Suma de salario diario más prestaciones (Art. 84 LFT).
+                      </div>
+                    </div>
+                  </div>
                   <div className="relative group">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold group-focus-within:text-legal-gold transition-colors">$</span>
                     <input 
                       type="number" 
                       min="0"
                       value={dailySalary || ''} 
-                      onChange={(e) => setDailySalary(Number(e.target.value))}
+                      onChange={(e) => {
+                        setDailySalary(Number(e.target.value));
+                        setIsSdiCalculated(true);
+                      }}
                       className={`w-full pl-8 pr-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
                         dailySalary < 0 
                           ? 'border-red-500 focus:ring-red-500/20' 
