@@ -21,9 +21,9 @@ describe('gemini service', () => {
 
       const mockFiles = [{ base64: 'test', mimeType: 'text/plain', name: 'test.txt' }];
       const mockPrompt = 'Analyze this';
-      const mockUserId = 'user123';
+      const mockIdToken = 'token123';
 
-      await expect(analyzeLegalDocument(mockFiles, mockPrompt, mockUserId))
+      await expect(analyzeLegalDocument(mockFiles, mockPrompt, mockIdToken))
         .rejects
         .toThrow('Error al analizar el documento');
 
@@ -33,8 +33,11 @@ describe('gemini service', () => {
         expect.stringContaining('/analyze'),
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ files: mockFiles, prompt: mockPrompt, userId: mockUserId })
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${mockIdToken}`
+          },
+          body: JSON.stringify({ files: mockFiles, prompt: mockPrompt })
         })
       );
     });
@@ -50,9 +53,9 @@ describe('gemini service', () => {
 
       const mockFiles = [{ base64: 'test', mimeType: 'text/plain', name: 'test.txt' }];
       const mockPrompt = 'Analyze this';
-      const mockUserId = 'user123';
+      const mockIdToken = 'token123';
 
-      const result = await analyzeLegalDocument(mockFiles, mockPrompt, mockUserId);
+      const result = await analyzeLegalDocument(mockFiles, mockPrompt, mockIdToken);
 
       expect(result).toBe(mockText);
     });
@@ -69,9 +72,9 @@ describe('gemini service', () => {
 
       const mockHistory: ChatMessage[] = [];
       const mockNewMessage = 'Hello';
-      const mockUserId = 'user123';
+      const mockIdToken = 'token123';
 
-      await expect(streamLegalChat(mockHistory, mockNewMessage, false, mockUserId))
+      await expect(streamLegalChat(mockHistory, mockNewMessage, false, mockIdToken))
         .rejects
         .toThrow('Error en la respuesta del motor legal');
     });
@@ -87,9 +90,9 @@ describe('gemini service', () => {
 
       const mockHistory: ChatMessage[] = [];
       const mockNewMessage = 'Hello';
-      const mockUserId = 'user123';
+      const mockIdToken = 'token123';
 
-      const result = await streamLegalChat(mockHistory, mockNewMessage, false, mockUserId);
+      const result = await streamLegalChat(mockHistory, mockNewMessage, false, mockIdToken);
 
       expect(result).toHaveProperty('response');
       expect(typeof result.response.text).toBe('function');
@@ -107,9 +110,9 @@ describe('gemini service', () => {
       });
 
       const mockRequirements = 'Create a contract';
-      const mockUserId = 'user123';
+      const mockIdToken = 'token123';
 
-      await expect(draftLegalDocument(mockRequirements, mockUserId))
+      await expect(draftLegalDocument(mockRequirements, mockIdToken))
         .rejects
         .toThrow('Error al generar el borrador');
     });
@@ -124,9 +127,9 @@ describe('gemini service', () => {
       });
 
       const mockRequirements = 'Create a contract';
-      const mockUserId = 'user123';
+      const mockIdToken = 'token123';
 
-      const result = await draftLegalDocument(mockRequirements, mockUserId);
+      const result = await draftLegalDocument(mockRequirements, mockIdToken);
 
       expect(result).toBe(mockText);
     });

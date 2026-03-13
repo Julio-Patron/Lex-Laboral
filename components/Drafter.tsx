@@ -66,7 +66,8 @@ export const Drafter: React.FC<{
         return;
       }
       notify("Proyectando instrumento jurídico...", "info");
-      const doc = await draftLegalDocument(prompt, user.uid);
+      const idToken = await user.getIdToken();
+      const doc = await draftLegalDocument(prompt, idToken);
       setGeneratedDoc(doc);
       notify("Instrumento proyectado exitosamente", "success");
     } catch (error) {

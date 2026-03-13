@@ -41,11 +41,12 @@ export const ChatInterface: React.FC<{
       
       setMessages(prev => [...prev, { role: 'model', text: '', isThinking: true }]);
 
+      const idToken = user ? await user.getIdToken() : '';
       const result = await streamLegalChat(
         messages, 
         userMessage, 
         true, 
-        user?.uid || 'guest', 
+        idToken,
         focusMode, 
         analysisHistory
       );
