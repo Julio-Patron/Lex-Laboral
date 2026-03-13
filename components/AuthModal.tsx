@@ -40,12 +40,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
         onClose();
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        setMode('planSelection');
-        notify("Cuenta creada. Por favor seleccione su licencia para activar el acceso.", "success");
+        // Temporary bypass: Close modal immediately instead of plan selection
+        onClose();
+        notify("Cuenta creada satisfactoriamente. Acceso total activado.", "success");
       }
     } catch (err: any) {
-      console.error(err);
-      setError(err.message === "Firebase: Error (auth/email-already-in-use)." ? "El correo ya está registrado" : "Error en la autenticación");
+      console.error('Auth error:', err);
+      let message = "Error en la autenticación";
+      if (err.code === "auth/email-already-in-use") message = "El correo ya está registrado";
+      if (err.code === "auth/invalid-credential") message = "Credenciales inválidas o cuenta no registrada";
+      if (err.code === "auth/weak-password") message = "La contraseña es muy débil (mínimo 6 caracteres)";
+      if (err.code === "auth/unauthorized-domain") message = "Dominio no autorizado en Firebase. Contacte a soporte.";
+      setError(`${message} (${err.code || 'unknown'})`);
     } finally {
       setLoading(false);
     }
@@ -64,7 +70,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       notify("Correo de recuperación enviado", "success");
       setMode('login');
     } catch (err: any) {
-      setError("Error al enviar el correo. Verifique que sea válido.");
+      console.error('Reset error:', err);
+      setError(`Error: ${err.message || 'Verifique su correo'}`);
     } finally {
       setLoading(false);
     }
@@ -92,18 +99,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      // Check if user has a license
-      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-      if (!userDoc.exists() || !userDoc.data()?.isPremium) {
-        setMode('planSelection');
-      } else {
-        onClose();
-      }
+      await signInWithPopup(auth, provider);
+      // Temporary bypass: Always close modal on Google Sign-in
+      onClose();
+      notify("Sesión iniciada correctamente.", "success");
     } catch (err: any) {
-      console.error(err);
-      setError("Error en la autenticación con Google");
+      console.error('Google Auth error:', err);
+      let message = "Error en la autenticación con Google";
+      if (err.code === "auth/unauthorized-domain") {
+        message = "Dominio no autorizado. Agregue lexi-laboral.vercel.app a dominios permitidos en Firebase.";
+      }
+      setError(`${message} (${err.code || 'error'})`);
     } finally {
       setLoading(false);
     }

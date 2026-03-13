@@ -2,7 +2,10 @@
 import { loadStripe } from '@stripe/stripe-js';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-export const stripePromise = loadStripe(stripePublishableKey);
+if (!stripePublishableKey) {
+  console.warn('VITE_STRIPE_PUBLISHABLE_KEY is not defined. Stripe features will be disabled.');
+}
+export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
 
 // Map your plan names to Stripe Price IDs here
 const PRICE_IDS = {

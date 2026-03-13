@@ -57,9 +57,9 @@ function App() {
         } else {
           const initialData = {
             email: firebaseUser.email,
-            isPremium: false,
-            licenseType: null,
-            accessUntil: null,
+            isPremium: true,
+            licenseType: 'validation-bypass',
+            accessUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
             usage: { audits: 0, generations: 0 },
             createdAt: new Date().toISOString()
           };
