@@ -27,7 +27,7 @@ import {
   Cell
 } from 'recharts';
 import { NotificationType } from '../types';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;

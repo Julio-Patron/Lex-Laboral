@@ -4,7 +4,7 @@ import { draftLegalDocument } from '../services/gemini';
 import { User } from 'firebase/auth';
 import { ChatMessage, NotificationType, DraftingState } from '../types';
 import ReactMarkdown from 'react-markdown';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Drafter: React.FC<{
   state: DraftingState;
@@ -69,15 +69,17 @@ export const Drafter: React.FC<{
       const doc = await draftLegalDocument(prompt, user.uid);
       setGeneratedDoc(doc);
       notify("Instrumento proyectado exitosamente", "success");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Drafting Error:", error);
       let errorMsg = "Error en la proyección. Intente con instrucciones más breves.";
       
-      if (error.message?.includes("Límite")) {
+      const errorMessage = error instanceof Error ? error.message : "";
+
+      if (errorMessage.includes("Límite")) {
         errorMsg = "Ha alcanzado el límite de generaciones de su licencia. Consulte los términos del servicio.";
-      } else if (error.message?.includes("API key")) {
+      } else if (errorMessage.includes("API key")) {
         errorMsg = "Error de autenticación. Verifique su API Key.";
-      } else if (error.message?.includes("expirado")) {
+      } else if (errorMessage.includes("expirado")) {
         errorMsg = "Su licencia ha expirado. Por favor, renueve su suscripción.";
       }
       

@@ -70,15 +70,17 @@ export const DocumentAnalyzer: React.FC<{
         customInstruction
       });
       notify("Auditoría finalizada con éxito", "success");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Analysis Error:", err);
       let errorMsg = "Error en la auditoría. Verifique que los archivos sean legibles.";
       
-      if (err.message?.includes("Límite")) {
+      const errorMessage = err instanceof Error ? err.message : '';
+
+      if (errorMessage.includes("Límite")) {
         errorMsg = "Ha alcanzado el límite de auditorías de su licencia. Consulte los términos del servicio.";
-      } else if (err.message?.includes("API key")) {
+      } else if (errorMessage.includes("API key")) {
         errorMsg = "Error de autenticación. Verifique su API Key.";
-      } else if (err.message?.includes("expirado")) {
+      } else if (errorMessage.includes("expirado")) {
         errorMsg = "Su licencia ha expirado. Por favor, renueve su suscripción.";
       }
       

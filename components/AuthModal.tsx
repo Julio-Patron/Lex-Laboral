@@ -44,14 +44,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
         onClose();
         notify("Cuenta creada satisfactoriamente. Acceso total activado.", "success");
       }
-    } catch (err: any) {
-      console.error('Auth error:', err);
+    } catch (error) {
+      console.error('Auth error:', error);
+      const err = error as { code?: string; message?: string };
       let message = "Error en la autenticación";
-      if (err.code === "auth/email-already-in-use") message = "El correo ya está registrado";
-      if (err.code === "auth/invalid-credential") message = "Credenciales inválidas o cuenta no registrada";
-      if (err.code === "auth/weak-password") message = "La contraseña es muy débil (mínimo 6 caracteres)";
-      if (err.code === "auth/unauthorized-domain") message = "Dominio no autorizado en Firebase. Contacte a soporte.";
-      setError(`${message} (${err.code || 'unknown'})`);
+      const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'unknown';
+      if (errorCode === "auth/email-already-in-use") message = "El correo ya está registrado";
+      if (errorCode === "auth/invalid-credential") message = "Credenciales inválidas o cuenta no registrada";
+      if (errorCode === "auth/weak-password") message = "La contraseña es muy débil (mínimo 6 caracteres)";
+      if (errorCode === "auth/unauthorized-domain") message = "Dominio no autorizado en Firebase. Contacte a soporte.";
+      setError(`${message} (${errorCode})`);
     } finally {
       setLoading(false);
     }
@@ -69,8 +71,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       await sendPasswordResetEmail(auth, email);
       notify("Correo de recuperación enviado", "success");
       setMode('login');
-    } catch (err: any) {
-      console.error('Reset error:', err);
+    } catch (error) {
+      console.error('Reset error:', error);
+      const err = error as { message?: string };
       setError(`Error: ${err.message || 'Verifique su correo'}`);
     } finally {
       setLoading(false);
@@ -86,8 +89,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       
       const session = await createCheckoutSession(user.email || '', user.uid, selectedPlan);
       await redirectToCheckout(session.id);
-    } catch (err: any) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       setError("Error al iniciar el proceso de pago");
     } finally {
       setLoading(false);
@@ -103,13 +106,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       // Temporary bypass: Always close modal on Google Sign-in
       onClose();
       notify("Sesión iniciada correctamente.", "success");
-    } catch (err: any) {
-      console.error('Google Auth error:', err);
+    } catch (error) {
+      console.error('Google Auth error:', error);
+      const err = error as { code?: string };
       let message = "Error en la autenticación con Google";
-      if (err.code === "auth/unauthorized-domain") {
+      const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'error';
+      if (errorCode === "auth/unauthorized-domain") {
         message = "Dominio no autorizado. Agregue lexi-laboral.vercel.app a dominios permitidos en Firebase.";
       }
-      setError(`${message} (${err.code || 'error'})`);
+      setError(`${message} (${errorCode})`);
     } finally {
       setLoading(false);
     }
