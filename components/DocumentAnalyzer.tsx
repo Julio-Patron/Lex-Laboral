@@ -33,6 +33,7 @@ export const DocumentAnalyzer: React.FC<{
 }> = ({ state, setState, onAddAnalysis, notify, user }) => {
   const { files, result, customInstruction } = state;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   const setFiles = (f: AnalyzedFile[] | ((prev: AnalyzedFile[]) => AnalyzedFile[])) => 
     setState(prev => ({ ...prev, files: typeof f === 'function' ? f(prev.files) : f }));
@@ -45,6 +46,10 @@ export const DocumentAnalyzer: React.FC<{
 
   const handleAnalyze = async () => {
     if (files.length === 0) return;
+    if (!privacyAccepted) {
+      notify("Debe aceptar el Aviso de Privacidad para continuar", "warning", "Consentimiento Requerido");
+      return;
+    }
     setIsAnalyzing(true);
     try {
       if (!user) {
@@ -220,9 +225,23 @@ Generado por LexLaboral. Privacidad Total: No se conservan copias de este análi
                   className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] outline-none h-32 focus:ring-4 ring-legal-gold/5 focus:border-legal-gold transition-all shadow-inner-soft leading-relaxed"
                 />
               </div>
+
+              <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200/60 rounded-xl">
+                <input
+                  type="checkbox"
+                  id="privacy-consent"
+                  checked={privacyAccepted}
+                  onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-legal-gold bg-white border-slate-300 rounded focus:ring-legal-gold cursor-pointer"
+                />
+                <label htmlFor="privacy-consent" className="text-[11px] text-slate-600 leading-relaxed cursor-pointer select-none">
+                  <span className="font-bold text-slate-800">Consentimiento de Privacidad:</span> Confirmo que he ofuscado datos sensibles (RFC, nombres, salarios) de los documentos. Autorizo el análisis automatizado conforme a la <a href="#" className="text-legal-gold hover:underline">Política de Privacidad</a>, entendiendo que no se almacenan copias ni se entrenan modelos con esta información.
+                </label>
+              </div>
+
               <button 
                 onClick={handleAnalyze} 
-                disabled={isAnalyzing || files.length === 0}
+                disabled={isAnalyzing || files.length === 0 || !privacyAccepted}
                 className="w-full py-5 bg-legal-950 text-legal-gold rounded-2xl font-bold shadow-xl shadow-legal-950/20 hover:bg-legal-900 hover:shadow-2xl hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 {isAnalyzing ? (
