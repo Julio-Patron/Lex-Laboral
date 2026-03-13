@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
   ShieldCheck, 
   Activity, 
@@ -8,24 +8,11 @@ import {
   Home, 
   TrendingUp, 
   Download, 
-  RefreshCw, 
-  Info,
   AlertCircle,
   Stethoscope,
   Users,
   Zap
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip as RechartsTooltip, 
-  ResponsiveContainer, 
-  Legend,
-  Cell
-} from 'recharts';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -171,14 +158,6 @@ export const SocialSecurityCalculator: React.FC<{
     setShowRiskCalc(false);
     notify(`Nueva Prima de Riesgo calculada: ${(calculatedRisk * 100).toFixed(5)}%`, "success");
   };
-
-  const chartData = useMemo(() => {
-    if (!results) return [];
-    return [
-      { name: 'Patrón', value: results.employer.total, color: '#1e293b' },
-      { name: 'Trabajador', value: results.employee.total, color: '#d4af37' },
-    ];
-  }, [results]);
 
   const handleExport = () => {
     if (!results) return;
