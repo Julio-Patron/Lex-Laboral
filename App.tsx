@@ -162,7 +162,7 @@ function App() {
         {(() => {
           switch (currentView) {
             case AppView.CHAT:
-              return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} />;
+              return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
             case AppView.DOCUMENT_ANALYSIS:
               return <DocumentAnalyzer 
           state={documentAnalysisState} 
@@ -183,7 +183,7 @@ function App() {
             case AppView.SOCIAL_SECURITY:
               return <SocialSecurityCalculator notify={notify} />;
             default:
-              return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} />;
+              return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} />;
           }
         })()}
       </div>

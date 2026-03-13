@@ -3,14 +3,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, AnalyzedDocumentHistory, NotificationType } from '../types';
 import { streamLegalChat } from '../services/gemini';
 import { Send, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink } from 'lucide-react';
-import { GenerateContentResponse } from '@google/genai';
+import { User } from 'firebase/auth';
 
 export const ChatInterface: React.FC<{
   messages: ChatMessage[];
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   analysisHistory?: AnalyzedDocumentHistory[];
   notify: (m: string, t?: NotificationType, tit?: string) => void;
-}> = ({ messages, setMessages, analysisHistory = [], notify }) => {
+  user: User | null;
+}> = ({ messages, setMessages, analysisHistory = [], notify, user }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusMode, setFocusMode] = useState<'standard' | 'individual' | 'collective' | 'procedural'>('standard');
@@ -40,7 +41,14 @@ export const ChatInterface: React.FC<{
       
       setMessages(prev => [...prev, { role: 'model', text: '', isThinking: true }]);
 
-      const result = await streamLegalChat(messages, userMessage, true, focusMode, analysisHistory);
+      const result = await streamLegalChat(
+        messages, 
+        userMessage, 
+        true, 
+        user?.uid || 'guest', 
+        focusMode, 
+        analysisHistory
+      );
       const fullResponse = (result.response as any).text();
       
       setMessages(prev => {
