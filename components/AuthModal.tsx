@@ -48,11 +48,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       console.error('Auth error:', error);
       const err = error as { code?: string; message?: string };
       let message = "Error en la autenticación";
-      if (err.code === "auth/email-already-in-use") message = "El correo ya está registrado";
-      if (err.code === "auth/invalid-credential") message = "Credenciales inválidas o cuenta no registrada";
-      if (err.code === "auth/weak-password") message = "La contraseña es muy débil (mínimo 6 caracteres)";
-      if (err.code === "auth/unauthorized-domain") message = "Dominio no autorizado en Firebase. Contacte a soporte.";
-      setError(`${message} (${err.code || 'unknown'})`);
+      const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'unknown';
+      if (errorCode === "auth/email-already-in-use") message = "El correo ya está registrado";
+      if (errorCode === "auth/invalid-credential") message = "Credenciales inválidas o cuenta no registrada";
+      if (errorCode === "auth/weak-password") message = "La contraseña es muy débil (mínimo 6 caracteres)";
+      if (errorCode === "auth/unauthorized-domain") message = "Dominio no autorizado en Firebase. Contacte a soporte.";
+      setError(`${message} (${errorCode})`);
     } finally {
       setLoading(false);
     }
@@ -109,10 +110,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       console.error('Google Auth error:', error);
       const err = error as { code?: string };
       let message = "Error en la autenticación con Google";
-      if (err.code === "auth/unauthorized-domain") {
+      const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'error';
+      if (errorCode === "auth/unauthorized-domain") {
         message = "Dominio no autorizado. Agregue lexi-laboral.vercel.app a dominios permitidos en Firebase.";
       }
-      setError(`${message} (${err.code || 'error'})`);
+      setError(`${message} (${errorCode})`);
     } finally {
       setLoading(false);
     }

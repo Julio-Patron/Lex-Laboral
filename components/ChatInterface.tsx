@@ -60,8 +60,8 @@ export const ChatInterface: React.FC<{
         }
         return newArr;
       });
-    } catch (error: any) {
-      const errorMsg = error?.message || "";
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "";
       if (errorMsg.includes("429")) notify("Límite de frecuencia alcanzado.", "warning", "Servidor Saturado");
       else if (errorMsg.includes("SAFETY")) notify("Consulta bloqueada por política de seguridad.", "info", "Aviso de Contenido");
       else notify("Error técnico en la comunicación.", "error", "Fallo de Red");
