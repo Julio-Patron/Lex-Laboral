@@ -40,22 +40,20 @@ export const LaborCalculator: React.FC<{
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
   const [isSdiCalculated, setIsSdiCalculated] = useState(false);
 
-  const calculateSDI = () => {
-    let daily = 0;
-    if (salaryPeriod === 'daily') daily = baseSalary;
-    else if (salaryPeriod === 'weekly') daily = baseSalary / 7;
-    else if (salaryPeriod === 'biweekly') daily = baseSalary / 15;
-    else if (salaryPeriod === 'monthly') daily = baseSalary / 30;
+  React.useEffect(() => {
+    if (baseSalary > 0) {
+      let daily = 0;
+      if (salaryPeriod === 'daily') daily = baseSalary;
+      else if (salaryPeriod === 'weekly') daily = baseSalary / 7;
+      else if (salaryPeriod === 'biweekly') daily = baseSalary / 15;
+      else if (salaryPeriod === 'monthly') daily = baseSalary / 30;
 
-    // Integración base (Ley Federal del Trabajo):
-    // Aguinaldo (15 días) + Prima Vacacional (25% de 12 días mínimo)
-    // Factor = 1 + (15/365) + (12 * 0.25 / 365) = 1.0493
-    const factor = 1 + (aguinaldoDays / 365.25) + (vacationDays * (vacationPremium / 100) / 365.25);
-    const sdi = daily * factor;
-    setDailySalary(Math.round(sdi * 100) / 100);
-    setIsSdiCalculated(true);
-    notify(`Salario Integrado calculado: $${sdi.toFixed(2)}`, "info");
-  };
+      const factor = 1 + (aguinaldoDays / 365.25) + (vacationDays * (vacationPremium / 100) / 365.25);
+      const sdi = daily * factor;
+      setDailySalary(Math.round(sdi * 100) / 100);
+      setIsSdiCalculated(true);
+    }
+  }, [baseSalary, salaryPeriod, aguinaldoDays, vacationDays, vacationPremium]);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [yearsOfService, setYearsOfService] = useState<number>(0);
@@ -358,7 +356,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Panel de Entradas */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
               <div className="flex items-center gap-2 text-slate-900 mb-2">
                 <User size={18} className="text-legal-gold" />
@@ -368,72 +366,68 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
               <div className="space-y-4">
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Asistente de Salario Base</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Asistente de Salario Base</label>
                       <button 
-                         onClick={() => setIsSdiCalculated(false)} 
-                         className="text-[9px] font-bold text-legal-gold hover:text-legal-800 uppercase tracking-tighter"
+                         onClick={() => {
+                            setBaseSalary(0);
+                            setIsSdiCalculated(false);
+                         }}
+                         className="text-[10px] font-bold text-legal-gold hover:text-legal-800 uppercase tracking-tight"
                       >
                          Reiniciar
                       </button>
                    </div>
                    
-                   {!isSdiCalculated ? (
                       <div className="space-y-3">
-                         <div className="flex bg-white p-0.5 rounded-lg border border-slate-200">
+                         <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                             {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
                                <button 
                                   key={p}
                                   onClick={() => setSalaryPeriod(p)}
-                                  className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white shadow' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                >
-                                  {p === 'daily' ? 'Día' : p === 'weekly' ? 'Sem' : p === 'biweekly' ? 'Quinc' : 'Mes'}
+                                  {p === 'daily' ? 'Día' : p === 'weekly' ? 'Semana' : p === 'biweekly' ? 'Quincena' : 'Mes'}
                                </button>
                             ))}
                          </div>
-                         <div className="flex gap-2">
-                            <div className="relative flex-1">
-                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs">$</span>
+                         <div className="flex gap-3">
+                            <div className="relative flex-1 group">
+                               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold group-focus-within:text-legal-gold transition-colors">$</span>
                                <input 
                                   type="number" 
-                                  placeholder="Monto"
+                                  placeholder="Monto de salario base"
                                   value={baseSalary || ''}
                                   onChange={(e) => setBaseSalary(Number(e.target.value))}
-                                  className="w-full pl-7 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-legal-gold/20"
+                                  className="w-full pl-8 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold transition-all"
                                />
                             </div>
-                            <button 
-                               onClick={calculateSDI}
-                               disabled={baseSalary <= 0}
-                               className="px-3 py-2 bg-legal-gold text-legal-950 rounded-lg text-[10px] font-bold hover:bg-legal-goldhover transition-all disabled:opacity-50"
-                            >
-                               Integrar
-                            </button>
                          </div>
-                         <p className="text-[9px] text-slate-400 italic">Escriba su salario antes de impuestos.</p>
+                         {isSdiCalculated && baseSalary > 0 ? (
+                            <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                               <div>
+                                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-0.5">SDI Integrado Automáticamente</p>
+                                  <p className="text-lg font-serif font-bold text-emerald-900">${dailySalary.toFixed(2)}</p>
+                               </div>
+                               <CheckCircle2 className="text-emerald-500" size={20} />
+                            </div>
+                         ) : (
+                            <p className="text-[10px] text-slate-500 italic">Escriba su salario antes de impuestos. El cálculo se hará automáticamente.</p>
+                         )}
                       </div>
-                   ) : (
-                      <div className="bg-white p-3 rounded-xl border border-legal-gold/20 flex items-center justify-between">
-                         <div>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SDI Calculado</p>
-                            <p className="text-lg font-serif font-bold text-legal-950">${dailySalary.toFixed(2)}</p>
-                         </div>
-                         <CheckCircle2 className="text-emerald-500" size={20} />
-                      </div>
-                   )}
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Salario Diario Integrado Final</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Salario Diario Integrado Final</label>
                     <div className="group relative">
                       <Info size={12} className="text-slate-300 hover:text-legal-gold cursor-help" />
-                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                        Suma de salario diario más prestaciones (Art. 84 LFT).
+                      <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-slate-800 text-[11px] text-white rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                        Suma de salario diario más proporciones de aguinaldo y prima vacacional (Art. 84 LFT).
                       </div>
                     </div>
                   </div>
                   <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold group-focus-within:text-legal-gold transition-colors">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold group-focus-within:text-legal-gold transition-colors">$</span>
                     <input 
                       type="number" 
                       min="0"
@@ -442,59 +436,59 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         setDailySalary(Number(e.target.value));
                         setIsSdiCalculated(true);
                       }}
-                      className={`w-full pl-8 pr-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
+                      className={`w-full pl-8 pr-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
                         (showErrors && dailySalary <= 0) || dailySalary < 0
-                          ? 'border-red-500 ring-1 ring-red-500/20' 
-                          : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                          ? 'border-red-500 ring-4 ring-red-500/10'
+                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                       }`}
                       placeholder="0.00"
                     />
                     {showErrors && dailySalary <= 0 && (
-                      <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 right-0">Ingrese un salario</span>
+                      <span className="text-[11px] text-red-500 font-medium mt-1 absolute -bottom-5 right-0">Ingrese un salario</span>
                     )}
                   </div>
                   {dailySalary < 0 && (
-                    <p className="text-[10px] text-red-500 font-bold animate-pulse">El salario no puede ser negativo</p>
+                    <p className="text-[11px] text-red-500 font-bold animate-pulse mt-1">El salario no puede ser negativo</p>
                   )}
                 </div>
 
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2 relative">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                        <Calendar size={12} className="text-legal-gold" />
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+                    <div className="space-y-3 relative">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <Calendar size={14} className="text-legal-gold" />
                         Fecha de Ingreso
                       </label>
                       <input 
                         type="date" 
                         value={startDate} 
                         onChange={(e) => setStartDate(e.target.value)}
-                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-xs outline-none transition-all shadow-sm ${
+                        className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm text-slate-700 outline-none transition-all shadow-sm ${
                           showErrors && !startDate
-                            ? 'border-red-500 ring-1 ring-red-500/20' 
-                            : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                            ? 'border-red-500 ring-4 ring-red-500/10'
+                            : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                         }`}
                       />
                       {showErrors && !startDate && (
-                        <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 left-0">Requerido</span>
+                        <span className="text-[11px] text-red-500 font-medium mt-1 absolute -bottom-5 left-0">Requerido</span>
                       )}
                     </div>
-                    <div className="space-y-2 relative">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                        <Calendar size={12} className="text-legal-gold" />
+                    <div className="space-y-3 relative">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <Calendar size={14} className="text-legal-gold" />
                         Fecha de Baja
                       </label>
                       <input 
                         type="date" 
                         value={endDate} 
                         onChange={(e) => setEndDate(e.target.value)}
-                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-xs outline-none transition-all shadow-sm ${
+                        className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm text-slate-700 outline-none transition-all shadow-sm ${
                           showErrors && !endDate
-                            ? 'border-red-500 ring-1 ring-red-500/20' 
-                            : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                            ? 'border-red-500 ring-4 ring-red-500/10'
+                            : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                         }`}
                       />
                       {showErrors && !endDate && (
-                        <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 left-0">Requerido</span>
+                        <span className="text-[11px] text-red-500 font-medium mt-1 absolute -bottom-5 left-0">Requerido</span>
                       )}
                     </div>
                   </div>
@@ -516,83 +510,83 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                   ) : null}
               </div>
 
-              <div className="pt-6 border-t border-slate-100 space-y-4">
+              <div className="pt-8 border-t border-slate-100 space-y-6">
                 <div className="flex items-center gap-2 text-slate-900 mb-2">
                   <FileText size={18} className="text-legal-gold" />
                   <h3 className="text-sm font-bold uppercase tracking-wider">Prestaciones</h3>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aguinaldo (Días)</label>
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Aguinaldo (Días)</label>
                     <input 
                       type="number" 
                       min="0"
                       value={aguinaldoDays} 
                       onChange={(e) => setAguinaldoDays(Number(e.target.value))}
-                      className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
+                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
                         aguinaldoDays < 0 
-                          ? 'border-red-500 focus:ring-red-500/20' 
-                          : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                          ? 'border-red-500 ring-4 ring-red-500/10'
+                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                       }`}
                     />
                     {aguinaldoDays < 0 && (
-                      <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
+                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vacaciones (Días)</label>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vacaciones (Días)</label>
                     <input 
                       type="number" 
                       min="0"
                       value={vacationDays} 
                       onChange={(e) => setVacationDays(Number(e.target.value))}
-                      className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
+                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
                         vacationDays < 0 
-                          ? 'border-red-500 focus:ring-red-500/20' 
-                          : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                          ? 'border-red-500 ring-4 ring-red-500/10'
+                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                       }`}
                     />
                     {vacationDays < 0 && (
-                      <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
+                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prima Vacacional (%)</label>
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Prima Vacacional (%)</label>
                     <input 
                       type="number" 
                       min="0"
                       value={vacationPremium} 
                       onChange={(e) => setVacationPremium(Number(e.target.value))}
-                      className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
+                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
                         vacationPremium < 0 
-                          ? 'border-red-500 focus:ring-red-500/20' 
-                          : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                          ? 'border-red-500 ring-4 ring-red-500/10'
+                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                       }`}
                     />
                     {vacationPremium < 0 && (
-                      <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
+                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horas Extras (Dobles)</label>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Horas Extras</label>
                     <input 
                       type="number" 
                       min="0"
                       value={doubleOvertimeHours || ''} 
                       onChange={(e) => setDoubleOvertimeHours(Number(e.target.value))}
-                      className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
+                      className={`w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
                         doubleOvertimeHours < 0 
-                          ? 'border-red-500 focus:ring-red-500/20' 
-                          : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
+                          ? 'border-red-500 ring-4 ring-red-500/10'
+                          : 'border-slate-200 focus:ring-4 focus:ring-legal-gold/10 focus:border-legal-gold focus:bg-white'
                       }`}
                       placeholder="0"
                     />
                     {doubleOvertimeHours < 0 && (
-                      <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
+                      <p className="text-[11px] text-red-500 font-bold mt-1">No puede ser negativo</p>
                     )}
                   </div>
                 </div>
@@ -617,20 +611,42 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
           </div>
 
           {/* Panel de Resultados */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-7">
             <AnimatePresence mode="wait">
               {!results ? (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="h-full min-h-[500px] flex flex-col items-center justify-center text-slate-300 bg-white rounded-[2rem] border border-slate-200 p-12 border-dashed"
+                  className="h-full min-h-[500px] flex flex-col items-center justify-center text-slate-300 bg-gradient-to-b from-white to-slate-50 rounded-[2rem] border border-slate-200 p-12 shadow-sm relative overflow-hidden"
                 >
-                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                    <Coins size={40} className="text-slate-200" />
+                  <div className="absolute inset-0 bg-slate-50 opacity-50 mix-blend-multiply pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(0,0,0,0.05) 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                    className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl shadow-slate-200/50 border border-slate-100 z-10"
+                  >
+                    <div className="w-16 h-16 bg-legal-gold/10 rounded-full flex items-center justify-center">
+                      <Calculator size={32} className="text-legal-gold" />
+                    </div>
+                  </motion.div>
+
+                  <h4 className="text-2xl font-serif font-bold text-slate-900 mb-3 z-10">Proyección Legal Lista</h4>
+                  <p className="text-sm text-slate-500 text-center max-w-md leading-relaxed z-10">
+                    Complete la información del trabajador en el panel izquierdo para generar un dictamen técnico detallado de finiquito e indemnizaciones.
+                  </p>
+
+                  <div className="mt-8 flex gap-4 opacity-40 grayscale pointer-events-none blur-[1px]">
+                     <div className="w-32 h-20 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col p-3">
+                        <div className="w-1/2 h-2 bg-slate-200 rounded mb-2"></div>
+                        <div className="w-3/4 h-4 bg-slate-300 rounded"></div>
+                     </div>
+                     <div className="w-32 h-20 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col p-3">
+                        <div className="w-1/2 h-2 bg-slate-200 rounded mb-2"></div>
+                        <div className="w-3/4 h-4 bg-slate-300 rounded"></div>
+                     </div>
                   </div>
-                  <h4 className="text-slate-900 font-bold mb-2">Esperando Datos</h4>
-                  <p className="text-sm text-slate-400 text-center max-w-xs">Complete la información del trabajador para generar la proyección legal detallada.</p>
                 </motion.div>
               ) : (
                 <motion.div 
