@@ -14,6 +14,23 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 app.use(cors());
 
+let db;
+
+// Initialize Firebase Admin
+if (process.env.FIREBASE_PROJECT_ID) {
+  try {
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+      console.log('Firebase Admin initialized');
+    }
+    db = admin.firestore();
+  } catch (error) {
+    console.error('Firebase Admin initialization error:', error);
+  }
+}
+
 // Webhook handling needs raw body
 app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -47,7 +64,6 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     expiresAt.setMonth(expiresAt.getMonth() + months);
 
     try {
-      const db = admin.firestore();
       const userRef = db.collection('users').doc(userId);
       await userRef.set({ 
         isPremium: true, 
@@ -122,7 +138,6 @@ No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio ent
 
 // Helper to check and increment usage
 async function checkUsage(userId, type) {
-  const db = admin.firestore();
   const userRef = db.collection('users').doc(userId);
   const userDoc = await userRef.get();
   
@@ -249,18 +264,6 @@ app.post('/api/gemini', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-
-// Initialize Firebase Admin
-if (process.env.FIREBASE_PROJECT_ID) {
-  try {
-    admin.initializeApp({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-    });
-    console.log('Firebase Admin initialized');
-  } catch (error) {
-    console.error('Firebase Admin initialization error:', error);
-  }
-}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
