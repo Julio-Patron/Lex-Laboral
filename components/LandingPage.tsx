@@ -25,25 +25,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onTryCalculator }) => 
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
-          className="w-20 h-20 bg-gradient-to-br from-legal-gold to-legal-goldhover rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg shadow-legal-gold/20"
+          className="w-24 h-24 bg-slate-900 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl overflow-hidden"
         >
-          <Scale className="text-slate-900" size={40} />
+          <img src="/assets/logo.png" alt="Lex Laboral Logo" className="w-full h-full object-cover" />
         </motion.div>
         
         <h1 className="text-4xl font-serif font-bold text-white mb-2 tracking-tight">
           Lex Laboral
         </h1>
-        <p className="text-legal-gold/60 text-sm font-medium mb-12 uppercase tracking-[0.1em]">
-          Ecosistema de Inteligencia Jurídica y Cálculos LFT 2026
+        <p className="text-legal-gold/80 text-sm font-medium mb-12 uppercase tracking-[0.05em] px-4 leading-relaxed">
+          Asesoría integral de derecho Laboral
         </p>
         
         <button 
           onClick={() => onTryCalculator('labor')}
-          className="group relative w-full bg-legal-gold hover:bg-legal-goldhover text-slate-900 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center space-x-3 shadow-xl overflow-hidden active:scale-95"
+          className="group relative w-full bg-slate-950 text-legal-gold border border-legal-gold/30 hover:border-legal-gold py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center space-x-3 shadow-[0_0_20px_rgba(197,164,126,0.1)] overflow-hidden active:scale-95"
         >
-          <span className="relative z-10 text-[14px]">Entrar al Sistema</span>
+          <span className="relative z-10 text-[14px]">Acceder al Sistema</span>
           <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+          <div className="absolute inset-0 bg-legal-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </button>
       </motion.div>
       

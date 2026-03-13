@@ -55,9 +55,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.05),transparent_50%)] pointer-events-none" />
       
       <div className="p-8 pt-10 relative">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-gradient-to-br from-legal-gold to-legal-goldhover rounded-xl shadow-lg shadow-legal-gold/20 flex items-center justify-center">
-            <Scale className="text-legal-950" size={24} />
+        <div className="flex items-center space-x-3.5">
+          <div className="w-10 h-10 bg-black/20 border border-white/5 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+            <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="font-serif font-bold text-xl tracking-tight text-white">Lex Laboral</h1>
         </div>
