@@ -23,6 +23,7 @@
     "firebase-admin": "^13.7.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
+    "framer-motion": "^12.35.2",
     "lucide-react": "^0.556.0",
     "motion": "^12.35.2",
     "react": "^19.2.1",
