@@ -13,7 +13,7 @@ import { auth, db } from './firebase.config';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState, DocumentAnalysisState } from './types';
-import { Shield } from 'lucide-react';
+import { Shield, Menu, X } from 'lucide-react';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>(AppView.CALCULATOR);
@@ -24,6 +24,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [isGuestMode, setIsGuestMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -39,13 +40,11 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        // Fetch user data from Firestore
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
         
         if (userDoc.exists()) {
           const data = userDoc.data();
-          // Check for license expiration
           if (data.isPremium && data.accessUntil) {
             const now = new Date();
             const expiration = new Date(data.accessUntil);
@@ -56,16 +55,12 @@ function App() {
           }
           setUserData(data);
         } else {
-          // Initialize user data in Firestore
           const initialData = {
             email: firebaseUser.email,
             isPremium: false,
             licenseType: null,
             accessUntil: null,
-            usage: {
-              audits: 0,
-              generations: 0
-            },
+            usage: { audits: 0, generations: 0 },
             createdAt: new Date().toISOString()
           };
           await setDoc(userDocRef, initialData);
@@ -103,6 +98,7 @@ function App() {
       setDocumentAnalysisState({ files: [], result: null, customInstruction: '' });
       setCurrentView(AppView.CHAT);
       notify("Memoria volátil purgada. Nueva sesión iniciada.", "info", "Sistema Reiniciado");
+      setIsSidebarOpen(false);
     }
   };
 
@@ -112,18 +108,17 @@ function App() {
   };
 
   const renderView = () => {
-    // Gating for protected views
     const isProtected = [AppView.CHAT, AppView.DOCUMENT_ANALYSIS, AppView.DRAFTING].includes(currentView);
     
     if (isProtected && (!user || !userData?.isPremium)) {
       return (
-        <div className="h-full w-full flex items-center justify-center p-6 text-center">
-          <div className="max-w-md bg-white p-10 rounded-3xl shadow-xl border border-slate-100">
+        <div className="h-full w-full flex items-center justify-center p-4 md:p-6 text-center animate-fade-in">
+          <div className="max-w-md w-full bg-white p-6 md:p-10 rounded-3xl shadow-xl border border-slate-100">
             <div className="w-16 h-16 bg-legal-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Shield className="text-legal-gold" size={32} />
             </div>
-            <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">Acceso por Licencia</h3>
-            <p className="text-slate-600 mb-8 leading-relaxed">
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-900 mb-4">Acceso por Licencia</h3>
+            <p className="text-sm md:text-base text-slate-600 mb-8 leading-relaxed">
               Esta herramienta avanzada requiere una Licencia de Acceso Completo activa. 
               {user ? 'Adquiera su licencia para continuar.' : 'Inicie sesión o regístrese para continuar.'}
             </p>
@@ -131,14 +126,14 @@ function App() {
               {!user ? (
                 <button 
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="bg-legal-950 text-white py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all"
+                  className="bg-legal-950 text-white py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
                 >
                   Identificarse
                 </button>
               ) : (
                 <button 
-                  onClick={() => setCurrentView(AppView.CHAT)} // In a real app, this might trigger a payment modal
-                  className="bg-legal-gold hover:bg-legal-gold/90 text-legal-950 py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all"
+                  onClick={() => setCurrentView(AppView.CHAT)}
+                  className="bg-legal-gold hover:bg-legal-gold/90 text-legal-950 py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
                 >
                   Adquirir Licencia
                 </button>
@@ -146,7 +141,7 @@ function App() {
               {isGuestMode && (
                 <button 
                   onClick={() => setCurrentView(AppView.CALCULATOR)}
-                  className="text-slate-500 text-sm font-semibold py-2 hover:text-slate-800 transition-colors"
+                  className="text-slate-500 text-xs md:text-sm font-semibold py-2 hover:text-slate-800 transition-colors"
                 >
                   Regresar a la Herramienta
                 </button>
@@ -158,26 +153,26 @@ function App() {
     }
 
     return (
-      <div className="h-full w-full animate-fade-in relative">
+      <div className="h-full w-full animate-fade-in relative overflow-y-auto">
         {(() => {
           switch (currentView) {
             case AppView.CHAT:
               return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
             case AppView.DOCUMENT_ANALYSIS:
               return <DocumentAnalyzer 
-          state={documentAnalysisState} 
-          setState={setDocumentAnalysisState} 
-          onAddAnalysis={handleAddAnalysis}
-          notify={notify}
-          user={user}
-        />;
-      case AppView.DRAFTING:
-        return <Drafter 
-          state={draftingState} 
-          setState={setDraftingState} 
-          notify={notify}
-          user={user}
-        />;
+                state={documentAnalysisState} 
+                setState={setDocumentAnalysisState} 
+                onAddAnalysis={handleAddAnalysis}
+                notify={notify}
+                user={user}
+              />;
+            case AppView.DRAFTING:
+              return <Drafter 
+                state={draftingState} 
+                setState={setDraftingState} 
+                notify={notify}
+                user={user}
+              />;
             case AppView.CALCULATOR:
               return <LaborCalculator notify={notify} />;
             case AppView.SOCIAL_SECURITY:
@@ -194,9 +189,8 @@ function App() {
     if (window.location.hash === '#payment-success') {
       notify("¡Pago procesado con éxito! Tu cuenta se está actualizando.", "success", "Suscripción Activa");
       window.location.hash = '';
-      // Trigger a refresh of user data
       if (user) {
-         const userRef = doc(db, 'users', user.uid); // Corrected from user.email to user.uid
+         const userRef = doc(db, 'users', user.uid);
          getDoc(userRef).then(docSnap => {
            if (docSnap.exists()) setUserData(docSnap.data() as any);
          });
@@ -205,7 +199,7 @@ function App() {
       notify("El proceso de pago fue cancelado.", "info", "Pago Cancelado");
       window.location.hash = '';
     }
-  }, [user, notify]); // Added notify to dependency array
+  }, [user, notify]);
 
   if (loading) {
     return (
@@ -239,21 +233,53 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden font-sans selection:bg-legal-gold/30">
+    <div className="flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden font-sans selection:bg-legal-gold/30">
       <NotificationHub notifications={notifications} onDismiss={dismissNotification} />
-      <Sidebar 
-        currentView={currentView} 
-        onChangeView={setCurrentView} 
-        onNewCase={handleNewCase} 
-        onLogout={handleLogout}
-        user={user}
-        isPremium={userData?.isPremium || false}
-        isGuest={isGuestMode}
-        notify={notify}
+      
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5">
+        <div className="flex items-center space-x-2">
+           <img src="/assets/logo.png" alt="Logo" className="w-8 h-8 rounded-lg" />
+           <span className="font-serif font-bold text-lg">Lex Laboral</span>
+        </div>
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all"
+        >
+          {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay for Mobile */}
+      <div 
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 md:hidden ${
+          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
       />
-      <main className="flex-1 relative overflow-hidden">
-        {renderView()}
+
+      {/* Sidebar Container */}
+      <div className={`fixed inset-y-0 left-0 z-[70] transition-transform duration-300 transform md:relative md:translate-x-0 ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <Sidebar 
+          currentView={currentView} 
+          onChangeView={(v) => { setCurrentView(v); setIsSidebarOpen(false); }} 
+          onNewCase={handleNewCase} 
+          onLogout={handleLogout}
+          user={user}
+          isPremium={userData?.isPremium || false}
+          isGuest={isGuestMode}
+          notify={notify}
+        />
+      </div>
+
+      <main className="flex-1 relative overflow-hidden flex flex-col h-full bg-slate-50">
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          {renderView()}
+        </div>
       </main>
+
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 

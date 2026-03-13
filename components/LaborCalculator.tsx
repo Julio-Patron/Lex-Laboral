@@ -56,6 +56,8 @@ export const LaborCalculator: React.FC<{
     setIsSdiCalculated(true);
     notify(`Salario Integrado calculado: $${sdi.toFixed(2)}`, "info");
   };
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [yearsOfService, setYearsOfService] = useState<number>(0);
   const [daysOfService, setDaysOfService] = useState<number>(0);
   const [vacationDays, setVacationDays] = useState<number>(12);
@@ -67,6 +69,28 @@ export const LaborCalculator: React.FC<{
   const [dismissalType, setDismissalType] = useState<DismissalType>('injustificado');
   const [minWage, setMinWage] = useState<number>(312.41); // Salario Mínimo General Vigente 2026 (Proyectado)
   const [showErrors, setShowErrors] = useState(false);
+
+  // Sincronización de Antigüedad basada en fechas
+  React.useEffect(() => {
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (end >= start) {
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        const years = Math.floor(totalDays / 365.25);
+        const remainingDays = Math.floor(totalDays % 365.25);
+        
+        setYearsOfService(years);
+        setDaysOfService(remainingDays);
+      } else {
+        setYearsOfService(0);
+        setDaysOfService(0);
+      }
+    }
+  }, [startDate, endDate]);
 
   const [results, setResults] = useState<{
     aguinaldo: number;
@@ -149,6 +173,13 @@ export const LaborCalculator: React.FC<{
     notify("Dictamen técnico generado con precisión actualizada", "success");
   };
 
+  // Auto-recálculo cuando cambian parámetros clave y ya hay resultados
+  React.useEffect(() => {
+    if (results) {
+      calculate();
+    }
+  }, [dismissalType, yearsOfService, daysOfService, dailySalary]);
+
   const chartData = useMemo(() => {
     if (!results) return [];
     return [
@@ -194,8 +225,10 @@ export const LaborCalculator: React.FC<{
         startY: 60,
         head: [['Concepto de Entrada', 'Valor']],
         body: [
-          ['Salario Diario Integrado (SDI)', `$${dailySalary.toFixed(2)}`],
+          ['Fecha de Ingreso', startDate || 'No especificada'],
+          ['Fecha de Baja', endDate || 'No especificada'],
           ['Antigüedad', `${yearsOfService} años, ${daysOfService} días`],
+          ['Salario Diario Integrado (SDI)', `$${dailySalary.toFixed(2)}`],
           ['Salario Mínimo (Tope)', `$${minWage.toFixed(2)}`],
           ['Días Aguinaldo', `${aguinaldoDays}`],
           ['Días Vacaciones', `${vacationDays}`],
@@ -293,7 +326,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
+    <div className="h-full overflow-y-auto p-4 md:p-10 bg-[#f8fafc]">
       <div className="max-w-6xl mx-auto">
         <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -306,15 +339,15 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
             </div>
           </div>
           
-          <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm self-start">
+          <div className="flex flex-wrap bg-white p-1 rounded-xl border border-slate-200 shadow-sm self-start gap-1">
             {(['injustificado', 'renuncia', 'rescision_patron'] as DismissalType[]).map((type) => (
               <button
                 key={type}
                 onClick={() => setDismissalType(type)}
-                className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 min-w-[100px] px-3 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold transition-all transform active:scale-95 ${
                   dismissalType === type 
-                    ? 'bg-legal-950 text-legal-gold shadow-md' 
-                    : 'text-slate-400 hover:text-slate-600'
+                    ? 'bg-legal-950 text-legal-gold shadow-lg ring-2 ring-legal-gold/20 scale-[1.02]' 
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 {type === 'injustificado' ? 'Injustificado' : type === 'renuncia' ? 'Renuncia' : 'Rescisión'}
@@ -425,47 +458,62 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                   )}
                 </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2 relative">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Años</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                        <Calendar size={12} className="text-legal-gold" />
+                        Fecha de Ingreso
+                      </label>
                       <input 
-                        type="number" 
-                        min="0"
-                        value={yearsOfService || ''} 
-                        onChange={(e) => setYearsOfService(Number(e.target.value))}
-                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all shadow-sm ${
-                          (showErrors && yearsOfService <= 0 && daysOfService <= 0) || yearsOfService < 0 
+                        type="date" 
+                        value={startDate} 
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-xs outline-none transition-all shadow-sm ${
+                          showErrors && !startDate
                             ? 'border-red-500 ring-1 ring-red-500/20' 
                             : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
                         }`}
-                        placeholder="0"
                       />
-                      {showErrors && yearsOfService <= 0 && daysOfService <= 0 && (
-                        <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 left-0 text-nowrap">Ingrese antigüedad</span>
-                      )}
-                      {yearsOfService < 0 && (
-                        <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
+                      {showErrors && !startDate && (
+                        <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 left-0">Requerido</span>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Días Extra</label>
+                    <div className="space-y-2 relative">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                        <Calendar size={12} className="text-legal-gold" />
+                        Fecha de Baja
+                      </label>
                       <input 
-                        type="number" 
-                        min="0"
-                        value={daysOfService || ''} 
-                        onChange={(e) => setDaysOfService(Number(e.target.value))}
-                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${
-                          (showErrors && yearsOfService <= 0 && daysOfService <= 0) || daysOfService < 0 
-                            ? 'border-red-500 focus:ring-red-500/20' 
+                        type="date" 
+                        value={endDate} 
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-xs outline-none transition-all shadow-sm ${
+                          showErrors && !endDate
+                            ? 'border-red-500 ring-1 ring-red-500/20' 
                             : 'border-slate-200 focus:ring-legal-gold/20 focus:border-legal-gold'
                         }`}
-                        placeholder="0"
                       />
-                      {daysOfService < 0 && (
-                        <p className="text-[9px] text-red-500 font-bold">No puede ser negativo</p>
+                      {showErrors && !endDate && (
+                        <span className="text-[10px] text-red-500 font-medium mt-1 absolute -bottom-4 left-0">Requerido</span>
                       )}
                     </div>
                   </div>
+
+                  {yearsOfService > 0 || daysOfService > 0 ? (
+                    <div className="bg-legal-gold/5 border border-legal-gold/10 p-3 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-legal-gold/10 flex items-center justify-center">
+                          <Zap size={16} className="text-legal-gold" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Antigüedad Calculada</p>
+                          <p className="text-xs font-bold text-legal-950">
+                            {yearsOfService} {yearsOfService === 1 ? 'año' : 'años'} y {daysOfService} {daysOfService === 1 ? 'día' : 'días'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
               </div>
 
               <div className="pt-6 border-t border-slate-100 space-y-4">
@@ -595,23 +643,25 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                     <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                       <div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Global Estimado</span>
-                        <div className="flex items-baseline gap-2">
-                          <h3 className="text-5xl font-serif font-bold text-slate-900 mt-1">
+                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                          <h3 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 mt-1">
                             ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </h3>
                           <span className="text-slate-400 font-medium text-sm">MXN</span>
                         </div>
                       </div>
                       <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button onClick={() => setResults(null)} className="flex items-center gap-2 px-3 py-2 bg-slate-50 text-slate-600 font-bold rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all text-[10px] border border-slate-200 active:scale-95">
-                          <RefreshCw size={12} /> Reiniciar
+                          <RefreshCw size={12} /> <span className="hidden xs:inline">Reiniciar</span>
                         </button>
                         <button onClick={handleExport} className="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 hover:text-slate-900 transition-all text-[10px] border border-slate-200 active:scale-95">
-                          <Download size={12} /> TXT
+                          <Download size={12} /> <span className="hidden xs:inline">TXT</span>
                         </button>
-                        <button onClick={handleExportPDF} className="flex items-center gap-2 px-4 py-2 bg-legal-950 text-legal-gold font-bold rounded-xl shadow-md hover:bg-legal-900 hover:shadow-lg hover:-translate-y-0.5 transition-all text-[10px] active:scale-95">
-                          <FileDown size={14} /> Exportar PDF
+                        <button onClick={handleExportPDF} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-legal-950 text-legal-gold font-bold rounded-xl shadow-md hover:bg-legal-900 hover:shadow-lg hover:-translate-y-0.5 transition-all text-[10px] active:scale-95">
+                          <FileDown size={14} /> <span>PDF</span>
                         </button>
+                      </div>
                       </div>
                     </div>
 

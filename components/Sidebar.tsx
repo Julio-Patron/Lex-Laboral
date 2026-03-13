@@ -100,44 +100,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
       </nav>
 
       <div className="p-6 mt-auto space-y-4 border-t border-white/5 bg-black/10">
-        <div className="bg-white/5 rounded-2xl p-4 mb-2">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center border border-white/10 overflow-hidden">
-               {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={18} className="text-slate-400" />}
-            </div>
-            <div className="flex-1 min-w-0">
-               <p className="text-[11px] font-bold text-white truncate">{isGuest ? 'Invitado' : user?.email?.split('@')[0]}</p>
-               <div className="flex items-center space-x-1.5">
+        {!isGuest && (
+          <div className="bg-white/5 rounded-2xl p-4 mb-2">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center border border-white/10 overflow-hidden">
+                {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={18} className="text-slate-400" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold text-white truncate">{user?.email?.split('@')[0]}</p>
+                <div className="flex items-center space-x-1.5">
                   {isPremium ? (
                     <span className="flex items-center text-[9px] font-bold text-legal-gold uppercase tracking-tighter bg-legal-gold/10 px-1.5 py-0.5 rounded leading-none">
                       <Crown size={8} className="mr-0.5" /> LICENCIA ACTIVA
                     </span>
                   ) : (
                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded leading-none">
-                      {isGuest ? 'SIN REGISTRO' : 'SIN LICENCIA'}
+                      SIN LICENCIA
                     </span>
                   )}
-               </div>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          {!isPremium && !isGuest && (
-             <button 
+            
+            {!isPremium && (
+              <button 
                 onClick={handleUpgrade}
                 className="w-full bg-gradient-to-r from-legal-gold/20 to-legal-gold/10 hover:from-legal-gold/30 hover:to-legal-gold/20 text-legal-gold text-[10px] font-extrabold uppercase tracking-widest py-2 rounded-lg border border-legal-gold/20 transition-all mb-3 active:scale-95"
-             >
+              >
                 Adquirir Licencia
-             </button>
-          )}
+              </button>
+            )}
 
-          <button 
-            onClick={onLogout}
-            className="w-full flex items-center justify-center space-x-2 text-slate-500 hover:text-white transition-colors py-1"
-          >
-            <LogOut size={12} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Cerrar Sesión</span>
-          </button>
-        </div>
+            <button 
+              onClick={onLogout}
+              className="w-full flex items-center justify-center space-x-2 text-slate-500 hover:text-white transition-colors py-1"
+            >
+              <LogOut size={12} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Cerrar Sesión</span>
+            </button>
+          </div>
+        )}
 
         <button 
             onClick={onNewCase}

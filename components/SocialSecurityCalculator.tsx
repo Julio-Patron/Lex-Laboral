@@ -226,7 +226,7 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10 bg-[#f8fafc]">
+    <div className="h-full overflow-y-auto p-4 md:p-10 bg-[#f8fafc]">
       <div className="max-w-6xl mx-auto">
         <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -286,8 +286,8 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
                   </div>
                   
                   {showRiskCalc ? (
-                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 animate-fade-in">
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 animate-fade-in shadow-inner">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="text-[8px] font-bold text-slate-400 uppercase">Días Subsidiados (S)</label>
                           <input 
@@ -295,7 +295,7 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
                             min="0"
                             value={s_days} 
                             onChange={e => setS_days(Number(e.target.value))} 
-                            className={`w-full p-2 bg-white border rounded-lg text-xs outline-none transition-all ${s_days < 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
+                            className={`w-full p-2.5 bg-white border rounded-lg text-xs outline-none transition-all ${s_days < 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
                           />
                         </div>
                         <div className="space-y-1">
@@ -305,11 +305,11 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
                             min="0"
                             value={i_disability} 
                             onChange={e => setI_disability(Number(e.target.value))} 
-                            className={`w-full p-2 bg-white border rounded-lg text-xs outline-none transition-all ${i_disability < 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
+                            className={`w-full p-2.5 bg-white border rounded-lg text-xs outline-none transition-all ${i_disability < 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="text-[8px] font-bold text-slate-400 uppercase">Defunciones (D)</label>
                           <input 
@@ -317,7 +317,7 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
                             min="0"
                             value={d_deaths} 
                             onChange={e => setD_deaths(Number(e.target.value))} 
-                            className={`w-full p-2 bg-white border rounded-lg text-xs outline-none transition-all ${d_deaths < 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
+                            className={`w-full p-2.5 bg-white border rounded-lg text-xs outline-none transition-all ${d_deaths < 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
                           />
                         </div>
                         <div className="space-y-1">
@@ -327,14 +327,14 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
                             min="1"
                             value={n_workers} 
                             onChange={e => setN_workers(Number(e.target.value))} 
-                            className={`w-full p-2 bg-white border rounded-lg text-xs outline-none transition-all ${n_workers <= 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
+                            className={`w-full p-2.5 bg-white border rounded-lg text-xs outline-none transition-all ${n_workers <= 0 ? 'border-red-500' : 'border-slate-200 focus:border-legal-gold'}`} 
                           />
                         </div>
                       </div>
                       <button 
                         onClick={calculateAnnualRisk}
                         disabled={s_days < 0 || i_disability < 0 || d_deaths < 0 || n_workers <= 0}
-                        className="w-full py-2 bg-legal-gold text-white text-[10px] font-bold rounded-lg hover:bg-legal-goldhover hover:shadow-md transition-all disabled:opacity-50 active:scale-95"
+                        className="w-full py-3 bg-legal- gold text-white text-[11px] font-bold rounded-xl hover:bg-legal-goldhover hover:shadow-lg transition-all disabled:opacity-50 active:scale-95 shadow-sm"
                       >
                         Aplicar Cálculo Anual
                       </button>
@@ -447,8 +447,8 @@ FUNDAMENTACIÓN: Ley del Seguro Social (LSS) y Ley del INFONAVIT.`;
                       </button>
                     </div>
                     
-                    <div className="p-0">
-                      <table className="w-full text-left border-collapse">
+                    <div className="p-0 overflow-x-auto">
+                      <table className="w-full text-left border-collapse min-w-[500px]">
                         <thead>
                           <tr className="bg-slate-50">
                             <th className="p-4 text-[10px] font-bold text-slate-400 uppercase">Rama</th>
