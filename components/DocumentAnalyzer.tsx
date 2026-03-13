@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 // Added missing Loader2 import from lucide-react
 import { Upload, FileText, AlertTriangle, ShieldCheck, Gavel, X, Zap, FileSearch, Scale, Landmark, Coins, Download, LayoutDashboard, Loader2, HelpCircle, Briefcase, Users, Shield, Printer } from 'lucide-react';
 import { analyzeLegalDocument } from '../services/gemini';
+import { User } from 'firebase/auth';
 import { AnalysisResult, AnalyzedDocumentHistory, AnalyzedFile, NotificationType, DocumentAnalysisState } from '../types';
 
 interface PillarCardProps {
@@ -28,7 +29,8 @@ export const DocumentAnalyzer: React.FC<{
   setState: React.Dispatch<React.SetStateAction<DocumentAnalysisState>>;
   onAddAnalysis: (item: AnalyzedDocumentHistory) => void;
   notify: (m: string, t?: NotificationType, tit?: string) => void;
-}> = ({ state, setState, onAddAnalysis, notify }) => {
+  user: User | null;
+}> = ({ state, setState, onAddAnalysis, notify, user }) => {
   const { files, result, customInstruction } = state;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -45,9 +47,13 @@ export const DocumentAnalyzer: React.FC<{
     if (files.length === 0) return;
     setIsAnalyzing(true);
     try {
+      if (!user) {
+        notify("Debe iniciar sesión para realizar auditorías", "error");
+        return;
+      }
       notify("Iniciando auditoría documental...", "info");
       const filesPayload = files.map(f => ({ base64: f.fileBase64, mimeType: f.mimeType, name: f.fileName }));
-      const response = await analyzeLegalDocument(filesPayload, customInstruction);
+      const response = await analyzeLegalDocument(filesPayload, customInstruction, user.uid);
       const cleanJson = response.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed: AnalysisResult = JSON.parse(cleanJson);
       setResult(parsed);
@@ -61,9 +67,16 @@ export const DocumentAnalyzer: React.FC<{
       notify("Auditoría finalizada con éxito", "success");
     } catch (err: any) {
       console.error("Analysis Error:", err);
-      const errorMsg = err.message?.includes("API key") 
-        ? "Error de autenticación. Verifique su API Key." 
-        : "Error en la auditoría. Verifique que los archivos sean legibles.";
+      let errorMsg = "Error en la auditoría. Verifique que los archivos sean legibles.";
+      
+      if (err.message?.includes("Límite")) {
+        errorMsg = "Ha alcanzado el límite de auditorías de su licencia. Consulte los términos del servicio.";
+      } else if (err.message?.includes("API key")) {
+        errorMsg = "Error de autenticación. Verifique su API Key.";
+      } else if (err.message?.includes("expirado")) {
+        errorMsg = "Su licencia ha expirado. Por favor, renueve su suscripción.";
+      }
+      
       notify(errorMsg, "error");
     } finally {
       setIsAnalyzing(false);

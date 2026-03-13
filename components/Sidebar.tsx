@@ -1,20 +1,52 @@
 
 import React from 'react';
 import { AppView } from '../types';
-import { Scale, MessageSquare, FileText, PenTool, Zap, Shield, ChevronRight, Calculator, ShieldCheck } from 'lucide-react';
+import { 
+  Scale, 
+  MessageSquare, 
+  FileText, 
+  PenTool, 
+  Zap, 
+  Shield, 
+  ChevronRight, 
+  Calculator, 
+  ShieldCheck, 
+  LogOut, 
+  User as UserIcon,
+  Crown
+} from 'lucide-react';
+import { User } from 'firebase/auth';
+import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
 
 interface SidebarProps {
   currentView: AppView;
   onChangeView: (view: AppView) => void;
   onNewCase: () => void;
+  onLogout: () => void;
+  user: User | null;
+  isPremium: boolean;
+  isGuest: boolean;
+  notify?: (m: string, t?: any, tit?: string) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, isPremium, isGuest, notify }) => {
+  const handleUpgrade = async () => {
+    if (!user) return;
+    try {
+      if (notify) notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
+      const { id: sessionId } = await createCheckoutSession(user.email || '', user.uid, 'price_placeholder'); 
+      await redirectToCheckout(sessionId);
+    } catch (error) {
+      console.error('Stripe error:', error);
+      if (notify) notify("No se pudo iniciar el proceso de pago.", "error", "Error de Conexión");
+    }
+  };
+
   const navItems = [
     { id: AppView.CHAT, label: 'Asesoría Legal', icon: <MessageSquare size={18} /> },
     { id: AppView.DOCUMENT_ANALYSIS, label: 'Auditoría Integral', icon: <FileText size={18} /> },
     { id: AppView.DRAFTING, label: 'Ingeniería Jurídica', icon: <PenTool size={18} /> },
-    { id: AppView.CALCULATOR, label: 'Simulador LFT', icon: <Calculator size={18} /> },
+    { id: AppView.CALCULATOR, label: 'Cálculo Liquidación', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
   ];
 
@@ -27,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
           <div className="p-2.5 bg-gradient-to-br from-legal-gold to-legal-goldhover rounded-xl shadow-lg shadow-legal-gold/20 flex items-center justify-center">
             <Scale className="text-legal-950" size={24} />
           </div>
-          <h1 className="font-serif font-bold text-xl tracking-tight text-white">LexLaboral</h1>
+          <h1 className="font-serif font-bold text-xl tracking-tight text-white">Lexi Laboral</h1>
         </div>
       </div>
       
@@ -58,6 +90,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
       </nav>
 
       <div className="p-6 mt-auto space-y-4 border-t border-white/5 bg-black/10">
+        <div className="bg-white/5 rounded-2xl p-4 mb-2">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center border border-white/10 overflow-hidden">
+               {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={18} className="text-slate-400" />}
+            </div>
+            <div className="flex-1 min-w-0">
+               <p className="text-[11px] font-bold text-white truncate">{isGuest ? 'Invitado' : user?.email?.split('@')[0]}</p>
+               <div className="flex items-center space-x-1.5">
+                  {isPremium ? (
+                    <span className="flex items-center text-[9px] font-bold text-legal-gold uppercase tracking-tighter bg-legal-gold/10 px-1.5 py-0.5 rounded leading-none">
+                      <Crown size={8} className="mr-0.5" /> LICENCIA ACTIVA
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded leading-none">
+                      {isGuest ? 'SIN REGISTRO' : 'SIN LICENCIA'}
+                    </span>
+                  )}
+               </div>
+            </div>
+          </div>
+          
+          {!isPremium && !isGuest && (
+             <button 
+                onClick={handleUpgrade}
+                className="w-full bg-gradient-to-r from-legal-gold/20 to-legal-gold/10 hover:from-legal-gold/30 hover:to-legal-gold/20 text-legal-gold text-[10px] font-extrabold uppercase tracking-widest py-2 rounded-lg border border-legal-gold/20 transition-all mb-3 active:scale-95"
+             >
+                Adquirir Licencia
+             </button>
+          )}
+
+          <button 
+            onClick={onLogout}
+            className="w-full flex items-center justify-center space-x-2 text-slate-500 hover:text-white transition-colors py-1"
+          >
+            <LogOut size={12} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Cerrar Sesión</span>
+          </button>
+        </div>
+
         <button 
             onClick={onNewCase}
             className="w-full flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-4 rounded-2xl text-xs font-bold transition-all border border-slate-700 active:scale-[0.98] shadow-lg"
@@ -66,6 +137,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
             <span>Nueva Sesión</span>
         </button>
         
+        <div className="bg-white/5 rounded-2xl p-5 mt-2 border border-white/5">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Soporte Técnico</p>
+          <div className="space-y-4">
+            <a 
+              href="https://wa.me/521234567890" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center space-x-3 text-slate-400 hover:text-white transition-all group bg-white/0 hover:bg-emerald-500/10 p-2.5 rounded-xl border border-transparent hover:border-emerald-500/20"
+            >
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-all shadow-sm">
+                <MessageSquare size={16} className="text-emerald-500" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-bold uppercase tracking-wider">WhatsApp</span>
+                <span className="text-[9px] text-slate-500 group-hover:text-emerald-400 transition-colors">Atención Inmediata</span>
+              </div>
+            </a>
+            <a 
+              href="mailto:soporte@lexilaboral.com" 
+              className="flex items-center space-x-3 text-slate-400 hover:text-white transition-all group bg-white/0 hover:bg-legal-gold/10 p-2.5 rounded-xl border border-transparent hover:border-legal-gold/20"
+            >
+              <div className="w-9 h-9 rounded-lg bg-legal-gold/10 flex items-center justify-center group-hover:bg-legal-gold/20 transition-all shadow-sm">
+                <FileText size={16} className="text-legal-gold" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Email Soporte</span>
+                <span className="text-[9px] text-slate-500 group-hover:text-legal-gold transition-colors">Respuesta en 24h</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
         <div className="flex items-center justify-center gap-2.5 text-[9px] text-slate-500 uppercase tracking-widest font-bold py-2">
            <Shield size={10} className="text-emerald-500/80" />
            <span>Seguridad Encriptada</span>

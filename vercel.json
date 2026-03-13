@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://lexi-server-studio-6462708856-c0f94.a.run.app/api/$1"
+    }
+  ]
+}

@@ -37,41 +37,21 @@ export const ChatInterface: React.FC<{
 
     try {
       notify("Procesando consulta jurídica...", "info");
-      const streamResult = await streamLegalChat(messages, userMessage, true, focusMode, analysisHistory);
-      let fullResponse = "";
       
       setMessages(prev => [...prev, { role: 'model', text: '', isThinking: true }]);
 
-      for await (const chunk of streamResult) {
-        const c = chunk as GenerateContentResponse;
-        
-        const chunks = c.candidates?.[0]?.groundingMetadata?.groundingChunks;
-        if (chunks) {
-            const sources = chunks
-              .filter(ch => ch.web)
-              .map(ch => ({ title: ch.web!.title, uri: ch.web!.uri }));
-            if (sources.length > 0) {
-              setGroundingSources(prev => {
-                const existingUris = new Set(prev.map(s => s.uri));
-                const uniqueNew = sources.filter(s => !existingUris.has(s.uri));
-                return [...prev, ...uniqueNew];
-              });
-            }
+      const result = await streamLegalChat(messages, userMessage, true, focusMode, analysisHistory);
+      const fullResponse = (result.response as any).text();
+      
+      setMessages(prev => {
+        const newArr = [...prev];
+        const lastMsg = newArr[newArr.length - 1];
+        if (lastMsg.role === 'model') {
+          lastMsg.text = fullResponse;
+          lastMsg.isThinking = false;
         }
-
-        if (c.text) {
-          fullResponse += c.text;
-          setMessages(prev => {
-            const newArr = [...prev];
-            const lastMsg = newArr[newArr.length - 1];
-            if (lastMsg.role === 'model') {
-              lastMsg.text = fullResponse;
-              lastMsg.isThinking = false;
-            }
-            return newArr;
-          });
-        }
-      }
+        return newArr;
+      });
     } catch (error: any) {
       const errorMsg = error?.message || "";
       if (errorMsg.includes("429")) notify("Límite de frecuencia alcanzado.", "warning", "Servidor Saturado");

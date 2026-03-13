@@ -60,21 +60,21 @@ export const LaborCalculator: React.FC<{
   } | null>(null);
 
   const calculate = () => {
-    if (dailySalary < 0) {
-      notify("El Salario Diario Integrado no puede ser negativo", "error");
+    // Validaciones preventivas
+    if (dailySalary <= 0) {
+      notify("Ingrese un Salario Diario Integrado válido (mayor a 0)", "warning");
       return;
     }
-    if (dailySalary === 0) {
-      notify("Ingrese un salario diario válido", "warning");
-      return;
-    }
-
-    const totalYears = yearsOfService + (daysOfService / 365);
+    
+    // Cálculo de antigüedad exacta promediada
+    // Se usa 365.25 para considerar el ciclo bisiesto en proporciones de larga duración
+    const totalYears = yearsOfService + (daysOfService / 365.25);
     const hourlyRate = dailySalary / hoursPerDay;
     
     // 1. Finiquito (Siempre se paga)
-    const aguinaldo = (dailySalary * aguinaldoDays) * (daysOfService / 365);
-    const vacations = (dailySalary * vacationDays) * (daysOfService / 365);
+    const proportionOfYear = daysOfService / 365.25;
+    const aguinaldo = (dailySalary * aguinaldoDays) * proportionOfYear;
+    const vacations = (dailySalary * vacationDays) * proportionOfYear;
     const vPremium = vacations * (vacationPremium / 100);
     const overtimeDouble = doubleOvertimeHours * (hourlyRate * 2);
     const overtimeTriple = tripleOvertimeHours * (hourlyRate * 3);
@@ -88,7 +88,6 @@ export const LaborCalculator: React.FC<{
     let seniorityPremium = 0;
 
     // Prima de Antigüedad (Art. 162 LFT)
-    // Se paga en: Despido (justificado o no), Renuncia (+15 años), Muerte, Incapacidad, Rescisión por trabajador.
     // Tope: 2 veces el salario mínimo (Art. 486 LFT)
     const cappedSalary = Math.min(dailySalary, minWage * 2);
     
@@ -96,6 +95,7 @@ export const LaborCalculator: React.FC<{
       dismissalType !== 'renuncia' || (dismissalType === 'renuncia' && yearsOfService >= 15);
 
     if (shouldPaySeniority) {
+      // 12 días por cada año laborado
       seniorityPremium = (cappedSalary * 12) * totalYears;
     }
 
@@ -107,20 +107,22 @@ export const LaborCalculator: React.FC<{
 
     const liquidacion = indemnity90 + indemnity20 + seniorityPremium;
 
+    const round = (num: number) => Math.round((num + Number.EPSILON) * 100) / 100;
+
     setResults({
-      aguinaldo,
-      vacations,
-      vacationPremium: vPremium,
-      indemnity90,
-      indemnity20,
-      seniorityPremium,
-      overtime: totalOvertime,
-      finiquito,
-      liquidacion,
-      total: finiquito + liquidacion
+      aguinaldo: round(aguinaldo),
+      vacations: round(vacations),
+      vacationPremium: round(vPremium),
+      indemnity90: round(indemnity90),
+      indemnity20: round(indemnity20),
+      seniorityPremium: round(seniorityPremium),
+      overtime: round(totalOvertime),
+      finiquito: round(finiquito),
+      liquidacion: round(liquidacion),
+      total: round(finiquito + liquidacion)
     });
     
-    notify("Simulación de despido finalizada", "success");
+    notify("Dictamen técnico generado con precisión actualizada", "success");
   };
 
   const chartData = useMemo(() => {
@@ -203,7 +205,7 @@ export const LaborCalculator: React.FC<{
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('TOTAL GLOBAL ESTIMADO:', 20, finalY);
-      doc.text(`$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`, 140, finalY);
+      doc.text(`$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`, 140, finalY);
 
       // Footer
       doc.setFontSize(8);
@@ -275,8 +277,8 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                <Calculator className="text-legal-gold" size={28} />
             </div>
             <div>
-              <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Simulador de Despidos LFT</h2>
-              <p className="text-slate-500 text-sm font-medium">Cálculo técnico de indemnizaciones y finiquitos legales.</p>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Cálculo de Liquidación LFT</h2>
+              <p className="text-slate-500 text-sm font-medium">Determinación técnica de indemnizaciones y finiquitos legales.</p>
             </div>
           </div>
           
@@ -453,11 +455,11 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
 
               <button 
                 onClick={calculate}
-                disabled={dailySalary < 0 || yearsOfService < 0 || daysOfService < 0 || aguinaldoDays < 0 || vacationDays < 0 || vacationPremium < 0 || doubleOvertimeHours < 0}
+                disabled={dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)}
                 className="w-full py-4 bg-legal-950 text-legal-gold rounded-xl font-bold shadow-lg shadow-legal-950/20 hover:bg-legal-900 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
               >
                 <TrendingUp size={18} />
-                <span>Simular Liquidación</span>
+                <span>Calcular Liquidación</span>
               </button>
             </section>
 
@@ -498,7 +500,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Global Estimado</span>
                         <div className="flex items-baseline gap-2">
                           <h3 className="text-5xl font-serif font-bold text-slate-900 mt-1">
-                            ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                            ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </h3>
                           <span className="text-slate-400 font-medium text-sm">MXN</span>
                         </div>
@@ -537,7 +539,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                                 ))}
                               </Pie>
                               <RechartsTooltip 
-                                formatter={(value: number) => `$${value.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`}
+                                formatter={(value: number) => `$${value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                               />
                             </PieChart>
@@ -558,16 +560,16 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         <div>
                           <div className="flex justify-between items-center mb-3">
                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Finiquito</h4>
-                            <span className="text-sm font-bold text-slate-900">${results.finiquito.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-sm font-bold text-slate-900">${results.finiquito.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between text-xs text-slate-500">
                               <span>Aguinaldo y Vacaciones</span>
-                              <span>${(results.aguinaldo + results.vacations + results.vacationPremium).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              <span>${(results.aguinaldo + results.vacations + results.vacationPremium).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="flex justify-between text-xs text-slate-500">
                               <span>Horas Extras</span>
-                              <span>${results.overtime.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              <span>${results.overtime.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                           </div>
                         </div>
@@ -575,22 +577,22 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                         <div className="pt-6 border-t border-slate-100">
                           <div className="flex justify-between items-center mb-3">
                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Liquidación</h4>
-                            <span className="text-sm font-bold text-legal-950">${results.liquidacion.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-sm font-bold text-legal-950">${results.liquidacion.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between text-xs text-slate-500">
                               <span>Indemnización 90 días</span>
-                              <span>${results.indemnity90.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              <span>${results.indemnity90.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             {results.indemnity20 > 0 && (
                               <div className="flex justify-between text-xs text-slate-500 bg-legal-gold/5 p-1 rounded">
                                 <span className="font-bold">Indemnización 20 días/año</span>
-                                <span className="font-bold">${results.indemnity20.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                                <span className="font-bold">${results.indemnity20.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                               </div>
                             )}
                             <div className="flex justify-between text-xs text-slate-500">
                               <span>Prima de Antigüedad</span>
-                              <span>${results.seniorityPremium.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                              <span>${results.seniorityPremium.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                           </div>
                         </div>
