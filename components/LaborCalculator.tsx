@@ -26,7 +26,7 @@ import {
   Legend 
 } from 'recharts';
 import { NotificationType } from '../types';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

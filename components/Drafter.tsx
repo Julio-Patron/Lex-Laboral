@@ -4,7 +4,7 @@ import { draftLegalDocument } from '../services/gemini';
 import { User } from 'firebase/auth';
 import { ChatMessage, NotificationType, DraftingState } from '../types';
 import ReactMarkdown from 'react-markdown';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Drafter: React.FC<{
   state: DraftingState;

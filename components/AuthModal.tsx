@@ -44,8 +44,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
         onClose();
         notify("Cuenta creada satisfactoriamente. Acceso total activado.", "success");
       }
-    } catch (err) {
-      console.error('Auth error:', err);
+    } catch (error) {
+      console.error('Auth error:', error);
+      const err = error as { code?: string; message?: string };
       let message = "Error en la autenticación";
       const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'unknown';
       if (errorCode === "auth/email-already-in-use") message = "El correo ya está registrado";
@@ -70,10 +71,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       await sendPasswordResetEmail(auth, email);
       notify("Correo de recuperación enviado", "success");
       setMode('login');
-    } catch (err) {
-      console.error('Reset error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Verifique su correo';
-      setError(`Error: ${errorMessage}`);
+    } catch (error) {
+      console.error('Reset error:', error);
+      const err = error as { message?: string };
+      setError(`Error: ${err.message || 'Verifique su correo'}`);
     } finally {
       setLoading(false);
     }
@@ -88,8 +89,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       
       const session = await createCheckoutSession(user.email || '', user.uid, selectedPlan);
       await redirectToCheckout(session.id);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       setError("Error al iniciar el proceso de pago");
     } finally {
       setLoading(false);
@@ -105,8 +106,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       // Temporary bypass: Always close modal on Google Sign-in
       onClose();
       notify("Sesión iniciada correctamente.", "success");
-    } catch (err) {
-      console.error('Google Auth error:', err);
+    } catch (error) {
+      console.error('Google Auth error:', error);
+      const err = error as { code?: string };
       let message = "Error en la autenticación con Google";
       const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'error';
       if (errorCode === "auth/unauthorized-domain") {
