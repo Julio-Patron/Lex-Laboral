@@ -1,35 +1,33 @@
+import { onRequest } from "firebase-functions/v2/https";
+import express from 'express';
+import Stripe from 'stripe';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import admin from 'firebase-admin';
 
-const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const cors = require('cors');
-const dotenv = require('dotenv');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const admin = require('firebase-admin');
-
-// Load local .env only if not in production
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config({ path: '../.env' });
-}
-
-const app = express();
-app.use(cors());
-
-let db;
+dotenv.config();
 
 // Initialize Firebase Admin
-if (process.env.FIREBASE_PROJECT_ID) {
+if (!admin.apps.length) {
   try {
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-      });
-      console.log('Firebase Admin initialized');
-    }
-    db = admin.firestore();
+    // In Firebase Functions, we can just initialize without args
+    // or use specific config if needed for other projects
+    admin.initializeApp();
+    console.log('Firebase Admin initialized');
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
   }
 }
+
+const db = admin.firestore();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'dummy_key');
+const app = express();
+
+app.use(cors({
+  origin: true, // Let Firebase handle CORS or use process.env.CLIENT_URL
+  optionsSuccessStatus: 200
+}));
 
 // Webhook handling needs raw body
 app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -47,13 +45,9 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     const session = event.data.object;
     const userId = session.client_reference_id;
     
-    // Determine license type based on price (placeholder logic)
-    // In production, map price IDs to months
     let months = 3;
     let licenseType = '3-months';
     
-    // Example: if (session.line_items?.data[0].price.id === 'price_6mo...')
-    // For now, let's assume we can get it from metadata or just default to 3 if not specified
     if (session.metadata?.plan === '6-months') {
       months = 6;
       licenseType = '6-months';
@@ -113,7 +107,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
       customer_email: userEmail,
       client_reference_id: userId,
       metadata: {
-        plan: priceId === 'price_6mo_placeholder' ? '6-months' : '3-months'
+        plan: priceId.includes('6mo') ? '6-months' : '3-months'
       },
       line_items: [
         {
@@ -132,7 +126,6 @@ app.post('/api/create-checkout-session', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 const SYSTEM_INSTRUCTION = `
 Eres "Lex Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano.
@@ -153,7 +146,6 @@ REGLAS DE OPERACIÓN:
 No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio entre los factores de la producción y la excelencia técnica en el entorno laboral mexicano.
 `;
 
-// Helper to check and increment usage
 async function checkUsage(userId, type) {
   const userRef = db.collection('users').doc(userId);
   const userDoc = await userRef.get();
@@ -163,7 +155,6 @@ async function checkUsage(userId, type) {
   const userData = userDoc.data();
   if (!userData.isPremium) throw new Error("Se requiere licencia activa");
   
-  // Check expiration
   if (userData.expiresAt && userData.expiresAt.toDate() < new Date()) {
     throw new Error("Su licencia ha expirado");
   }
@@ -178,7 +169,6 @@ async function checkUsage(userId, type) {
     throw new Error("Límite de uso alcanzado para este periodo");
   }
 
-  // Increment usage
   await userRef.update({
     [`usage.${type}`]: admin.firestore.FieldValue.increment(1)
   });
@@ -189,7 +179,6 @@ app.post('/api/legal/chat', authenticateUser, async (req, res) => {
   const userId = req.user.uid;
   
   try {
-    // Chat doesn't have a hard "silent limit" per user request, but maybe good to track
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const modelName = "gemini-1.5-pro";
     const model = genAI.getGenerativeModel({ 
@@ -221,14 +210,17 @@ app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
     await checkUsage(userId, 'audits');
     
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-pro",
+      systemInstruction: SYSTEM_INSTRUCTION
+    });
 
     const parts = files.map(file => ({
       inlineData: { mimeType: file.mimeType, data: file.base64 }
     }));
 
     parts.push({
-      text: `${SYSTEM_INSTRUCTION}\n\nRealice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. Petición técnica: ${prompt}`
+      text: `Realice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. Petición técnica: ${prompt}`
     });
 
     const result = await model.generateContent(parts);
@@ -253,10 +245,11 @@ app.post('/api/legal/draft', authenticateUser, async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-pro",
-      systemInstruction: `${SYSTEM_INSTRUCTION}\n\nTAREA: Proyecte el instrumento jurídico formal completo siguiendo la técnica legislativa y contractual mexicana.`
+      systemInstruction: SYSTEM_INSTRUCTION
     });
 
-    const result = await model.generateContent(requirements);
+    const promptText = `TAREA: Proyecte el instrumento jurídico formal completo siguiendo la técnica legislativa y contractual mexicana.\n\nRequerimientos: ${requirements}`;
+    const result = await model.generateContent(promptText);
     const response = await result.response;
     res.json({ text: response.text() });
   } catch (error) {
@@ -268,23 +261,10 @@ app.post('/api/legal/draft', authenticateUser, async (req, res) => {
   }
 });
 
-app.post('/api/gemini', async (req, res) => {
-  const { prompt } = req.body;
-  
-  try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    res.json({ text: response.text() });
-  } catch (error) {
-    console.error('Gemini error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export the Express app as a Cloud Function named "api"
+export const api = onRequest({
+  memory: "512MiB",
+  timeoutSeconds: 60,
+  maxInstances: 10,
+  // We can also specify secrets here if using Google Cloud Secret Manager
+}, app);
