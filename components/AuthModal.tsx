@@ -27,7 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'3-months' | '6-months'>('3-months');
+  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft' | '3-months' | '6-months'>('3-months');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +40,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
         onClose();
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        // Temporary bypass: Close modal immediately instead of plan selection
-        onClose();
-        notify("Cuenta creada satisfactoriamente. Acceso total activado.", "success");
+        // Go to plan selection instead of bypassing
+        setMode('planSelection');
+        notify("Cuenta creada. Seleccione su nivel de acceso.", "success");
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -246,27 +246,61 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
                     </button>
                   </form>
                 ) : (
-                  <div className="space-y-6 text-left">
+                  <div className="space-y-4 text-left">
+                    <div 
+                      onClick={() => setSelectedPlan('audit')}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'audit' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                         <h3 className="font-bold text-slate-900 text-base">Auditoría Jurídica (1 Crédito)</h3>
+                         <span className="text-legal-gold font-black">$59 MXN</span>
+                      </div>
+                      <p className="text-xs text-slate-500">Un dictamen de auditoría de documentos.</p>
+                    </div>
+                    
+                    <div 
+                      onClick={() => setSelectedPlan('draft')}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'draft' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                         <h3 className="font-bold text-slate-900 text-base">Ingeniería Jurídica (1 Crédito)</h3>
+                         <span className="text-legal-gold font-black">$79 MXN</span>
+                      </div>
+                      <p className="text-xs text-slate-500">Una generación de documento legal.</p>
+                    </div>
+
                     <div 
                       onClick={() => setSelectedPlan('3-months')}
-                      className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '3-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '3-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                         <h3 className="font-bold text-slate-900 text-lg">Licencia 3 Meses</h3>
-                         <span className="text-legal-gold font-black">$[Precio]</span>
+                      <div className="flex justify-between items-center mb-1">
+                         <h3 className="font-bold text-slate-900 text-base">Licencia Individual (3 Meses)</h3>
+                         <span className="text-legal-gold font-black">$1,299 MXN</span>
                       </div>
-                      <p className="text-xs text-slate-500">Acceso total a IA Jurídica, Redacción y Auditoría. 50 auditorías incluidas.</p>
+                      <p className="text-xs text-slate-500">Acceso total a Calculadora y Chat. Incluye 40 auditorías y 50 generaciones por 3 meses.</p>
                     </div>
 
                     <div 
                       onClick={() => setSelectedPlan('6-months')}
-                      className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '6-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '6-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                         <h3 className="font-bold text-slate-900 text-lg">Licencia 6 Meses</h3>
-                         <span className="text-legal-gold font-black">$[Precio]</span>
+                      <div className="flex justify-between items-center mb-1">
+                         <h3 className="font-bold text-slate-900 text-base">Licencia Oficina (6 Meses)</h3>
+                         <span className="text-legal-gold font-black">$3,999 MXN</span>
                       </div>
-                      <p className="text-xs text-slate-500">Ahorre un 20%. Acceso total con límites extendidos a 100 auditorías.</p>
+                      <p className="text-xs text-slate-500">Multiusuario (5 equipos). Acceso total. Incluye 120 auditorías y 150 generaciones por 6 meses.</p>
+                    </div>
+
+                    <div className="text-center pt-2">
+                       <button 
+                         onClick={() => {
+                           onClose();
+                           notify("Puede adquirir una licencia más tarde desde el panel de control.", "info");
+                         }}
+                         className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors underline"
+                       >
+                         Continuar con acceso gratuito limitado
+                       </button>
                     </div>
 
                     {error && (

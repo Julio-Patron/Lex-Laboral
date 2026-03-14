@@ -27,10 +27,16 @@ interface SidebarProps {
   isPremium: boolean;
   isGuest: boolean;
   notify?: (m: string, t?: any, tit?: string) => void;
+  onOpenPricing?: (plan: 'audit' | 'draft' | '3-months' | '6-months') => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, isPremium, isGuest, notify }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, isPremium, isGuest, notify, onOpenPricing }) => {
   const handleUpgrade = async () => {
+    if (onOpenPricing) {
+      onOpenPricing('3-months');
+      return;
+    }
+    // Fallback if prop not provided
     if (!user) return;
     try {
       if (notify) notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PenTool, Download, Copy, RefreshCw, ShieldAlert, FileSignature, Gavel, Users, Zap, FileText, Home, FileKey, Shield, Briefcase, Coins, Scale, HelpCircle, Eye, X, Printer } from 'lucide-react';
+import { PenTool, Download, Copy, RefreshCw, ShieldAlert, FileSignature, Gavel, Users, Zap, FileText, Home, FileKey, Shield, Briefcase, Coins, Scale, HelpCircle, Eye, X, Printer, Sparkles } from 'lucide-react';
 import { draftLegalDocument } from '../services/gemini';
 import { User } from 'firebase/auth';
 import { ChatMessage, NotificationType, DraftingState } from '../types';
@@ -9,9 +9,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 export const Drafter: React.FC<{
   state: DraftingState;
   setState: React.Dispatch<React.SetStateAction<DraftingState>>;
-  notify: (m: string, t?: NotificationType) => void;
+  notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
-}> = ({ state, setState, notify, user }) => {
+  userData?: any;
+  onUpgrade?: () => void;
+}> = ({ state, setState, notify, user, userData, onUpgrade }) => {
   const { prompt, generatedDoc } = state;
   const [isDrafting, setIsDrafting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -112,27 +114,46 @@ export const Drafter: React.FC<{
   return (
     <div className="h-full flex flex-col bg-slate-50 no-print">
       <div className="p-10 pb-4">
-        <div className="flex items-center gap-4 mb-3">
-          <h2 className="text-4xl font-serif font-bold text-legal-900 tracking-tight">Ingeniería Jurídica</h2>
-          <div className="relative group/help">
-            <HelpCircle size={20} className="text-slate-400 cursor-help hover:text-legal-gold transition-colors mt-1" />
-            <div className="absolute left-0 top-full mt-2 w-80 p-5 bg-white border border-slate-200 shadow-2xl rounded-[1.5rem] opacity-0 invisible group-hover/help:opacity-100 group-hover/help:visible transition-all z-50 pointer-events-none">
-              <p className="text-[11px] font-bold text-legal-950 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Guía de Redacción</p>
-              <ul className="space-y-3 text-[12px] leading-relaxed text-slate-600">
-                <li className="flex gap-2">
-                  <span className="text-legal-gold font-bold">•</span>
-                  <span><b>Plantillas Base:</b> Utilice los botones superiores para cargar estructuras comunes.</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-legal-gold font-bold">•</span>
-                  <span><b>Personalización:</b> Detalle partes, objeto y condiciones especiales en el panel de instrucciones.</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-legal-gold font-bold">•</span>
-                  <span><b>Proyección Formal:</b> El sistema genera el instrumento con estructura de cláusulas, proemio y firmas.</span>
-                </li>
-              </ul>
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-4">
+            <h2 className="text-4xl font-serif font-bold text-legal-900 tracking-tight">Ingeniería Jurídica</h2>
+            <div className="relative group/help">
+              <HelpCircle size={20} className="text-slate-400 cursor-help hover:text-legal-gold transition-colors mt-1" />
+              <div className="absolute left-0 top-full mt-2 w-80 p-5 bg-white border border-slate-200 shadow-2xl rounded-[1.5rem] opacity-0 invisible group-hover/help:opacity-100 group-hover/help:visible transition-all z-50 pointer-events-none">
+                <p className="text-[11px] font-bold text-legal-950 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Guía de Redacción</p>
+                <ul className="space-y-3 text-[12px] leading-relaxed text-slate-600">
+                  <li className="flex gap-2">
+                    <span className="text-legal-gold font-bold">•</span>
+                    <span><b>Plantillas Base:</b> Utilice los botones superiores para cargar estructuras comunes.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-legal-gold font-bold">•</span>
+                    <span><b>Personalización:</b> Detalle partes, objeto y condiciones especiales en el panel de instrucciones.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-legal-gold font-bold">•</span>
+                    <span><b>Proyección Formal:</b> El sistema genera el instrumento con estructura de cláusulas, proemio y firmas.</span>
+                  </li>
+                </ul>
+              </div>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+             {userData && (
+               <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2 shadow-sm">
+                 <span className="text-[11px] font-bold uppercase tracking-wider">
+                   Generados: {userData.usage?.generations || 0} / {(userData.isPremium && (!userData.expiresAt || new Date(userData.expiresAt) >= new Date())) ? (userData.licenseType === '6-months' ? 300 : 100) : (userData.credits?.generations || 0)}
+                 </span>
+               </div>
+             )}
+             <button 
+               onClick={onUpgrade}
+               className="bg-legal-gold/10 text-legal-gold hover:bg-legal-gold/20 px-4 py-2 rounded-xl border border-legal-gold/20 flex items-center gap-2 shadow-sm transition-all active:scale-95 group"
+             >
+               <Sparkles size={14} className="group-hover:animate-pulse" />
+               <span className="text-[11px] font-bold uppercase tracking-wider">Adquirir Créditos</span>
+             </button>
+          </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 max-w-5xl">
@@ -146,7 +167,7 @@ export const Drafter: React.FC<{
                 </button>
             ))}
         </div>
-      </div>
+
 
       <div className="flex-1 flex flex-col lg:flex-row p-10 pt-2 gap-8 overflow-hidden">
         <div className="w-full lg:w-1/3 flex flex-col bg-white rounded-3xl shadow-sm border border-slate-200 p-8">

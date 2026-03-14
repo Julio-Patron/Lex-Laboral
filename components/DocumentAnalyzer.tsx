@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// Added missing Loader2 import from lucide-react
-import { Upload, FileText, AlertTriangle, ShieldCheck, Gavel, X, Zap, FileSearch, Scale, Landmark, Coins, Download, LayoutDashboard, Loader2, HelpCircle, Briefcase, Users, Shield, Printer } from 'lucide-react';
+// Added missing Loader2 and Sparkles import from lucide-react
+import { Upload, FileText, AlertTriangle, ShieldCheck, Gavel, X, Zap, FileSearch, Scale, Landmark, Coins, Download, LayoutDashboard, Loader2, HelpCircle, Briefcase, Users, Shield, Printer, Sparkles } from 'lucide-react';
 import { analyzeLegalDocument } from '../services/gemini';
 import { User } from 'firebase/auth';
 import { AnalysisResult, AnalyzedDocumentHistory, AnalyzedFile, NotificationType, DocumentAnalysisState } from '../types';
@@ -30,7 +30,9 @@ export const DocumentAnalyzer: React.FC<{
   onAddAnalysis: (item: AnalyzedDocumentHistory) => void;
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
-}> = ({ state, setState, onAddAnalysis, notify, user }) => {
+  userData?: any;
+  onUpgrade?: () => void;
+}> = ({ state, setState, onAddAnalysis, notify, user, userData, onUpgrade }) => {
   const { files, result, customInstruction } = state;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -187,6 +189,22 @@ Generado por LexLaboral. Privacidad Total: No se conservan copias de este análi
                 <ShieldCheck size={16} />
                 <span className="text-[11px] font-bold uppercase tracking-wider">Modo Privado</span>
              </div>
+             {userData && (
+               <div className="flex items-center gap-3">
+                 <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2 shadow-sm">
+                   <span className="text-[11px] font-bold uppercase tracking-wider">
+                     Auditorías: {userData.usage?.audits || 0} / {(userData.isPremium && (!userData.expiresAt || new Date(userData.expiresAt) >= new Date())) ? (userData.licenseType === '6-months' ? 120 : 40) : (userData.credits?.audits || 0)}
+                   </span>
+                 </div>
+                 <button 
+                  onClick={onUpgrade}
+                  className="bg-legal-gold/10 text-legal-gold hover:bg-legal-gold/20 px-4 py-2 rounded-xl border border-legal-gold/20 flex items-center gap-2 shadow-sm transition-all active:scale-95 group"
+                 >
+                   <Sparkles size={14} className="group-hover:animate-pulse" />
+                   <span className="text-[11px] font-bold uppercase tracking-wider">Adquirir Créditos</span>
+                 </button>
+               </div>
+             )}
           </div>
         </header>
 

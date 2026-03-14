@@ -9,11 +9,13 @@ export const stripePromise = stripePublishableKey ? loadStripe(stripePublishable
 
 // Map your plan names to Stripe Price IDs here
 const PRICE_IDS = {
+  'audit': import.meta.env.VITE_STRIPE_PRICE_AUDIT || 'price_placeholder_audit',
+  'draft': import.meta.env.VITE_STRIPE_PRICE_DRAFT || 'price_placeholder_draft',
   '3-months': import.meta.env.VITE_STRIPE_PRICE_3_MONTHS || 'price_placeholder_3mo',
   '6-months': import.meta.env.VITE_STRIPE_PRICE_6_MONTHS || 'price_placeholder_6mo',
 };
 
-export const createCheckoutSession = async (userEmail: string, userId: string, plan: '3-months' | '6-months') => {
+export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft' | '3-months' | '6-months') => {
   // Use relative path for Vercel proxy
   const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
   
@@ -25,7 +27,8 @@ export const createCheckoutSession = async (userEmail: string, userId: string, p
     body: JSON.stringify({ 
       userEmail, 
       userId, 
-      priceId: PRICE_IDS[plan] 
+      priceId: PRICE_IDS[plan],
+      plan: plan
     }),
   });
 

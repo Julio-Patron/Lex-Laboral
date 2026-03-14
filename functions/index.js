@@ -44,33 +44,52 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const userId = session.client_reference_id;
-    
-    let months = 3;
-    let licenseType = '3-months';
-    
-    if (session.metadata?.plan === '6-months') {
-      months = 6;
-      licenseType = '6-months';
-    }
-
-    const activatedAt = new Date();
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + months);
+    const plan = session.metadata?.plan;
 
     try {
       const userRef = db.collection('users').doc(userId);
-      await userRef.set({ 
-        isPremium: true, 
-        licenseType,
-        activatedAt: admin.firestore.Timestamp.fromDate(activatedAt),
-        expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-        usage: {
-          audits: 0,
-          generations: 0
-        },
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() 
-      }, { merge: true });
-      console.log(`User ${userId} upgraded to Premium (${licenseType})`);
+      
+      if (plan === 'audit') {
+        await userRef.set({
+          credits: {
+            audits: admin.firestore.FieldValue.increment(1)
+          }
+        }, { merge: true });
+        console.log(`User ${userId} bought 1 Audit credit`);
+      } else if (plan === 'draft') {
+        await userRef.set({
+          credits: {
+            generations: admin.firestore.FieldValue.increment(1)
+          }
+        }, { merge: true });
+        console.log(`User ${userId} bought 1 Draft credit`);
+      } else {
+        let months = 3;
+        let licenseType = '3-months';
+        
+        if (plan === '6-months') {
+          months = 6;
+          licenseType = '6-months';
+        }
+
+        const activatedAt = new Date();
+        const expiresAt = new Date();
+        expiresAt.setMonth(expiresAt.getMonth() + months);
+
+        await userRef.set({ 
+          isPremium: true, 
+          licenseType,
+          activatedAt: admin.firestore.Timestamp.fromDate(activatedAt),
+          expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+          usage: {
+            audits: 0,
+            generations: 0,
+            chats: 0
+          },
+          updatedAt: admin.firestore.FieldValue.serverTimestamp() 
+        }, { merge: true });
+        console.log(`User ${userId} upgraded to Premium (${licenseType})`);
+      }
     } catch (error) {
       console.error('Error updating firestore:', error);
     }
@@ -102,12 +121,16 @@ app.post('/api/create-checkout-session', async (req, res) => {
   const { userEmail, userId, priceId } = req.body;
 
   try {
+    let plan = '3-months';
+    if (priceId.includes('6mo')) plan = '6-months';
+    else if (req.body.plan) plan = req.body.plan; // use plan passed from frontend
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: userEmail,
       client_reference_id: userId,
       metadata: {
-        plan: priceId.includes('6mo') ? '6-months' : '3-months'
+        plan: plan
       },
       line_items: [
         {
@@ -115,7 +138,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
           quantity: 1,
         },
       ],
-      mode: 'subscription',
+      mode: (plan === 'audit' || plan === 'draft') ? 'payment' : 'subscription',
       success_url: `${process.env.CLIENT_URL}/#payment-success`,
       cancel_url: `${process.env.CLIENT_URL}/#payment-cancelled`,
     });
@@ -153,24 +176,51 @@ async function checkUsage(userId, type) {
   if (!userDoc.exists) throw new Error("Usuario no encontrado");
   
   const userData = userDoc.data();
-  if (!userData.isPremium) throw new Error("Se requiere licencia activa");
+  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
   
-  if (userData.expiresAt && userData.expiresAt.toDate() < new Date()) {
-    throw new Error("Su licencia ha expirado");
+  if (!isPremiumValid) {
+    const credits = userData.credits?.[type] || 0;
+    if (credits > 0) {
+      await userRef.update({
+        [`credits.${type}`]: admin.firestore.FieldValue.increment(-1)
+      });
+      return;
+    }
+    throw new Error(userData.isPremium ? "Su licencia ha expirado." : "Se requiere licencia activa o un crédito para esta función.");
   }
 
   const limit = userData.licenseType === '6-months' 
-    ? (type === 'audits' ? 100 : 200) 
-    : (type === 'audits' ? 50 : 100);
+    ? (type === 'audits' ? 120 : 150) 
+    : (type === 'audits' ? 40 : 50);
     
   const currentUsage = userData.usage?.[type] || 0;
   
   if (currentUsage >= limit) {
-    throw new Error("Límite de uso alcanzado para este periodo");
+    throw new Error("Límite de uso alcanzado para este periodo.");
   }
 
   await userRef.update({
     [`usage.${type}`]: admin.firestore.FieldValue.increment(1)
+  });
+}
+
+async function checkChatUsage(userId) {
+  const userRef = db.collection('users').doc(userId);
+  const userDoc = await userRef.get();
+  if (!userDoc.exists) throw new Error("Usuario no encontrado");
+  
+  const userData = userDoc.data();
+  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
+  
+  const chatUsage = userData.usage?.chats || 0;
+  const limit = isPremiumValid ? 500 : 5;
+
+  if (chatUsage >= limit) {
+    throw new Error(isPremiumValid ? "Límite de mensajes alcanzado (500)." : "Límite de prueba alcanzado (5 mensajes). Adquiera una licencia para continuar.");
+  }
+
+  await userRef.update({
+    'usage.chats': admin.firestore.FieldValue.increment(1)
   });
 }
 
@@ -179,6 +229,8 @@ app.post('/api/legal/chat', authenticateUser, async (req, res) => {
   const userId = req.user.uid;
   
   try {
+    await checkChatUsage(userId);
+    
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const modelName = "gemini-1.5-pro";
     const model = genAI.getGenerativeModel({ 
@@ -186,8 +238,10 @@ app.post('/api/legal/chat', authenticateUser, async (req, res) => {
       systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
     });
 
+    const recentHistory = history.slice(-8);
+
     const chat = model.startChat({
-      history: history.map(h => ({
+      history: recentHistory.map(h => ({
         role: h.role === 'user' ? 'user' : 'model',
         parts: [{ text: h.text }]
       })),

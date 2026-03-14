@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { NotificationHub } from './components/NotificationHub';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
+import { PricingModal } from './components/PricingModal';
 
 // Code Splitting for Performance - Lazy loading large components
 const ChatInterface = lazy(() => import('./components/ChatInterface').then(module => ({ default: module.ChatInterface })));
@@ -27,6 +28,8 @@ function App() {
   const [userData, setUserData] = useState<any>(null);
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft' | '3-months' | '6-months'>('3-months');
   
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -104,6 +107,11 @@ function App() {
     }
   };
 
+  const openPricingModal = (plan: 'audit' | 'draft' | '3-months' | '6-months' = '3-months') => {
+    setSelectedPlan(plan);
+    setIsPricingModalOpen(true);
+  };
+
   const handleLogout = async () => {
     await signOut(auth);
     notify("Sesión cerrada correctamente", "info", "Adiós");
@@ -160,7 +168,7 @@ function App() {
           {(() => {
             switch (currentView) {
               case AppView.CHAT:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} userData={userData} />;
               case AppView.DOCUMENT_ANALYSIS:
                 return <DocumentAnalyzer
                   state={documentAnalysisState}
@@ -168,6 +176,8 @@ function App() {
                   onAddAnalysis={handleAddAnalysis}
                   notify={notify}
                   user={user}
+                  userData={userData}
+                  onUpgrade={() => openPricingModal('audit')}
                 />;
               case AppView.DRAFTING:
                 return <Drafter
@@ -175,13 +185,15 @@ function App() {
                   setState={setDraftingState}
                   notify={notify}
                   user={user}
+                  userData={userData}
+                  onUpgrade={() => openPricingModal('draft')}
                 />;
               case AppView.CALCULATOR:
-                return <LaborCalculator notify={notify} />;
+                return <LaborCalculator notify={notify} user={user} userData={userData} />;
               case AppView.SOCIAL_SECURITY:
-                return <SocialSecurityCalculator notify={notify} />;
+                return <SocialSecurityCalculator notify={notify} user={user} userData={userData} />;
               default:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} userData={userData} />;
             }
           })()}
         </Suspense>
@@ -275,6 +287,7 @@ function App() {
           isPremium={userData?.isPremium || false}
           isGuest={isGuestMode}
           notify={notify}
+          onOpenPricing={openPricingModal}
         />
       </div>
 
@@ -288,6 +301,13 @@ function App() {
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
         notify={notify}
+      />
+      <PricingModal 
+        isOpen={isPricingModalOpen} 
+        onClose={() => setIsPricingModalOpen(false)} 
+        user={user} 
+        notify={notify} 
+        initialPlan={selectedPlan}
       />
     </div>
   );

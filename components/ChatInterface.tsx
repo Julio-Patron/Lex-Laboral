@@ -11,12 +11,14 @@ export const ChatInterface: React.FC<{
   analysisHistory?: AnalyzedDocumentHistory[];
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
-}> = ({ messages, setMessages, analysisHistory = [], notify, user }) => {
+  userData?: any;
+}> = ({ messages, setMessages, analysisHistory = [], notify, user, userData }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusMode, setFocusMode] = useState<'standard' | 'individual' | 'collective' | 'procedural'>('standard');
   const [groundingSources, setGroundingSources] = useState<{title: string, uri: string}[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastSentTime = useRef<number>(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,10 +31,17 @@ export const ChatInterface: React.FC<{
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
+    const now = Date.now();
+    if (now - lastSentTime.current < 5000) {
+      notify("Por favor, espere 5 segundos entre consultas.", "warning", "Límite de Frecuencia");
+      return;
+    }
+    
     const userMessage = input;
     setInput('');
     setIsLoading(true);
     setGroundingSources([]);
+    lastSentTime.current = now;
     
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
 
@@ -42,8 +51,12 @@ export const ChatInterface: React.FC<{
       setMessages(prev => [...prev, { role: 'model', text: '', isThinking: true }]);
 
       const idToken = user ? await user.getIdToken() : '';
+      
+      // Limit history to last 10 messages to save context and speed up
+      const historyToSend = messages.slice(-10);
+
       const result = await streamLegalChat(
-        messages, 
+        historyToSend, 
         userMessage, 
         true, 
         idToken,
@@ -173,9 +186,16 @@ export const ChatInterface: React.FC<{
               <Send size={28} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
           </div>
-          <p className="text-center mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-            Enter para procesar consulta estratégica
-          </p>
+          <div className="flex justify-between items-center mt-4">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              Enter para procesar consulta estratégica
+            </p>
+            {userData && (
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Mensajes usados: {userData.usage?.chats || 0} / {(userData.isPremium && (!userData.expiresAt || new Date(userData.expiresAt) >= new Date())) ? 500 : 5}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

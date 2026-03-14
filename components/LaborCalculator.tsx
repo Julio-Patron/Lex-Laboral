@@ -36,7 +36,9 @@ type DismissalType = 'injustificado' | 'renuncia' | 'rescision_patron' | 'rescis
 
 export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
-}> = ({ notify }) => {
+  user?: any;
+  userData?: any;
+}> = ({ notify, user, userData }) => {
   const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
@@ -117,6 +119,22 @@ export const LaborCalculator: React.FC<{
   } | null>(null);
 
   const calculate = () => {
+    const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || new Date(userData.expiresAt) >= new Date());
+    
+    if (!isPremiumValid) {
+      const maxLimit = user ? 5 : 2;
+      const usageKey = user ? `lex_laboral_calc_user_${user.uid}` : `lex_laboral_calc_anon`;
+      const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
+      
+      if (currentUsage >= maxLimit) {
+        notify(user 
+          ? "Límite de cálculos gratuitos (5) alcanzado. Adquiera una licencia para uso ilimitado." 
+          : "Límite de cálculos gratuitos (2) alcanzado. Inicie sesión para obtener 5 cálculos.", "warning");
+        return;
+      }
+      localStorage.setItem(usageKey, (currentUsage + 1).toString());
+    }
+
     // Validaciones preventivas
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
       setShowErrors(true);

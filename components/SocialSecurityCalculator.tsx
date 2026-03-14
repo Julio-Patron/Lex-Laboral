@@ -18,7 +18,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
-}> = ({ notify }) => {
+  user?: any;
+  userData?: any;
+}> = ({ notify, user, userData }) => {
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); // 0 means not selected
   const [days, setDays] = useState<number>(30);
@@ -62,6 +64,22 @@ export const SocialSecurityCalculator: React.FC<{
   } | null>(null);
 
   const calculate = () => {
+    const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || new Date(userData.expiresAt) >= new Date());
+    
+    if (!isPremiumValid) {
+      const maxLimit = user ? 5 : 2;
+      const usageKey = user ? `lex_laboral_ss_calc_user_${user.uid}` : `lex_laboral_ss_calc_anon`;
+      const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
+      
+      if (currentUsage >= maxLimit) {
+        notify(user 
+          ? "Límite de cálculos gratuitos (5) alcanzado. Adquiera una licencia para uso ilimitado." 
+          : "Límite de cálculos gratuitos (2) alcanzado. Inicie sesión para obtener 5 cálculos.", "warning");
+        return;
+      }
+      localStorage.setItem(usageKey, (currentUsage + 1).toString());
+    }
+
     if (sbc <= 0) {
       notify("El Salario Base de Cotización debe ser un número positivo", "error");
       return;
