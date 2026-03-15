@@ -41,7 +41,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onTryCalculator }) => 
           onClick={() => onTryCalculator('labor')}
           className="group relative w-full bg-slate-950 text-legal-gold border border-legal-gold/30 hover:border-legal-gold py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center space-x-3 shadow-[0_0_20px_rgba(197,164,126,0.1)] overflow-hidden active:scale-95"
         >
-          <span className="relative z-10 text-[14px]">Acceder al Sistema</span>
+          <span className="relative z-10 text-[13px]">Explorar Herramientas Gratuitas</span>
           <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
           <div className="absolute inset-0 bg-legal-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </button>

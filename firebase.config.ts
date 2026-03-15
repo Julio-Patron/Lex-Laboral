@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import { getAI, GoogleAIBackend } from "firebase/ai";
 
 const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "studio-6462708856-c0f94";
@@ -20,6 +21,7 @@ let app;
 let auth;
 let db;
 let ai;
+let functions;
 
 try {
   if (!firebaseConfig.apiKey) {
@@ -28,12 +30,21 @@ try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  functions = getFunctions(app);
   ai = getAI(app, {
     backend: new GoogleAIBackend()
   });
+
+  // Connect to emulators in development mode
+  if (import.meta.env.DEV) {
+    console.log("Connecting to Firebase Emulators...");
+    connectAuthEmulator(auth, "http://localhost:9099");
+    connectFirestoreEmulator(db, "localhost", 8080);
+    connectFunctionsEmulator(functions, "localhost", 5001);
+  }
 } catch (error) {
   console.error("Firebase initialization failed:", error);
 }
 
-export { auth, db, ai };
+export { auth, db, ai, functions };
 export default app;

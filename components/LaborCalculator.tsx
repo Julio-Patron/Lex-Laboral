@@ -38,7 +38,8 @@ export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
   user?: any;
   userData?: any;
-}> = ({ notify, user, userData }) => {
+  onAuthRequired?: () => void;
+}> = ({ notify, user, userData, onAuthRequired }) => {
   const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
@@ -118,23 +119,7 @@ export const LaborCalculator: React.FC<{
     };
   } | null>(null);
 
-  const calculate = () => {
-    const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || new Date(userData.expiresAt) >= new Date());
-    
-    if (!isPremiumValid) {
-      const maxLimit = user ? 5 : 2;
-      const usageKey = user ? `lex_laboral_calc_user_${user.uid}` : `lex_laboral_calc_anon`;
-      const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
-      
-      if (currentUsage >= maxLimit) {
-        notify(user 
-          ? "Límite de cálculos gratuitos (5) alcanzado. Adquiera una licencia para uso ilimitado." 
-          : "Límite de cálculos gratuitos (2) alcanzado. Inicie sesión para obtener 5 cálculos.", "warning");
-        return;
-      }
-      localStorage.setItem(usageKey, (currentUsage + 1).toString());
-    }
-
+  const calculate = async () => {
     // Validaciones preventivas
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
       setShowErrors(true);
@@ -142,6 +127,42 @@ export const LaborCalculator: React.FC<{
       return;
     }
     setShowErrors(false);
+
+    const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || (userData.expiresAt.toDate ? userData.expiresAt.toDate() : new Date(userData.expiresAt)) >= new Date());
+    
+    if (!isPremiumValid) {
+      if (!user) {
+        const usageKey = `lex_laboral_calc_anon`;
+        const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
+        if (currentUsage >= 2) {
+          notify("Límite de cálculos gratuitos (2) alcanzado. Inicie sesión para continuar.", "warning");
+          if (onAuthRequired) onAuthRequired();
+          return;
+        }
+        localStorage.setItem(usageKey, (currentUsage + 1).toString());
+      } else {
+        try {
+          const auth = (await import('../firebase.config')).auth;
+          const token = await auth.currentUser?.getIdToken();
+          const response = await fetch('https://us-central1-studio-6462708856-c0f94.cloudfunctions.net/api/api/legal/calculator', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            notify(data.error || "Límite de cálculos diarios superado.", "warning");
+            return;
+          }
+        } catch (error) {
+          console.error("Error validando limite:", error);
+          notify("Error de conexión al validar límites.", "error");
+          return;
+        }
+      }
+    }
     
     // Cálculo de antigüedad exacta promediada
     // Se usa 365.25 para considerar el ciclo bisiesto en proporciones de larga duración

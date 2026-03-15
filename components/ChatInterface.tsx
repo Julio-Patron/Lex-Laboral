@@ -12,7 +12,8 @@ export const ChatInterface: React.FC<{
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
   userData?: any;
-}> = ({ messages, setMessages, analysisHistory = [], notify, user, userData }) => {
+  onUpgrade?: () => void;
+}> = ({ messages, setMessages, analysisHistory = [], notify, user, userData, onUpgrade }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusMode, setFocusMode] = useState<'standard' | 'individual' | 'collective' | 'procedural'>('standard');
@@ -76,15 +77,29 @@ export const ChatInterface: React.FC<{
       });
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "";
-      if (errorMsg.includes("429")) notify("Límite de frecuencia alcanzado.", "warning", "Servidor Saturado");
-      else if (errorMsg.includes("SAFETY")) notify("Consulta bloqueada por política de seguridad.", "info", "Aviso de Contenido");
-      else notify("Error técnico en la comunicación.", "error", "Fallo de Red");
+      if (errorMsg.includes("403") || errorMsg.includes("Límite") || errorMsg.includes("Saldo")) {
+        notify("Límite alcanzado o saldo insuficiente.", "warning", "Acceso Restringido");
+        if (onUpgrade) onUpgrade();
+      } else if (errorMsg.includes("429")) {
+        notify("Límite de frecuencia alcanzado.", "warning", "Servidor Saturado");
+      } else if (errorMsg.includes("SAFETY")) {
+        notify("Consulta bloqueada por política de seguridad.", "info", "Aviso de Contenido");
+      } else {
+        notify("Error técnico en la comunicación.", "error", "Fallo de Red");
+      }
       
       setMessages(prev => prev.filter(m => !m.isThinking || m.text !== ''));
     } finally {
       setIsLoading(false);
     }
   };
+
+  const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || (userData.expiresAt.toDate ? userData.expiresAt.toDate() : new Date(userData.expiresAt)) >= new Date());
+  const today = new Date().toISOString().split('T')[0];
+  const chatsUsed = isPremiumValid 
+    ? (userData?.usage?.chats || 0) 
+    : (userData?.dailyUsage?.date === today ? (userData?.dailyUsage?.chats || 0) : 0);
+  const chatsLimit = isPremiumValid ? 100 : 2;
 
   return (
     <div className="flex flex-col h-full bg-white relative">
@@ -180,7 +195,7 @@ export const ChatInterface: React.FC<{
             />
             <button 
               onClick={handleSend} 
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || !input.trim() || (!user)}
               className="w-20 h-20 bg-legal-950 text-legal-gold rounded-3xl hover:bg-legal-900 hover:shadow-2xl hover:-translate-y-0.5 transition-all shadow-xl shadow-legal-950/20 active:scale-95 disabled:opacity-30 disabled:translate-y-0 flex items-center justify-center group"
             >
               <Send size={28} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -190,9 +205,13 @@ export const ChatInterface: React.FC<{
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
               Enter para procesar consulta estratégica
             </p>
-            {userData && (
+            {user ? (
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                Mensajes usados: {userData.usage?.chats || 0} / {(userData.isPremium && (!userData.expiresAt || new Date(userData.expiresAt) >= new Date())) ? 500 : 5}
+                Mensajes usados: {chatsUsed} / {chatsLimit} {isPremiumValid ? '(Trimestre)' : '(Hoy)'}
+              </p>
+            ) : (
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest cursor-pointer hover:text-legal-gold transition-colors" onClick={() => onUpgrade && onUpgrade()}>
+                Inicie sesión para chatear
               </p>
             )}
           </div>

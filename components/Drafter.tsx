@@ -12,7 +12,7 @@ export const Drafter: React.FC<{
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
   userData?: any;
-  onUpgrade?: () => void;
+  onUpgrade?: (plan?: 'draft_basic' | 'draft_custom') => void;
 }> = ({ state, setState, notify, user, userData, onUpgrade }) => {
   const { prompt, generatedDoc } = state;
   const [isDrafting, setIsDrafting] = useState(false);
@@ -74,19 +74,19 @@ export const Drafter: React.FC<{
       notify("Instrumento proyectado exitosamente", "success");
     } catch (error) {
       console.error("Drafting Error:", error);
-      let errorMsg = "Error en la proyección. Intente con instrucciones más breves.";
-      
       const errorMessage = error instanceof Error ? error.message : "";
 
-      if (errorMessage.includes("Límite")) {
-        errorMsg = "Ha alcanzado el límite de generaciones de su licencia. Consulte los términos del servicio.";
+      if (errorMessage.includes("Límite") || errorMessage.includes("Saldo")) {
+        notify("Créditos insuficientes. Adquiera un pase para continuar.", "warning", "Acceso Restringido");
+        if (onUpgrade) onUpgrade('draft_basic');
       } else if (errorMessage.includes("API key")) {
-        errorMsg = "Error de autenticación. Verifique su API Key.";
+        notify("Error de autenticación. Verifique su API Key.", "error");
       } else if (errorMessage.includes("expirado")) {
-        errorMsg = "Su licencia ha expirado. Por favor, renueve su suscripción.";
+        notify("Su licencia ha expirado. Por favor, renueve su suscripción.", "error");
+        if (onUpgrade) onUpgrade('draft_basic');
+      } else {
+        notify("Error en la proyección. Intente con instrucciones más breves.", "error");
       }
-      
-      notify(errorMsg, "error");
     } finally {
       setIsDrafting(false);
     }
@@ -147,7 +147,7 @@ export const Drafter: React.FC<{
                </div>
              )}
              <button 
-               onClick={onUpgrade}
+               onClick={() => onUpgrade && onUpgrade()}
                className="bg-legal-gold/10 text-legal-gold hover:bg-legal-gold/20 px-4 py-2 rounded-xl border border-legal-gold/20 flex items-center gap-2 shadow-sm transition-all active:scale-95 group"
              >
                <Sparkles size={14} className="group-hover:animate-pulse" />

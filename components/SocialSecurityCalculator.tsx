@@ -20,7 +20,8 @@ export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
   user?: any;
   userData?: any;
-}> = ({ notify, user, userData }) => {
+  onAuthRequired?: () => void;
+}> = ({ notify, user, userData, onAuthRequired }) => {
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); // 0 means not selected
   const [days, setDays] = useState<number>(30);
@@ -63,23 +64,7 @@ export const SocialSecurityCalculator: React.FC<{
     total: number;
   } | null>(null);
 
-  const calculate = () => {
-    const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || new Date(userData.expiresAt) >= new Date());
-    
-    if (!isPremiumValid) {
-      const maxLimit = user ? 5 : 2;
-      const usageKey = user ? `lex_laboral_ss_calc_user_${user.uid}` : `lex_laboral_ss_calc_anon`;
-      const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
-      
-      if (currentUsage >= maxLimit) {
-        notify(user 
-          ? "Límite de cálculos gratuitos (5) alcanzado. Adquiera una licencia para uso ilimitado." 
-          : "Límite de cálculos gratuitos (2) alcanzado. Inicie sesión para obtener 5 cálculos.", "warning");
-        return;
-      }
-      localStorage.setItem(usageKey, (currentUsage + 1).toString());
-    }
-
+  const calculate = async () => {
     if (sbc <= 0) {
       notify("El Salario Base de Cotización debe ser un número positivo", "error");
       return;
@@ -91,6 +76,42 @@ export const SocialSecurityCalculator: React.FC<{
     if (riskClass === 0) {
       notify("Por favor, seleccione una Clase de Riesgo", "error");
       return;
+    }
+
+    const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || (userData.expiresAt.toDate ? userData.expiresAt.toDate() : new Date(userData.expiresAt)) >= new Date());
+    
+    if (!isPremiumValid) {
+      if (!user) {
+        const usageKey = `lex_laboral_ss_calc_anon`;
+        const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
+        if (currentUsage >= 2) {
+          notify("Límite de cálculos gratuitos (2) alcanzado. Inicie sesión para continuar.", "warning");
+          if (onAuthRequired) onAuthRequired();
+          return;
+        }
+        localStorage.setItem(usageKey, (currentUsage + 1).toString());
+      } else {
+        try {
+          const auth = (await import('../firebase.config')).auth;
+          const token = await auth.currentUser?.getIdToken();
+          const response = await fetch('https://us-central1-studio-6462708856-c0f94.cloudfunctions.net/api/api/legal/calculator', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            notify(data.error || "Límite de cálculos diarios superado.", "warning");
+            return;
+          }
+        } catch (error) {
+          console.error("Error validando limite:", error);
+          notify("Error de conexión al validar límites.", "error");
+          return;
+        }
+      }
     }
 
     // Employer Calculations

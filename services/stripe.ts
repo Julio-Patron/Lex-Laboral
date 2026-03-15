@@ -10,12 +10,12 @@ export const stripePromise = stripePublishableKey ? loadStripe(stripePublishable
 // Map your plan names to Stripe Price IDs here
 const PRICE_IDS = {
   'audit': import.meta.env.VITE_STRIPE_PRICE_AUDIT || 'price_placeholder_audit',
-  'draft': import.meta.env.VITE_STRIPE_PRICE_DRAFT || 'price_placeholder_draft',
+  'draft_basic': import.meta.env.VITE_STRIPE_PRICE_DRAFT_BASIC || 'price_placeholder_draft_basic',
+  'draft_custom': import.meta.env.VITE_STRIPE_PRICE_DRAFT_CUSTOM || 'price_placeholder_draft_custom',
   '3-months': import.meta.env.VITE_STRIPE_PRICE_3_MONTHS || 'price_placeholder_3mo',
-  '6-months': import.meta.env.VITE_STRIPE_PRICE_6_MONTHS || 'price_placeholder_6mo',
 };
 
-export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft' | '3-months' | '6-months') => {
+export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => {
   // Use configured API URL for Firebase Functions or local dev server
   const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
   

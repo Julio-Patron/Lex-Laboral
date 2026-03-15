@@ -27,7 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft' | '3-months' | '6-months'>('3-months');
+  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft_basic' | 'draft_custom' | '3-months'>('3-months');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,20 +253,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
                     >
                       <div className="flex justify-between items-center mb-1">
                          <h3 className="font-bold text-slate-900 text-base">Auditoría Jurídica (1 Crédito)</h3>
-                         <span className="text-legal-gold font-black">$59 MXN</span>
+                         <span className="text-legal-gold font-black">$49 MXN</span>
                       </div>
                       <p className="text-xs text-slate-500">Un dictamen de auditoría de documentos.</p>
                     </div>
                     
                     <div 
-                      onClick={() => setSelectedPlan('draft')}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'draft' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                      onClick={() => setSelectedPlan('draft_basic')}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'draft_basic' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
                     >
                       <div className="flex justify-between items-center mb-1">
-                         <h3 className="font-bold text-slate-900 text-base">Ingeniería Jurídica (1 Crédito)</h3>
+                         <h3 className="font-bold text-slate-900 text-base">Documento Estándar (1 Crédito)</h3>
                          <span className="text-legal-gold font-black">$79 MXN</span>
                       </div>
-                      <p className="text-xs text-slate-500">Una generación de documento legal.</p>
+                      <p className="text-xs text-slate-500">Generación sin instrucciones personalizadas.</p>
+                    </div>
+
+                    <div 
+                      onClick={() => setSelectedPlan('draft_custom')}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'draft_custom' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                         <h3 className="font-bold text-slate-900 text-base">Documento A Medida (1 Crédito)</h3>
+                         <span className="text-legal-gold font-black">$299 MXN</span>
+                      </div>
+                      <p className="text-xs text-slate-500">Generación con instrucciones específicas.</p>
                     </div>
 
                     <div 
@@ -274,21 +285,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
                       className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '3-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
                     >
                       <div className="flex justify-between items-center mb-1">
-                         <h3 className="font-bold text-slate-900 text-base">Licencia Individual (3 Meses)</h3>
-                         <span className="text-legal-gold font-black">$1,299 MXN</span>
+                         <h3 className="font-bold text-slate-900 text-base">Premium Trimestral</h3>
+                         <span className="text-legal-gold font-black">$1,499 MXN</span>
                       </div>
-                      <p className="text-xs text-slate-500">Acceso total a Calculadora y Chat. Incluye 40 auditorías y 50 generaciones por 3 meses.</p>
-                    </div>
-
-                    <div 
-                      onClick={() => setSelectedPlan('6-months')}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '6-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                         <h3 className="font-bold text-slate-900 text-base">Licencia Oficina (6 Meses)</h3>
-                         <span className="text-legal-gold font-black">$3,999 MXN</span>
-                      </div>
-                      <p className="text-xs text-slate-500">Multiusuario (5 equipos). Acceso total. Incluye 120 auditorías y 150 generaciones por 6 meses.</p>
+                      <p className="text-xs text-slate-500">Acceso total. Incluye 50 auditorías, 50 redacciones y 100 chats.</p>
                     </div>
 
                     <div className="text-center pt-2">

@@ -10,7 +10,7 @@ interface PricingModalProps {
   onClose: () => void;
   user: User | null;
   notify: (m: string, t?: any, tit?: string) => void;
-  initialPlan?: 'audit' | 'draft' | '3-months' | '6-months';
+  initialPlan?: 'audit' | 'draft_basic' | 'draft_custom' | '3-months';
 }
 
 export const PricingModal: React.FC<PricingModalProps> = ({ 
@@ -22,7 +22,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 }) => {
   const [loading, setLoading] = React.useState<string | null>(null);
 
-  const handlePurchase = async (plan: 'audit' | 'draft' | '3-months' | '6-months') => {
+  const handlePurchase = async (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => {
     if (!user) {
       notify("Por favor, inicie sesión para continuar con la compra.", "warning");
       return;
@@ -44,64 +44,64 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   const plans = [
     {
       id: 'audit',
-      name: 'Crédito de Auditoría',
+      name: 'Análisis y Auditoría',
       description: 'Análisis profundo de un expediente laboral completo.',
-      price: '$199',
+      price: '$49',
       unit: 'por auditoría',
       icon: <FileText className="text-blue-500" size={24} />,
       features: [
         'Análisis de 3 pilares (LFT, Colectivo, IMSS)',
         'Detección de contingencias críticas',
         'Puntaje de riesgo estratégico',
-        'Dictamen exportable en .txt'
+        'Dictamen exportable'
       ],
       color: 'blue'
     },
     {
-      id: 'draft',
-      name: 'Crédito de Ingeniería',
-      description: 'Generación profesional de un instrumento jurídico.',
-      price: '$149',
+      id: 'draft_basic',
+      name: 'Documento Estándar',
+      description: 'Generación de instrumento jurídico sin indicaciones personalizadas.',
+      price: '$79',
       unit: 'por documento',
       icon: <PenTool className="text-purple-500" size={24} />,
       features: [
         'Técnica legislativa mexicana',
         'Estructura de cláusulas formal',
-        'Veredicto de validez intrínseca',
+        'Formatos LFT validados',
         'Exportación inmediata'
       ],
       color: 'purple'
     },
     {
-      id: '3-months',
-      name: 'Premium 3 Meses',
-      description: 'Acceso total para profesionales y despachos.',
-      price: '$899',
-      unit: 'pago único',
-      icon: <Zap className="text-legal-gold" size={24} />,
-      popular: true,
+      id: 'draft_custom',
+      name: 'Documento a Medida',
+      description: 'Generación de instrumento jurídico con instrucciones específicas avanzadas.',
+      price: '$299',
+      unit: 'por documento',
+      icon: <Zap className="text-orange-500" size={24} />,
       features: [
-        'Uso ILIMITADO de consultas (Chat)',
-        '40 Auditorías Integrales',
-        '50 Proyecciones de Instrumentos',
-        'Soporte técnico prioritario'
+        'Instrucciones personalizadas',
+        'Ingeniería de prompts avanzados',
+        'Cláusulas a la medida',
+        'Alta precisión jurídica'
       ],
-      color: 'gold'
+      color: 'orange'
     },
     {
-      id: '6-months',
-      name: 'Premium 6 Meses',
-      description: 'La solución definitiva para gestión laboral anual.',
+      id: '3-months',
+      name: 'Premium Trimestral',
+      description: 'Acceso corporativo para profesionales y despachos.',
       price: '$1,499',
       unit: 'pago único',
-      icon: <Crown className="text-emerald-500" size={24} />,
+      icon: <Crown className="text-legal-gold" size={24} />,
+      popular: true,
       features: [
-        'Todo lo de Premium 3 Meses',
-        '120 Auditorías Integrales (+300%)',
-        '150 Proyecciones de Instrumentos',
-        'Acceso anticipado a nuevos módulos'
+        '50 Auditorías Integrales',
+        '50 Generaciones de Documentos',
+        '100 Consultas en Chat Legal',
+        'Calculadoras Ilimitadas'
       ],
-      color: 'emerald'
+      color: 'gold'
     }
   ];
 

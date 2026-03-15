@@ -24,13 +24,14 @@ interface SidebarProps {
   onNewCase: () => void;
   onLogout: () => void;
   user: User | null;
+  userData?: any;
   isPremium: boolean;
   isGuest: boolean;
   notify?: (m: string, t?: any, tit?: string) => void;
-  onOpenPricing?: (plan: 'audit' | 'draft' | '3-months' | '6-months') => void;
+  onOpenPricing?: (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, isPremium, isGuest, notify, onOpenPricing }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, userData, isPremium, isGuest, notify, onOpenPricing }) => {
   const handleUpgrade = async () => {
     if (onOpenPricing) {
       onOpenPricing('3-months');
@@ -56,6 +57,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
   ];
 
+  const prefetchModule = (view: AppView) => {
+    // Webpack / Vite can prefetch dynamic imports if we call them silently
+    switch (view) {
+      case AppView.CHAT: import('./ChatInterface'); break;
+      case AppView.DOCUMENT_ANALYSIS: import('./DocumentAnalyzer'); break;
+      case AppView.DRAFTING: import('./Drafter'); break;
+      case AppView.CALCULATOR: import('./LaborCalculator'); break;
+      case AppView.SOCIAL_SECURITY: import('./SocialSecurityCalculator'); break;
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+  const chatsUsed = isPremium ? (userData?.usage?.chats || 0) : (userData?.dailyUsage?.date === today ? (userData?.dailyUsage?.chats || 0) : 0);
+  const chatsLimit = isPremium ? 100 : 2;
+
   return (
     <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.05),transparent_50%)] pointer-events-none" />
@@ -76,6 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
             <li key={item.id}>
               <button
                 onClick={() => onChangeView(item.id)}
+                onMouseEnter={() => prefetchModule(item.id)}
                 className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[13px] font-semibold transition-all group ${
                   currentView === item.id
                     ? 'bg-white/10 text-legal-gold shadow-inner'
@@ -107,31 +124,63 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
 
       <div className="p-6 mt-auto space-y-4 border-t border-white/5 bg-black/10">
         {!isGuest && (
-          <div className="bg-white/5 rounded-2xl p-4 mb-2">
-            <div className="flex items-center space-x-3 mb-3">
+          <div className="bg-white/5 rounded-2xl p-4 mb-2 flex flex-col gap-3">
+            <div className="flex items-center space-x-3">
               <div className="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center border border-white/10 overflow-hidden">
                 {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={18} className="text-slate-400" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-bold text-white truncate">{user?.email?.split('@')[0]}</p>
-                <div className="flex items-center space-x-1.5">
+                <div className="flex items-center space-x-1.5 mt-0.5">
                   {isPremium ? (
                     <span className="flex items-center text-[9px] font-bold text-legal-gold uppercase tracking-tighter bg-legal-gold/10 px-1.5 py-0.5 rounded leading-none">
-                      <Crown size={8} className="mr-0.5" /> LICENCIA ACTIVA
+                      <Crown size={8} className="mr-0.5" /> PLAN TRIMESTRAL
                     </span>
                   ) : (
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded leading-none">
-                      SIN LICENCIA
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded leading-none border border-slate-700">
+                      PLAN GRATUITO
                     </span>
                   )}
                 </div>
               </div>
             </div>
+
+            {userData && (
+              <div className="space-y-2 mt-1">
+                <div className="flex justify-between text-[9px] text-slate-400 uppercase tracking-widest font-bold">
+                  <span>Chat {isPremium ? '(Trimestral)' : '(Diario)'}</span>
+                  <span className={chatsUsed >= chatsLimit ? 'text-red-400' : 'text-slate-300'}>{chatsUsed} / {chatsLimit}</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
+                  <div className={`h-1 rounded-full ${chatsUsed >= chatsLimit ? 'bg-red-500' : 'bg-legal-gold'}`} style={{ width: `${Math.min(100, (chatsUsed / chatsLimit) * 100)}%` }}></div>
+                </div>
+
+                {isPremium && (
+                  <>
+                    <div className="flex justify-between text-[9px] text-slate-400 uppercase tracking-widest font-bold mt-2">
+                      <span>Auditorías</span>
+                      <span>{userData?.usage?.audits || 0} / 50</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
+                      <div className="bg-blue-500 h-1 rounded-full" style={{ width: `${Math.min(100, ((userData?.usage?.audits || 0) / 50) * 100)}%` }}></div>
+                    </div>
+                  </>
+                )}
+                {!isPremium && (
+                  <div className="flex justify-between items-center text-[9px] text-slate-400 uppercase tracking-widest font-bold mt-2 gap-2">
+                     <span title="Créditos Disponibles">Créditos: </span>
+                     <span className="text-legal-gold flex-1 text-right">
+                       A: {userData?.credits?.audits || 0} | E: {userData?.credits?.draft_basic || 0} | P: {userData?.credits?.draft_custom || 0}
+                     </span>
+                  </div>
+                )}
+              </div>
+            )}
             
             {!isPremium && (
               <button 
                 onClick={handleUpgrade}
-                className="w-full bg-gradient-to-r from-legal-gold/20 to-legal-gold/10 hover:from-legal-gold/30 hover:to-legal-gold/20 text-legal-gold text-[10px] font-extrabold uppercase tracking-widest py-2 rounded-lg border border-legal-gold/20 transition-all mb-3 active:scale-95"
+                className="w-full bg-gradient-to-r from-legal-gold/20 to-legal-gold/10 hover:from-legal-gold/30 hover:to-legal-gold/20 text-legal-gold text-[10px] font-extrabold uppercase tracking-widest py-2 rounded-lg border border-legal-gold/20 transition-all active:scale-95 mt-1"
               >
                 Adquirir Licencia
               </button>
@@ -139,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
 
             <button 
               onClick={onLogout}
-              className="w-full flex items-center justify-center space-x-2 text-slate-500 hover:text-white transition-colors py-1"
+              className="w-full flex items-center justify-center space-x-2 text-slate-500 hover:text-white transition-colors py-1.5 mt-1"
             >
               <LogOut size={12} />
               <span className="text-[10px] font-bold uppercase tracking-wider">Cerrar Sesión</span>

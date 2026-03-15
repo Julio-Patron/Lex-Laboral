@@ -29,7 +29,8 @@ function App() {
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft' | '3-months' | '6-months'>('3-months');
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft_basic' | 'draft_custom' | '3-months'>('3-months');
   
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -50,22 +51,21 @@ function App() {
         
         if (userDoc.exists()) {
           const data = userDoc.data();
-          if (data.isPremium && data.accessUntil) {
+          if (data.isPremium && data.expiresAt) {
             const now = new Date();
-            const expiration = new Date(data.accessUntil);
+            const expiration = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
             if (now > expiration) {
               data.isPremium = false;
-              notify("Su licencia de Lex Laboral ha expirado. Renueve para mantener el acceso a las funciones premium.", "warning", "Licencia Vencida");
+              notify("Su licencia de Lex Laboral ha expirado.", "warning", "Licencia Vencida");
             }
           }
           setUserData(data);
         } else {
           const initialData = {
             email: firebaseUser.email,
-            isPremium: true,
-            licenseType: 'validation-bypass',
-            accessUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
-            usage: { audits: 0, generations: 0 },
+            isPremium: false,
+            usage: { audits: 0, generations: 0, chats: 0 },
+            credits: { audits: 0, draft_basic: 0, draft_custom: 0 },
             createdAt: new Date().toISOString()
           };
           await setDoc(userDocRef, initialData);
@@ -95,19 +95,27 @@ function App() {
     notify("Expediente incorporado satisfactoriamente", "success", "Análisis Completado");
   };
 
-  const handleNewCase = () => {
-    if (confirm("Al iniciar una nueva sesión se purgarán los datos actuales para garantizar la confidencialidad. ¿Desea proceder?")) {
-      setChatHistory([{ role: 'model', text: 'Nueva sesión estratégica iniciada. Quedo a su disposición para cualquier consulta técnica.' }]);
-      setAnalysisHistory([]);
-      setDraftingState({ prompt: '', generatedDoc: '' });
-      setDocumentAnalysisState({ files: [], result: null, customInstruction: '' });
-      setCurrentView(AppView.CHAT);
-      notify("Memoria volátil purgada. Nueva sesión iniciada.", "info", "Sistema Reiniciado");
-      setIsSidebarOpen(false);
-    }
+  const executeNewCase = () => {
+    setChatHistory([{ role: 'model', text: 'Nueva sesión estratégica iniciada. Quedo a su disposición para cualquier consulta técnica.' }]);
+    setAnalysisHistory([]);
+    setDraftingState({ prompt: '', generatedDoc: '' });
+    setDocumentAnalysisState({ files: [], result: null, customInstruction: '' });
+    setCurrentView(AppView.CHAT);
+    notify("Memoria volátil purgada. Nueva sesión iniciada.", "info", "Sistema Reiniciado");
+    setIsSidebarOpen(false);
+    setIsConfirmModalOpen(false);
   };
 
-  const openPricingModal = (plan: 'audit' | 'draft' | '3-months' | '6-months' = '3-months') => {
+  const handleNewCase = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const openPricingModal = (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months' = '3-months') => {
+    if (!user) {
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+      return;
+    }
     setSelectedPlan(plan);
     setIsPricingModalOpen(true);
   };
@@ -118,57 +126,20 @@ function App() {
   };
 
   const renderView = () => {
-    const isProtected = [AppView.CHAT, AppView.DOCUMENT_ANALYSIS, AppView.DRAFTING].includes(currentView);
-    
-    // TEMPORARY LOGIC: Any registered user (user != null) has full access today without paying
-    // isPremium check is bypassed for now to allow full access upon registration.
-    if (isProtected && !user) {
-      return (
-        <div className="h-full w-full flex items-center justify-center p-4 md:p-6 text-center animate-fade-in">
-          <div className="max-w-md w-full bg-white p-6 md:p-10 rounded-3xl shadow-xl border border-slate-100">
-            <div className="w-16 h-16 bg-legal-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Shield className="text-legal-gold" size={32} />
-            </div>
-            <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-900 mb-4">Acceso Reservado</h3>
-            <p className="text-sm md:text-base text-slate-600 mb-8 leading-relaxed">
-              El día de hoy, esta herramienta avanzada está disponible en su totalidad de forma gratuita para todos los usuarios registrados.
-              Inicie sesión o regístrese para continuar.
-            </p>
-            <div className="flex flex-col space-y-3">
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="bg-legal-950 text-white py-3.5 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
-              >
-                Identificarse o Registrarse
-              </button>
-              {isGuestMode && (
-                <button 
-                  onClick={() => setCurrentView(AppView.CALCULATOR)}
-                  className="text-slate-500 text-xs md:text-sm font-semibold py-2 hover:text-slate-800 transition-colors"
-                >
-                  Regresar a la Calculadora
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="h-full w-full animate-fade-in relative overflow-y-auto">
         <Suspense fallback={
-          <div className="h-full w-full flex items-center justify-center">
+          <div className="h-full w-full min-h-[600px] flex items-center justify-center animate-in fade-in duration-500">
              <div className="flex flex-col items-center">
                 <div className="w-10 h-10 border-4 border-legal-gold/20 border-t-legal-gold rounded-full animate-spin mb-3"></div>
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">Cargando Módulo...</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Iniciando Módulo...</span>
              </div>
           </div>
         }>
           {(() => {
             switch (currentView) {
               case AppView.CHAT:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} userData={userData} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} userData={userData} onUpgrade={() => openPricingModal('3-months')} />;
               case AppView.DOCUMENT_ANALYSIS:
                 return <DocumentAnalyzer
                   state={documentAnalysisState}
@@ -186,12 +157,12 @@ function App() {
                   notify={notify}
                   user={user}
                   userData={userData}
-                  onUpgrade={() => openPricingModal('draft')}
+                  onUpgrade={(plan) => openPricingModal(plan || 'draft_basic')}
                 />;
               case AppView.CALCULATOR:
-                return <LaborCalculator notify={notify} user={user} userData={userData} />;
+                return <LaborCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
               case AppView.SOCIAL_SECURITY:
-                return <SocialSecurityCalculator notify={notify} user={user} userData={userData} />;
+                return <SocialSecurityCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
               default:
                 return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} userData={userData} />;
             }
@@ -284,6 +255,7 @@ function App() {
           onNewCase={handleNewCase} 
           onLogout={handleLogout}
           user={user}
+          userData={userData}
           isPremium={userData?.isPremium || false}
           isGuest={isGuestMode}
           notify={notify}
@@ -309,6 +281,35 @@ function App() {
         notify={notify} 
         initialPlan={selectedPlan}
       />
+
+      {/* Custom Confirm Modal for New Session */}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-legal-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full border border-slate-100 scale-100 transition-all">
+            <div className="flex items-center justify-center w-16 h-16 bg-red-50 text-red-500 rounded-2xl mx-auto mb-6">
+               <Shield size={32} />
+            </div>
+            <h3 className="text-2xl font-serif font-bold text-center text-slate-900 mb-3">¿Iniciar nueva sesión?</h3>
+            <p className="text-center text-slate-600 mb-8 text-sm leading-relaxed">
+              Al iniciar un nuevo expediente se purgarán los datos de la sesión actual de la memoria volátil para garantizar la confidencialidad. Los datos no guardados se perderán.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={() => setIsConfirmModalOpen(false)}
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeNewCase}
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all active:scale-95"
+              >
+                Purgar e Iniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

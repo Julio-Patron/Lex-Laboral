@@ -8,13 +8,9 @@ import admin from 'firebase-admin';
 
 dotenv.config();
 
-// Initialize Firebase Admin
 if (!admin.apps.length) {
   try {
-    // In Firebase Functions, we can just initialize without args
-    // or use specific config if needed for other projects
     admin.initializeApp();
-    console.log('Firebase Admin initialized');
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
   }
@@ -24,20 +20,15 @@ const db = admin.firestore();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'dummy_key');
 const app = express();
 
-app.use(cors({
-  origin: true, // Let Firebase handle CORS or use process.env.CLIENT_URL
-  optionsSuccessStatus: 200
-}));
+app.use(cors({ origin: true, optionsSuccessStatus: 200 }));
 
-// Webhook handling needs raw body
+// Webhook para procesar pagos
 app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
-
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error(`Webhook Error: ${err.message}`);
     return res.status(400).send('Webhook Error: Invalid signature');
   }
 
@@ -50,51 +41,29 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
       const userRef = db.collection('users').doc(userId);
       
       if (plan === 'audit') {
-        await userRef.set({
-          credits: {
-            audits: admin.firestore.FieldValue.increment(1)
-          }
-        }, { merge: true });
-        console.log(`User ${userId} bought 1 Audit credit`);
-      } else if (plan === 'draft') {
-        await userRef.set({
-          credits: {
-            generations: admin.firestore.FieldValue.increment(1)
-          }
-        }, { merge: true });
-        console.log(`User ${userId} bought 1 Draft credit`);
-      } else {
-        let months = 3;
-        let licenseType = '3-months';
-        
-        if (plan === '6-months') {
-          months = 6;
-          licenseType = '6-months';
-        }
-
+        await userRef.set({ credits: { audits: admin.firestore.FieldValue.increment(1) } }, { merge: true });
+      } else if (plan === 'draft_basic') {
+        await userRef.set({ credits: { draft_basic: admin.firestore.FieldValue.increment(1) } }, { merge: true });
+      } else if (plan === 'draft_custom') {
+        await userRef.set({ credits: { draft_custom: admin.firestore.FieldValue.increment(1) } }, { merge: true });
+      } else if (plan === '3-months') {
         const activatedAt = new Date();
         const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + months);
+        expiresAt.setMonth(expiresAt.getMonth() + 3);
 
         await userRef.set({ 
           isPremium: true, 
-          licenseType,
+          licenseType: '3-months',
           activatedAt: admin.firestore.Timestamp.fromDate(activatedAt),
           expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-          usage: {
-            audits: 0,
-            generations: 0,
-            chats: 0
-          },
+          usage: { audits: 0, generations: 0, chats: 0 },
           updatedAt: admin.firestore.FieldValue.serverTimestamp() 
         }, { merge: true });
-        console.log(`User ${userId} upgraded to Premium (${licenseType})`);
       }
     } catch (error) {
       console.error('Error updating firestore:', error);
     }
   }
-
   res.json({ received: true });
 });
 
@@ -102,107 +71,40 @@ app.use(express.json());
 
 const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-  const idToken = authHeader.split('Bearer ')[1];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'No token provided' });
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = await admin.auth().verifyIdToken(authHeader.split('Bearer ')[1]);
     req.user = decodedToken;
     next();
   } catch (error) {
-    console.error('Error verifying token:', error);
     res.status(401).json({ error: 'Unauthorized' });
   }
 };
 
 app.post('/api/create-checkout-session', async (req, res) => {
-  const { userEmail, userId, priceId } = req.body;
-
+  const { userEmail, userId, plan } = req.body;
   try {
-    let plan = '3-months';
-    if (priceId.includes('6mo')) plan = '6-months';
-    else if (req.body.plan) plan = req.body.plan; // use plan passed from frontend
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: userEmail,
       client_reference_id: userId,
-      metadata: {
-        plan: plan
-      },
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: (plan === 'audit' || plan === 'draft') ? 'payment' : 'subscription',
-      success_url: `${process.env.CLIENT_URL}/#payment-success`,
-      cancel_url: `${process.env.CLIENT_URL}/#payment-cancelled`,
+      metadata: { plan: plan },
+      line_items: [{ price: req.body.priceId || 'price_dummy', quantity: 1 }],
+      mode: (plan === '3-months') ? 'subscription' : 'payment',
+      success_url: `${process.env.CLIENT_URL || 'https://studio-6462708856-c0f94.web.app'}/#payment-success`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://studio-6462708856-c0f94.web.app'}/#payment-cancelled`,
     });
-
     res.json({ id: session.id });
   } catch (error) {
-    console.error('Checkout error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-const SYSTEM_INSTRUCTION = `
-Eres "Lex Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano.
+const SYSTEM_INSTRUCTION = `Eres "Lex Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano...`;
+const MAIN_MODEL = "gemini-2.5-pro";
+const FLASH_MODEL = "gemini-3-flash";
 
-ÁREAS DE EXPERTISE:
-1. Relaciones Individuales de Trabajo: Dominio total de la Ley Federal del Trabajo (LFT). Especialista en contratos individuales, jornadas, salarios, prestaciones (aguinaldo, vacaciones, prima vacacional) y rescisiones.
-2. Relaciones Colectivas: Especialista en Sindicatos, Contratos Colectivos de Trabajo (CCT), Contratos Ley y huelgas. Conocimiento profundo de la reforma laboral de 2019.
-3. Seguridad Social y Previsión Social: Dominio de la Ley del Seguro Social (IMSS) y Ley del INFONAVIT. Análisis de cuotas, riesgos de trabajo y pensiones.
-4. Derecho Procesal Laboral: Conocimiento de los nuevos Tribunales Laborales y Centros de Conciliación. Estrategia en juicios laborales y conciliación obligatoria.
-
-REGLAS DE OPERACIÓN:
-- SOBRIEDAD Y PRECISIÓN: Tu tono es estrictamente profesional, técnico y directo.
-- SÍNTESIS ESTRATÉGICA: Sintetiza tus respuestas. Evita preámbulos innecesarios. Ve directo al punto legal. Utiliza estructuras jerárquicas (viñetas, negritas) para facilitar la lectura rápida.
-- FUNDAMENTACIÓN POSITIVA: Sustenta cada diagnóstico exclusivamente en fuentes del Derecho Positivo Mexicano vigente: Constitución Política (CPEUM), Ley Federal del Trabajo (LFT), Ley del Seguro Social (LSS), Ley del INFONAVIT y Jurisprudencia firme de la SCJN o Tribunales Colegiados.
-- ANÁLISIS INTEGRAL: Proporciona diagnósticos que crucen la LFT, Seguridad Social y Precedentes Judiciales.
-- ESTRUCTURA: Genera respuestas con organización clara y jerárquica.
-
-No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio entre los factores de la producción y la excelencia técnica en el entorno laboral mexicano.
-`;
-
-async function checkUsage(userId, type) {
-  const userRef = db.collection('users').doc(userId);
-  const userDoc = await userRef.get();
-  
-  if (!userDoc.exists) throw new Error("Usuario no encontrado");
-  
-  const userData = userDoc.data();
-  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
-  
-  if (!isPremiumValid) {
-    const credits = userData.credits?.[type] || 0;
-    if (credits > 0) {
-      await userRef.update({
-        [`credits.${type}`]: admin.firestore.FieldValue.increment(-1)
-      });
-      return;
-    }
-    throw new Error(userData.isPremium ? "Su licencia ha expirado." : "Se requiere licencia activa o un crédito para esta función.");
-  }
-
-  const limit = userData.licenseType === '6-months' 
-    ? (type === 'audits' ? 120 : 150) 
-    : (type === 'audits' ? 40 : 50);
-    
-  const currentUsage = userData.usage?.[type] || 0;
-  
-  if (currentUsage >= limit) {
-    throw new Error("Límite de uso alcanzado para este periodo.");
-  }
-
-  await userRef.update({
-    [`usage.${type}`]: admin.firestore.FieldValue.increment(1)
-  });
-}
+const getTodayString = () => new Date().toISOString().split('T')[0];
 
 async function checkChatUsage(userId) {
   const userRef = db.collection('users').doc(userId);
@@ -212,115 +114,110 @@ async function checkChatUsage(userId) {
   const userData = userDoc.data();
   const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
   
-  const chatUsage = userData.usage?.chats || 0;
-  const limit = isPremiumValid ? 500 : 5;
-
-  if (chatUsage >= limit) {
-    throw new Error(isPremiumValid ? "Límite de mensajes alcanzado (500)." : "Límite de prueba alcanzado (5 mensajes). Adquiera una licencia para continuar.");
+  if (isPremiumValid) {
+    const chatUsage = userData.usage?.chats || 0;
+    if (chatUsage >= 100) throw new Error("Límite trimestral de chat alcanzado (100 consultas).");
+    await userRef.update({ 'usage.chats': admin.firestore.FieldValue.increment(1) });
+    return;
   }
 
-  await userRef.update({
-    'usage.chats': admin.firestore.FieldValue.increment(1)
-  });
+  // Usuario Gratis: 2 al día
+  const today = getTodayString();
+  const dailyChats = userData.dailyUsage?.date === today ? (userData.dailyUsage?.chats || 0) : 0;
+  
+  if (dailyChats >= 2) throw new Error("Límite diario de chat gratuito alcanzado (2). Adquiera un plan para continuar.");
+  
+  await userRef.set({ dailyUsage: { date: today, chats: dailyChats + 1, calculators: userData.dailyUsage?.date === today ? userData.dailyUsage.calculators : 0 } }, { merge: true });
 }
 
-const MAIN_MODEL = "gemini-2.5-pro";
-const FLASH_MODEL = "gemini-3-flash";
+async function checkUsage(userId, type) {
+  const userRef = db.collection('users').doc(userId);
+  const userDoc = await userRef.get();
+  if (!userDoc.exists) throw new Error("Usuario no encontrado");
+  
+  const userData = userDoc.data();
+  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
+  
+  if (isPremiumValid) {
+    const currentUsage = userData.usage?.[type === 'audits' ? 'audits' : 'generations'] || 0;
+    if (currentUsage >= 50) throw new Error(`Límite trimestral alcanzado para ${type} (50).`);
+    await userRef.update({ [`usage.${type === 'audits' ? 'audits' : 'generations'}`]: admin.firestore.FieldValue.increment(1) });
+    return;
+  }
+
+  // Verificar créditos a la carta
+  const credits = userData.credits?.[type] || 0;
+  if (credits > 0) {
+    await userRef.update({ [`credits.${type}`]: admin.firestore.FieldValue.increment(-1) });
+    return;
+  }
+  
+  throw new Error("Saldo insuficiente. Adquiera un crédito individual o el plan trimestral.");
+}
 
 app.post('/api/legal/chat', authenticateUser, async (req, res) => {
   const { history, message, useThinking, focusMode } = req.body;
-  const userId = req.user.uid;
-  
   try {
-    await checkChatUsage(userId);
-    
+    await checkChatUsage(req.user.uid);
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-      model: useThinking ? MAIN_MODEL : FLASH_MODEL,
-      systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
-    });
-
-    const recentHistory = history.slice(-10); // A bit more context
-
-    const chat = model.startChat({
-      history: recentHistory.map(h => ({
-        role: h.role === 'user' ? 'user' : 'model',
-        parts: [{ text: h.text }]
-      })),
-    });
-
+    const model = genAI.getGenerativeModel({ model: useThinking ? MAIN_MODEL : FLASH_MODEL, systemInstruction: SYSTEM_INSTRUCTION });
+    const chat = model.startChat({ history: history.slice(-10).map(h => ({ role: h.role, parts: [{ text: h.text }] })) });
     const result = await chat.sendMessage(message);
-    const response = await result.response;
-    res.json({ text: response.text() });
+    res.json({ text: (await result.response).text() });
   } catch (error) {
-    console.error('Chat error:', error);
+    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
   const { files, prompt } = req.body;
-  const userId = req.user.uid;
-  
   try {
-    await checkUsage(userId, 'audits');
-    
+    await checkUsage(req.user.uid, 'audits');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: MAIN_MODEL,
-      systemInstruction: SYSTEM_INSTRUCTION
-    });
-
-    const parts = files.map(file => ({
-      inlineData: { mimeType: file.mimeType, data: file.base64 }
-    }));
-
-    parts.push({
-      text: `Realice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. Petición técnica: ${prompt}`
-    });
-
+    const model = genAI.getGenerativeModel({ model: MAIN_MODEL, systemInstruction: SYSTEM_INSTRUCTION });
+    const parts = files.map(f => ({ inlineData: { mimeType: f.mimeType, data: f.base64 } }));
+    parts.push({ text: `Realice un Dictamen de Auditoría Integral exhaustivo. Petición: ${prompt}` });
     const result = await model.generateContent(parts);
-    const response = await result.response;
-    res.json({ text: response.text() });
+    res.json({ text: (await result.response).text() });
   } catch (error) {
-    console.error('Analysis error:', error);
-    if (error.message.includes('Límite') || error.message.includes('licencia') || error.message.includes('Usuario')) {
-      return res.status(error.message.includes('Límite') ? 403 : 401).json({ error: error.message });
-    }
+    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 app.post('/api/legal/draft', authenticateUser, async (req, res) => {
-  const { requirements } = req.body;
-  const userId = req.user.uid;
-  
+  const { requirements, customInstructions } = req.body;
   try {
-    await checkUsage(userId, 'generations');
-
+    await checkUsage(req.user.uid, customInstructions ? 'draft_custom' : 'draft_basic');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-      model: MAIN_MODEL,
-      systemInstruction: SYSTEM_INSTRUCTION
-    });
-
-    const promptText = `TAREA: Proyecte el instrumento jurídico formal completo siguiendo la técnica legislativa y contractual mexicana.\n\nRequerimientos: ${requirements}`;
+    const model = genAI.getGenerativeModel({ model: MAIN_MODEL, systemInstruction: SYSTEM_INSTRUCTION });
+    const promptText = `TAREA: Proyecte instrumento jurídico.\n\nRequerimientos: ${requirements}\nInstrucciones extra: ${customInstructions || 'Ninguna'}`;
     const result = await model.generateContent(promptText);
-    const response = await result.response;
-    res.json({ text: response.text() });
+    res.json({ text: (await result.response).text() });
   } catch (error) {
-    console.error('Draft error:', error);
-    if (error.message.includes('Límite') || error.message.includes('licencia') || error.message.includes('Usuario')) {
-      return res.status(error.message.includes('Límite') ? 403 : 401).json({ error: error.message });
-    }
+    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// Export the Express app as a Cloud Function named "api"
-export const api = onRequest({
-  memory: "512MiB",
-  timeoutSeconds: 60,
-  maxInstances: 10,
-  // We can also specify secrets here if using Google Cloud Secret Manager
-}, app);
+app.post('/api/legal/calculator', authenticateUser, async (req, res) => {
+  try {
+    const userRef = db.collection('users').doc(req.user.uid);
+    const userDoc = await userRef.get();
+    const userData = userDoc.data() || {};
+    
+    const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
+    if (!isPremiumValid) {
+      const today = getTodayString();
+      const dailyCalcs = userData.dailyUsage?.date === today ? (userData.dailyUsage?.calculators || 0) : 0;
+      if (dailyCalcs >= 2) return res.status(403).json({ error: "Límite diario de calculadora gratuito alcanzado (2)." });
+      await userRef.set({ dailyUsage: { date: today, calculators: dailyCalcs + 1, chats: userData.dailyUsage?.date === today ? userData.dailyUsage.chats : 0 } }, { merge: true });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Error' });
+  }
+});
+
+export const api = onRequest({ memory: "512MiB", timeoutSeconds: 60 }, app);
