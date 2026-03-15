@@ -43,3 +43,6 @@ ui-debug.log*
 
 # Test coverage
 coverage
+
+.gemini/
+gha-creds-*.json

@@ -1,6 +1,7 @@
 import { ai } from "../firebase.config";
 import { getGenerativeModel } from "firebase/ai";
 import { ChatMessage, AnalyzedDocumentHistory } from "../types";
+import Tesseract from 'tesseract.js';
 
 const SYSTEM_INSTRUCTION = `
 Eres "Lex Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano.
@@ -21,6 +22,9 @@ REGLAS DE OPERACIÓN:
 No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio entre los factores de la producción y la excelencia técnica en el entorno laboral mexicano.
 `;
 
+const MAIN_MODEL = "gemini-2.5-pro";
+const FLASH_MODEL = "gemini-3-flash";
+
 export const streamLegalChat = async (
   history: ChatMessage[],
   newMessage: string,
@@ -30,7 +34,7 @@ export const streamLegalChat = async (
   analysisHistory: AnalyzedDocumentHistory[] = []
 ) => {
   const model = getGenerativeModel(ai, {
-    model: "gemini-2.5-pro",
+    model: useThinking ? MAIN_MODEL : FLASH_MODEL,
     systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
   });
 
@@ -57,12 +61,31 @@ export const analyzeLegalDocument = async (
   idToken: string // Kept for signature compatibility
 ) => {
   const model = getGenerativeModel(ai, {
-    model: "gemini-2.5-pro",
+    model: MAIN_MODEL,
     systemInstruction: SYSTEM_INSTRUCTION
   });
 
+  // OCR extraction for images
+  let extractedTexts = "";
+  for (const file of files) {
+    if (file.mimeType.startsWith('image/')) {
+      try {
+        const { data: { text } } = await Tesseract.recognize(
+          `data:${file.mimeType};base64,${file.base64}`,
+          'spa', // Mexican Spanish context
+          { logger: m => console.log(m) }
+        );
+        extractedTexts += `\n--- TEXTO EXTRAÍDO DE ${file.name} ---\n${text}\n`;
+      } catch (ocrError) {
+        console.error(`Error de OCR en ${file.name}:`, ocrError);
+      }
+    }
+  }
+
   const promptPart = {
-    text: `Realice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. Petición técnica: ${prompt}`
+    text: `Realice un Dictamen de Auditoría Integral exhaustivo sobre los instrumentos proporcionados. 
+    ${extractedTexts ? `Utilice este texto extraído por OCR como referencia primaria: ${extractedTexts}` : ''}
+    Petición técnica: ${prompt}`
   };
 
   const fileParts = files.map(file => ({
@@ -79,7 +102,7 @@ export const draftLegalDocument = async (
   idToken: string // Kept for signature compatibility
 ) => {
   const model = getGenerativeModel(ai, {
-    model: "gemini-2.5-pro",
+    model: MAIN_MODEL,
     systemInstruction: SYSTEM_INSTRUCTION
   });
 

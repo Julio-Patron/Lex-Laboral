@@ -112,7 +112,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
       let message = "Error en la autenticación con Google";
       const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'error';
       if (errorCode === "auth/unauthorized-domain") {
-        message = "Dominio no autorizado. Agregue lexi-laboral.vercel.app a dominios permitidos en Firebase.";
+        message = "Dominio no autorizado. Agregue el dominio actual a dominios permitidos en Firebase.";
       }
       setError(`${message} (${errorCode})`);
     } finally {

@@ -224,6 +224,9 @@ async function checkChatUsage(userId) {
   });
 }
 
+const MAIN_MODEL = "gemini-2.5-pro";
+const FLASH_MODEL = "gemini-3-flash";
+
 app.post('/api/legal/chat', authenticateUser, async (req, res) => {
   const { history, message, useThinking, focusMode } = req.body;
   const userId = req.user.uid;
@@ -232,13 +235,12 @@ app.post('/api/legal/chat', authenticateUser, async (req, res) => {
     await checkChatUsage(userId);
     
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const modelName = "gemini-1.5-pro";
     const model = genAI.getGenerativeModel({ 
-      model: modelName,
+      model: useThinking ? MAIN_MODEL : FLASH_MODEL,
       systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
     });
 
-    const recentHistory = history.slice(-8);
+    const recentHistory = history.slice(-10); // A bit more context
 
     const chat = model.startChat({
       history: recentHistory.map(h => ({
@@ -265,7 +267,7 @@ app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
     
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: MAIN_MODEL,
       systemInstruction: SYSTEM_INSTRUCTION
     });
 
@@ -298,7 +300,7 @@ app.post('/api/legal/draft', authenticateUser, async (req, res) => {
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: MAIN_MODEL,
       systemInstruction: SYSTEM_INSTRUCTION
     });
 

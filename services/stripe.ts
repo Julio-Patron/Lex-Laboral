@@ -16,7 +16,7 @@ const PRICE_IDS = {
 };
 
 export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft' | '3-months' | '6-months') => {
-  // Use relative path for Vercel proxy
+  // Use configured API URL for Firebase Functions or local dev server
   const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
   
   const response = await fetch(`${API_URL}/api/create-checkout-session`, {
