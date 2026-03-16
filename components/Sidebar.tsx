@@ -88,13 +88,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
           <h1 className="font-serif font-bold text-lg tracking-tight text-white">Lex Laboral</h1>
         </div>
 
-        <button 
-            onClick={onNewCase}
-            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-slate-100 py-3.5 rounded-xl text-xs font-bold transition-all border border-white/5 hover:border-white/10 shadow-lg active:scale-[0.98] group"
-        >
-            <Zap size={14} className="text-legal-gold group-hover:scale-110 transition-transform" />
-            <span>Nueva Sesión</span>
-        </button>
+        {!isGuest && (
+          <button 
+              onClick={onNewCase}
+              className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-slate-100 py-3.5 rounded-xl text-xs font-bold transition-all border border-white/5 hover:border-white/10 shadow-lg active:scale-[0.98] group"
+          >
+              <Zap size={14} className="text-legal-gold group-hover:scale-110 transition-transform" />
+              <span>Nueva Sesión</span>
+          </button>
+        )}
       </div>
       
       {/* Navigation */}

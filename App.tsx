@@ -171,6 +171,10 @@ function App() {
   };
 
   const handleLogout = async () => {
+    if (isGuestMode) {
+      setIsGuestMode(false);
+      return;
+    }
     await signOut(auth);
     notify("Sesión cerrada correctamente", "info", "Adiós");
   };
