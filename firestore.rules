@@ -59,6 +59,11 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUserDoc();
       // Updates and deletes are handled exclusively by the backend
       allow update, delete: if false;
+
+      // Allow access to chat sessions history
+      match /sessions/{sessionId} {
+        allow read, write, delete: if isOwner(userId);
+      }
     }
     
     match /{document=**} {
