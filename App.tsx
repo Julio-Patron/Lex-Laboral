@@ -36,7 +36,7 @@ function App() {
   const [currentSessionId, setCurrentSessionId] = useState<string>(crypto.randomUUID());
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([{ 
     role: 'model', 
-    text: 'Sistema Lex Laboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?' 
+    text: 'Bienvenido a Lex Laboral. Soy su asistente jurídico especializado en Derecho Laboral y Seguridad Social. Puedo ayudarle con análisis de contratos, cálculo de prestaciones o interpretación de la LFT. ¿Por dónde le gustaría comenzar?' 
   }]);
   const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
@@ -93,6 +93,13 @@ function App() {
         } else {
           setUserData(null);
           setSessions([]);
+          // Reset state on logout
+          setChatHistory([{ 
+            role: 'model', 
+            text: 'Bienvenido a Lex Laboral. Soy su asistente jurídico especializado en Derecho Laboral y Seguridad Social. Puedo ayudarle con análisis de contratos, cálculo de prestaciones o interpretación de la LFT. ¿Por dónde le gustaría comenzar?' 
+          }]);
+          setAnalysisHistory([]);
+          setCurrentSessionId(crypto.randomUUID());
         }
       } catch (error) {
         console.error("Auth status sync error:", error);

@@ -54,14 +54,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
   };
 
   const navItems = [
-    { id: AppView.CHAT, label: 'Consulta y Análisis Jurídico', icon: <MessageSquare size={18} /> },
-    { id: AppView.DRAFTING, label: 'Ingeniería Jurídica', icon: <PenTool size={18} /> },
-    { id: AppView.CALCULATOR, label: 'Cálculo Liquidación', icon: <Calculator size={18} /> },
+    { id: AppView.CHAT, label: 'Chat Jurídico IA', icon: <MessageSquare size={18} /> },
+    { id: AppView.DRAFTING, label: 'Redacción Documental', icon: <PenTool size={18} /> },
+    { id: AppView.CALCULATOR, label: 'Calculadora Laboral', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
   ];
 
   const prefetchModule = (view: AppView) => {
-    // Webpack / Vite can prefetch dynamic imports if we call them silently
     switch (view) {
       case AppView.CHAT: import('./ChatInterface'); break;
       case AppView.DRAFTING: import('./Drafter'); break;
@@ -73,7 +72,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
   const handleNavClick = (viewId: AppView) => {
     if (isGuest && (viewId === AppView.CHAT || viewId === AppView.DRAFTING)) {
       if (notify) notify("Debe iniciar sesión para usar las herramientas de IA", "warning", "Acceso Restringido");
-      // Trigger login modal logic if provided or just block
       return;
     }
     onChangeView(viewId);
@@ -81,20 +79,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
 
   return (
     <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print">
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.05),transparent_50%)] pointer-events-none" />
-      
-      <div className="p-8 pt-10 relative">
-        <div className="flex items-center space-x-3.5">
-          <div className="w-10 h-10 bg-black/20 border border-white/5 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+      {/* Header & New Session */}
+      <div className="p-6 pb-2 space-y-6">
+        <div className="flex items-center space-x-3 px-2">
+          <div className="w-8 h-8 bg-black/40 border border-white/10 rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
             <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
-          <h1 className="font-serif font-bold text-xl tracking-tight text-white">Lex Laboral</h1>
+          <h1 className="font-serif font-bold text-lg tracking-tight text-white">Lex Laboral</h1>
         </div>
+
+        <button 
+            onClick={onNewCase}
+            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 text-slate-100 py-3.5 rounded-xl text-xs font-bold transition-all border border-white/5 hover:border-white/10 shadow-lg active:scale-[0.98] group"
+        >
+            <Zap size={14} className="text-legal-gold group-hover:scale-110 transition-transform" />
+            <span>Nueva Sesión</span>
+        </button>
       </div>
       
-      <nav className="mt-4 px-4 flex-1 overflow-y-auto custom-scrollbar">
-        <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Capacidades</p>
-        <ul className="space-y-1.5">
+      {/* Navigation */}
+      <nav className="px-4 flex-1 overflow-y-auto custom-scrollbar mt-2">
+        <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-2">Herramientas</p>
+        <ul className="space-y-1">
           {navItems.map((item) => {
             const isRestricted = isGuest && (item.id === AppView.CHAT || item.id === AppView.DRAFTING);
             return (
@@ -102,19 +108,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
                 <button
                   onClick={() => handleNavClick(item.id)}
                   onMouseEnter={() => !isRestricted && prefetchModule(item.id)}
-                  className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[13px] font-semibold transition-all group ${
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-medium transition-all group ${
                     currentView === item.id
-                      ? 'bg-white/10 text-legal-gold shadow-inner'
+                      ? 'bg-white/10 text-legal-gold border border-white/5'
                       : isRestricted
-                        ? 'text-slate-600 cursor-not-allowed'
+                        ? 'text-slate-600 cursor-not-allowed opacity-70'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3">
                     <span className={currentView === item.id ? 'text-legal-gold' : isRestricted ? 'text-slate-700' : 'text-slate-500 group-hover:text-slate-300'}>
                       {item.icon}
                     </span>
-                    <span className={isRestricted ? 'opacity-50' : ''}>{item.label}</span>
+                    <span>{item.label}</span>
                   </div>
                   {currentView === item.id && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
                   {isRestricted && <Shield size={12} className="text-slate-700" />}
@@ -125,11 +131,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
         </ul>
 
         {sessions.length > 0 && (
-          <div className="mt-8 mb-4">
-            <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Clock size={12} /> Expedientes Recientes
+          <div className="mt-8">
+            <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+              <Clock size={12} /> Recientes
             </p>
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {sessions.slice(0, 5).map(session => (
                 <li key={session.id}>
                   <button
@@ -137,10 +143,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
                       if (onSelectSession) onSelectSession(session.id);
                       onChangeView(AppView.CHAT);
                     }}
-                    className={`w-full text-left px-5 py-2.5 rounded-xl text-[12px] transition-all truncate ${
+                    className={`w-full text-left px-4 py-2 rounded-lg text-[12px] transition-all truncate ${
                       currentSessionId === session.id && currentView === AppView.CHAT
-                        ? 'bg-legal-gold/10 text-legal-gold font-bold border border-legal-gold/20'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5 font-medium'
+                        ? 'bg-legal-gold/5 text-legal-gold font-medium'
+                        : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                     }`}
                   >
                     {session.title}
@@ -150,89 +156,73 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
             </ul>
           </div>
         )}
-
-        <div className="mt-8 mb-6 px-5 space-y-4">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Información Legal</p>
-          <button className="block text-[11px] font-bold text-slate-400 hover:text-legal-gold transition-colors text-left uppercase tracking-tighter">
-            Términos y Condiciones
-          </button>
-          <button className="block text-[11px] font-bold text-slate-400 hover:text-legal-gold transition-colors text-left uppercase tracking-tighter">
-            Aviso de Privacidad
-          </button>
-        </div>
       </nav>
 
-      <div className="p-6 mt-auto space-y-4 border-t border-white/5 bg-black/10">
-        {!isGuest && (
-          <div className="bg-white/5 rounded-2xl p-4 mb-2 flex flex-col gap-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center border border-white/10 overflow-hidden">
-                {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={18} className="text-slate-400" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold text-white truncate">{user?.email?.split('@')[0]}</p>
-                <div className="flex items-center space-x-1.5 mt-0.5">
-                  {isPremium ? (
-                    <span className="flex items-center text-[9px] font-bold text-legal-gold uppercase tracking-tighter bg-legal-gold/10 px-1.5 py-0.5 rounded leading-none">
-                      <Crown size={8} className="mr-0.5" /> PLAN TRIMESTRAL
-                    </span>
-                  ) : (
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded leading-none border border-slate-700">
-                      PLAN GRATUITO
-                    </span>
-                  )}
+      {/* Footer / User Profile */}
+      <div className="p-4 mt-auto border-t border-white/5 bg-black/20">
+        {!isGuest ? (
+          <div className="flex flex-col gap-3">
+             {/* User Info & Actions */}
+             <div className="bg-white/5 rounded-xl p-3 border border-white/5 hover:border-white/10 transition-colors">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
+                    {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={16} className="text-slate-400" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-white truncate">{user?.email?.split('@')[0]}</p>
+                    <div className="flex items-center mt-0.5">
+                      {isPremium ? (
+                        <span className="text-[9px] font-bold text-legal-gold bg-legal-gold/10 px-1.5 py-px rounded flex items-center gap-1">
+                           <Crown size={8} /> PREMIUM
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold text-slate-500 bg-slate-800 px-1.5 py-px rounded">GRATUITO</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            {!isPremium && (
-              <button 
-                onClick={handleUpgrade}
-                className="w-full bg-gradient-to-r from-legal-gold/20 to-legal-gold/10 hover:from-legal-gold/30 hover:to-legal-gold/20 text-legal-gold text-[10px] font-extrabold uppercase tracking-widest py-2 rounded-lg border border-legal-gold/20 transition-all active:scale-95 mt-1"
-              >
-                Adquirir Licencia
-              </button>
-            )}
-
+                
+                <div className="grid grid-cols-2 gap-2">
+                  {!isPremium && (
+                    <button 
+                      onClick={handleUpgrade}
+                      className="col-span-2 bg-legal-gold/20 hover:bg-legal-gold/30 text-legal-gold text-[10px] font-bold py-1.5 rounded-lg border border-legal-gold/20 transition-all text-center"
+                    >
+                      Mejorar Plan
+                    </button>
+                  )}
+                  <button 
+                    onClick={onLogout}
+                    className="col-span-2 flex items-center justify-center space-x-1.5 text-slate-500 hover:text-slate-300 py-1.5 hover:bg-white/5 rounded-lg transition-all"
+                  >
+                    <LogOut size={12} />
+                    <span className="text-[10px] font-bold">Salir</span>
+                  </button>
+                </div>
+             </div>
+          </div>
+        ) : (
+          <div className="bg-legal-gold/10 rounded-xl p-4 border border-legal-gold/20 mb-2">
+            <p className="text-[10px] text-legal-gold mb-2 text-center">Modo Invitado</p>
             <button 
-              onClick={onLogout}
-              className="w-full flex items-center justify-center space-x-2 text-slate-500 hover:text-white transition-colors py-1.5 mt-1"
+              onClick={onLogout} 
+              className="w-full bg-legal-gold text-black text-xs font-bold py-2 rounded-lg hover:bg-yellow-500 transition-colors"
             >
-              <LogOut size={12} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Cerrar Sesión</span>
+              Iniciar Sesión
             </button>
           </div>
         )}
-
-        <button 
-            onClick={onNewCase}
-            className="w-full flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-4 rounded-2xl text-xs font-bold transition-all border border-slate-700 active:scale-[0.98] shadow-lg"
-        >
-            <Zap size={14} className="text-legal-gold" />
-            <span>Nueva Sesión</span>
-        </button>
         
-        <div className="bg-white/5 rounded-2xl p-5 mt-2 border border-white/5">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Soporte Técnico</p>
-          <div className="space-y-4">
-            <a 
-              href="mailto:admin@lexlaboral.com.mx" 
-              className="flex items-center space-x-3 text-slate-400 hover:text-white transition-all group bg-white/0 hover:bg-legal-gold/10 p-2.5 rounded-xl border border-transparent hover:border-legal-gold/20"
-            >
-              <div className="w-9 h-9 rounded-lg bg-legal-gold/10 flex items-center justify-center group-hover:bg-legal-gold/20 transition-all shadow-sm">
-                <FileText size={16} className="text-legal-gold" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Email Soporte</span>
-                <span className="text-[9px] text-slate-500 group-hover:text-legal-gold transition-colors">Respuesta en 24h</span>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-2.5 text-[9px] text-slate-500 uppercase tracking-widest font-bold py-2">
-           <Shield size={10} className="text-emerald-500/80" />
-           <span>Seguridad Encriptada</span>
+        {/* Minimal Footer Links */}
+        <div className="flex items-center justify-between px-1 mt-3 opacity-60">
+            <button className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors">Soporte</button>
+            <span className="text-slate-700 text-[9px]">•</span>
+            <button className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors">Privacidad</button>
+            <span className="text-slate-700 text-[9px]">•</span>
+            <div className="flex items-center gap-1 text-[9px] text-emerald-500/80">
+              <Shield size={8} />
+              <span>Seguro</span>
+            </div>
         </div>
       </div>
     </div>
