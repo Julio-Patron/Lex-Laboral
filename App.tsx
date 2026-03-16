@@ -53,44 +53,53 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          if (data.isPremium && data.expiresAt) {
-            const now = new Date();
-            const expiration = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
-            if (now > expiration) {
-              data.isPremium = false;
-              notify("Su licencia de Lex Laboral ha expirado.", "warning", "Licencia Vencida");
+      try {
+        setUser(firebaseUser);
+        if (firebaseUser) {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.isPremium && data.expiresAt) {
+              const now = new Date();
+              const expiration = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+              if (now > expiration) {
+                data.isPremium = false;
+                notify("Su licencia de Lex Laboral ha expirado.", "warning", "Licencia Vencida");
+              }
             }
+            setUserData(data);
+          } else {
+            // Updated to match firestore.rules requirements
+            const initialData = {
+              email: firebaseUser.email,
+              isPremium: false,
+              licenseType: 'free',
+              accessUntil: new Date(new Date().getFullYear() + 10, 0, 1).toISOString(), // Dummy date for free users
+              usage: { audits: 0, generations: 0, chats: 0 },
+              credits: { audits: 0, draft_basic: 0, draft_custom: 0 },
+              createdAt: new Date().toISOString()
+            };
+            await setDoc(userDocRef, initialData);
+            setUserData(initialData);
           }
-          setUserData(data);
+          
+          // Load sessions
+          getUserSessions(firebaseUser.uid).then(setSessions);
+          
+          setIsGuestMode(false);
+          notify(`Bienvenido, ${firebaseUser.email?.split('@')[0]}`, 'success', 'Sesión Iniciada');
         } else {
-          const initialData = {
-            email: firebaseUser.email,
-            isPremium: false,
-            usage: { audits: 0, generations: 0, chats: 0 },
-            credits: { audits: 0, draft_basic: 0, draft_custom: 0 },
-            createdAt: new Date().toISOString()
-          };
-          await setDoc(userDocRef, initialData);
-          setUserData(initialData);
+          setUserData(null);
+          setSessions([]);
         }
-        
-        // Load sessions
-        getUserSessions(firebaseUser.uid).then(setSessions);
-        
-        setIsGuestMode(false);
-        notify(`Bienvenido, ${firebaseUser.email?.split('@')[0]}`, 'success', 'Sesión Iniciada');
-      } else {
-        setUserData(null);
-        setSessions([]);
+      } catch (error) {
+        console.error("Auth status sync error:", error);
+        // Don't notify on every check, but log it
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
