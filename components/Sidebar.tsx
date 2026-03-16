@@ -70,10 +70,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
     }
   };
 
-  const today = new Date().toISOString().split('T')[0];
-  const chatsUsed = isPremium ? (userData?.usage?.chats || 0) : (userData?.dailyUsage?.date === today ? (userData?.dailyUsage?.chats || 0) : 0);
-  const chatsLimit = isPremium ? 100 : 2;
-
   return (
     <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.05),transparent_50%)] pointer-events-none" />
@@ -173,38 +169,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
                 </div>
               </div>
             </div>
-
-            {userData && (
-              <div className="space-y-2 mt-1">
-                <div className="flex justify-between text-[9px] text-slate-400 uppercase tracking-widest font-bold">
-                  <span>Chat {isPremium ? '(Trimestral)' : '(Diario)'}</span>
-                  <span className={chatsUsed >= chatsLimit ? 'text-red-400' : 'text-slate-300'}>{chatsUsed} / {chatsLimit}</span>
-                </div>
-                <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
-                  <div className={`h-1 rounded-full ${chatsUsed >= chatsLimit ? 'bg-red-500' : 'bg-legal-gold'}`} style={{ width: `${Math.min(100, (chatsUsed / chatsLimit) * 100)}%` }}></div>
-                </div>
-
-                {isPremium && (
-                  <>
-                    <div className="flex justify-between text-[9px] text-slate-400 uppercase tracking-widest font-bold mt-2">
-                      <span>Auditorías</span>
-                      <span>{userData?.usage?.audits || 0} / 50</span>
-                    </div>
-                    <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
-                      <div className="bg-blue-500 h-1 rounded-full" style={{ width: `${Math.min(100, ((userData?.usage?.audits || 0) / 50) * 100)}%` }}></div>
-                    </div>
-                  </>
-                )}
-                {!isPremium && (
-                  <div className="flex justify-between items-center text-[9px] text-slate-400 uppercase tracking-widest font-bold mt-2 gap-2">
-                     <span title="Créditos Disponibles">Créditos: </span>
-                     <span className="text-legal-gold flex-1 text-right">
-                       A: {userData?.credits?.audits || 0} | E: {userData?.credits?.draft_basic || 0} | P: {userData?.credits?.draft_custom || 0}
-                     </span>
-                  </div>
-                )}
-              </div>
-            )}
             
             {!isPremium && (
               <button 

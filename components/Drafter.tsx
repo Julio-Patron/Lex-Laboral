@@ -139,20 +139,15 @@ export const Drafter: React.FC<{
             </div>
           </div>
           <div className="flex items-center gap-3">
-             {userData && (
-               <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2 shadow-sm">
-                 <span className="text-[11px] font-bold uppercase tracking-wider">
-                   Generados: {userData.usage?.generations || 0} / {(userData.isPremium && (!userData.expiresAt || new Date(userData.expiresAt) >= new Date())) ? (userData.licenseType === '6-months' ? 300 : 100) : (userData.credits?.generations || 0)}
-                 </span>
-               </div>
+             {(!userData?.isPremium || (userData?.expiresAt && new Date(userData.expiresAt) < new Date())) && (
+               <button 
+                 onClick={() => onUpgrade && onUpgrade()}
+                 className="bg-legal-gold/10 text-legal-gold hover:bg-legal-gold/20 px-4 py-2 rounded-xl border border-legal-gold/20 flex items-center gap-2 shadow-sm transition-all active:scale-95 group"
+               >
+                 <Sparkles size={14} className="group-hover:animate-pulse" />
+                 <span className="text-[11px] font-bold uppercase tracking-wider">Adquirir Créditos</span>
+               </button>
              )}
-             <button 
-               onClick={() => onUpgrade && onUpgrade()}
-               className="bg-legal-gold/10 text-legal-gold hover:bg-legal-gold/20 px-4 py-2 rounded-xl border border-legal-gold/20 flex items-center gap-2 shadow-sm transition-all active:scale-95 group"
-             >
-               <Sparkles size={14} className="group-hover:animate-pulse" />
-               <span className="text-[11px] font-bold uppercase tracking-wider">Adquirir Créditos</span>
-             </button>
           </div>
           </div>
         </div>
