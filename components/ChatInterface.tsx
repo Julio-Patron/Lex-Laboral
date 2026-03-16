@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage, AnalyzedDocumentHistory, NotificationType } from '../types';
+import { ChatMessage, AnalyzedDocumentHistory, NotificationType, AnalyzedFile } from '../types';
 import { streamLegalChat } from '../services/gemini';
-import { Send, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink } from 'lucide-react';
+import { Zap, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink, Upload, FileText, X, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { User } from 'firebase/auth';
 
 export const ChatInterface: React.FC<{
@@ -11,15 +10,13 @@ export const ChatInterface: React.FC<{
   analysisHistory?: AnalyzedDocumentHistory[];
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
-  userData?: any;
-  onUpgrade?: () => void;
-}> = ({ messages, setMessages, analysisHistory = [], notify, user, userData, onUpgrade }) => {
+}> = ({ messages, setMessages, analysisHistory = [], notify, user }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [files, setFiles] = useState<AnalyzedFile[]>([]);
   const [focusMode, setFocusMode] = useState<'standard' | 'individual' | 'collective' | 'procedural'>('standard');
-  const [groundingSources, setGroundingSources] = useState<{title: string, uri: string}[]>([]);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastSentTime = useRef<number>(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,36 +26,58 @@ export const ChatInterface: React.FC<{
     scrollToBottom();
   }, [messages]);
 
+  const processFiles = (newFiles: File[]) => {
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFiles(prev => [...prev, {
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: (reader.result as string).split(',')[1],
+          previewUrl: null
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-    
-    const now = Date.now();
-    if (now - lastSentTime.current < 5000) {
-      notify("Por favor, espere 5 segundos entre consultas.", "warning", "Límite de Frecuencia");
-      return;
+    if ((!input.trim() && files.length === 0) || isLoading) return;
+    if (files.length > 0 && !privacyAccepted) {
+        notify("Debe aceptar el Aviso de Privacidad para analizar documentos", "warning", "Consentimiento Requerido");
+        return;
     }
     
-    const userMessage = input;
-    setInput('');
     setIsLoading(true);
-    setGroundingSources([]);
-    lastSentTime.current = now;
     
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    // Crear el mensaje del usuario. Si hay archivos, adjuntamos el primero (simplificado para la UI)
+    const userMsg: ChatMessage = { 
+        role: 'user', 
+        text: input || "Solicito auditoría del documento adjunto.",
+        attachment: files.length > 0 ? {
+            type: 'file',
+            mimeType: files[0].mimeType,
+            data: files[0].fileBase64,
+            name: files[0].fileName
+        } : undefined
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
+    setInput('');
+    setFiles([]); // Limpiar archivos después de enviar
+    setPrivacyAccepted(false);
 
     try {
       notify("Procesando consulta jurídica...", "info");
-      
       setMessages(prev => [...prev, { role: 'model', text: '', isThinking: true }]);
 
       const idToken = user ? await user.getIdToken() : '';
       
-      // Limit history to last 10 messages to save context and speed up
-      const historyToSend = messages.slice(-10);
-
+      // Llamada al servicio (Asegúrate de que streamLegalChat soporte attachments)
       const result = await streamLegalChat(
-        historyToSend, 
-        userMessage, 
+        [...messages, userMsg], // Enviamos el historial + el nuevo mensaje
+        currentInput, 
         true, 
         idToken,
         focusMode, 
@@ -77,143 +96,160 @@ export const ChatInterface: React.FC<{
       });
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "";
-      if (errorMsg.includes("403") || errorMsg.includes("Límite") || errorMsg.includes("Saldo")) {
-        notify("Límite alcanzado o saldo insuficiente.", "warning", "Acceso Restringido");
-        if (onUpgrade) onUpgrade();
-      } else if (errorMsg.includes("429")) {
-        notify("Límite de frecuencia alcanzado.", "warning", "Servidor Saturado");
-      } else if (errorMsg.includes("SAFETY")) {
-        notify("Consulta bloqueada por política de seguridad.", "info", "Aviso de Contenido");
-      } else {
-        notify("Error técnico en la comunicación.", "error", "Fallo de Red");
-      }
-      
+      if (errorMsg.includes("429")) notify("Límite de frecuencia alcanzado.", "warning", "Servidor Saturado");
+      else notify("Error técnico en la comunicación.", "error", "Fallo de Red");
       setMessages(prev => prev.filter(m => !m.isThinking || m.text !== ''));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isPremiumValid = userData?.isPremium && (!userData?.expiresAt || (userData.expiresAt.toDate ? userData.expiresAt.toDate() : new Date(userData.expiresAt)) >= new Date());
-  const today = new Date().toISOString().split('T')[0];
-  const chatsUsed = isPremiumValid 
-    ? (userData?.usage?.chats || 0) 
-    : (userData?.dailyUsage?.date === today ? (userData?.dailyUsage?.chats || 0) : 0);
-  const chatsLimit = isPremiumValid ? 100 : 2;
+  // Separar los mensajes en los que ya ocurrieron y el "nuevo" que se va a enviar
+  const pastMessages = messages.filter(m => m.text !== 'Sistema Lex Laboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?');
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
-      <header className="glass-panel border-b border-slate-200/60 px-8 py-6 flex flex-wrap justify-between items-center z-20 gap-4 sticky top-0 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 bg-legal-950 rounded-2xl flex items-center justify-center shadow-xl shadow-legal-950/10 border border-white/10">
-            <Sparkles className="text-legal-gold" size={22} />
-          </div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-serif font-bold text-legal-950 tracking-tight">Asesoría Legal</h2>
-            <div className="relative group/help">
-              <HelpCircle size={16} className="text-slate-300 cursor-help hover:text-legal-gold transition-colors" />
-              <div className="absolute left-0 top-full mt-3 w-80 p-5 bg-white border border-slate-200 shadow-2xl rounded-3xl opacity-0 invisible group-hover/help:opacity-100 group-hover/help:visible transition-all z-50 pointer-events-none border-t-4 border-t-legal-gold">
-                <p className="text-[11px] font-bold text-legal-950 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Protocolo de Asesoría Laboral</p>
-                <ul className="space-y-3 text-[12px] leading-relaxed text-slate-600">
-                  <li className="flex gap-3"><span className="text-legal-gold font-bold">I.</span><span>Orientación normativa en materia de LFT, Seguridad Social y Derecho Procesal.</span></li>
-                  <li className="flex gap-3"><span className="text-legal-gold font-bold">II.</span><span>Fundamentación mediante búsqueda en tiempo real de leyes vigentes y jurisprudencia.</span></li>
-                </ul>
+    <div className="h-full overflow-y-auto bg-slate-50/50 no-print">
+      <div className="max-w-6xl mx-auto p-8 md:p-12">
+        {/* Encabezado Formal (Extraído de DocumentAnalyzer) */}
+        <header className="mb-12 flex flex-wrap justify-between items-end gap-6 border-b border-slate-200 pb-8">
+          <div className="flex items-center gap-5">
+            <div className="p-3.5 bg-white rounded-2xl shadow-premium border border-slate-100">
+               <LayoutDashboard className="text-legal-gold" size={32} />
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-3xl font-serif font-bold text-legal-950 tracking-tight">Auditoría y Consulta Jurídica</h2>
               </div>
+              <p className="text-slate-500 text-sm mt-1 font-medium italic">Diagnóstico exhaustivo y orientación normativa en materia laboral.</p>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-2xl border border-slate-200/50">
-          {[
-            { id: 'standard', label: 'General', icon: <Sparkles size={14} /> },
-            { id: 'individual', label: 'Individual', icon: <Briefcase size={14} /> },
-            { id: 'collective', label: 'Colectivo', icon: <Users size={14} /> },
-            { id: 'procedural', label: 'Procesal', icon: <Gavel size={14} /> }
-          ].map(mode => (
-            <button 
-              key={mode.id}
-              onClick={() => setFocusMode(mode.id as any)}
-              className={`flex items-center gap-2.5 px-5 py-2 rounded-xl text-[11px] font-bold transition-all ${focusMode === mode.id ? 'bg-white text-legal-950 shadow-md border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              {mode.icon} <span className="hidden lg:inline">{mode.label}</span>
-            </button>
-          ))}
-        </div>
-      </header>
+          <div className="flex items-center gap-1 p-1 bg-white rounded-2xl border border-slate-200/50 shadow-sm">
+            {[
+              { id: 'standard', label: 'General', icon: <Sparkles size={14} /> },
+              { id: 'individual', label: 'Individual', icon: <Briefcase size={14} /> },
+              { id: 'collective', label: 'Colectivo', icon: <Users size={14} /> },
+            ].map(mode => (
+              <button 
+                key={mode.id}
+                onClick={() => setFocusMode(mode.id as any)}
+                className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-[11px] font-bold transition-all ${focusMode === mode.id ? 'bg-slate-100 text-legal-950 border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {mode.icon} <span>{mode.label}</span>
+              </button>
+            ))}
+          </div>
+        </header>
 
-      <div className="flex-1 overflow-y-auto px-6 sm:px-12 py-10 space-y-12 scrollbar-hide bg-slate-50/20">
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}>
-            <div className={`flex flex-col max-w-[90%] sm:max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`p-7 rounded-[2rem] text-[15px] leading-relaxed shadow-premium border ${
-                msg.role === 'user' 
-                  ? 'bg-white border-slate-200/60 text-slate-800 rounded-tr-none' 
-                  : 'bg-legal-950 text-slate-100 border-legal-900 rounded-tl-none'
-              }`}>
-                {msg.isThinking ? (
-                  <div className="flex items-center space-x-3 text-legal-gold">
-                    <Loader2 className="animate-spin" size={20} />
-                    <span className="font-serif italic text-sm tracking-wide">Analizando normativa vigente...</span>
-                  </div>
-                ) : (
-                  <div className="whitespace-pre-wrap font-sans opacity-95 selection:bg-legal-gold selection:text-legal-950">{msg.text}</div>
-                )}
-                
-                {msg.role === 'model' && groundingSources.length > 0 && idx === messages.length - 1 && (
-                  <div className="mt-8 pt-6 border-t border-white/10">
-                    <p className="text-[10px] font-bold text-legal-gold uppercase tracking-[0.2em] mb-4 flex items-center">
-                      <ExternalLink size={14} className="mr-2" /> Fundamentación Normativa
-                    </p>
-                    <div className="flex flex-wrap gap-2.5">
-                      {groundingSources.map((source, sIdx) => (
-                        <a key={sIdx} href={source.uri} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-white/5 hover:bg-white/15 px-4 py-2 rounded-xl border border-white/5 text-slate-300 transition-all hover:-translate-y-0.5 shadow-sm">
-                          {source.title}
-                        </a>
-                      ))}
+        {/* Historial de Dictámenes (Resultados Anteriores) */}
+        {pastMessages.length > 0 && (
+          <div className="space-y-8 mb-12">
+            {pastMessages.map((msg, idx) => (
+              <div key={idx} className="animate-fade-in-up">
+                 {msg.role === 'user' ? (
+                     <div className="bg-slate-100 p-5 rounded-t-2xl border-b border-slate-200/60 font-medium text-[13px] text-slate-700 flex items-start gap-3">
+                         <div className="p-1.5 bg-slate-200 rounded-lg shrink-0 mt-0.5"><Briefcase size={14} className="text-slate-600"/></div>
+                         <div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-1">Consulta Solicitada:</span>
+                            {msg.text}
+                            {msg.attachment && (
+                                <div className="mt-2 text-xs text-legal-600 font-bold bg-white px-3 py-1.5 rounded-lg inline-flex items-center gap-2 border border-slate-200">
+                                    <FileText size={14}/> Documento Adjunto: {msg.attachment.name}
+                                </div>
+                            )}
+                         </div>
+                     </div>
+                 ) : (
+                    <div className="bg-white p-8 rounded-b-2xl shadow-premium border border-slate-200/60 text-[14px] leading-relaxed text-slate-800">
+                        {msg.isThinking ? (
+                          <div className="flex items-center gap-3 text-legal-gold">
+                            <Loader2 className="animate-spin" size={24} />
+                            <span className="font-serif italic text-base">Generando Dictamen Técnico...</span>
+                          </div>
+                        ) : (
+                            <div className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-legal-950 prose-a:text-legal-gold">
+                                {msg.text}
+                            </div>
+                        )}
                     </div>
-                  </div>
-                )}
+                 )}
               </div>
-              <span className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mx-6">
-                {msg.role === 'user' ? 'Consulta' : 'Dictamen Técnico'} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
+            ))}
+            <div ref={messagesEndRef} />
           </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+        )}
 
-      <div className="p-8 bg-white border-t border-slate-100 shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.03)] z-10">
-        <div className="max-w-5xl mx-auto relative">
-          <div className="relative flex gap-4">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
-              placeholder="Describa su consulta técnica..."
-              className="flex-1 p-6 rounded-3xl border border-slate-200 bg-slate-50/50 text-sm outline-none focus:ring-4 focus:ring-legal-gold/5 focus:border-legal-gold transition-all resize-none h-[80px] shadow-inner-soft"
-            />
-            <button 
-              onClick={handleSend} 
-              disabled={isLoading || !input.trim() || (!user)}
-              className="w-20 h-20 bg-legal-950 text-legal-gold rounded-3xl hover:bg-legal-900 hover:shadow-2xl hover:-translate-y-0.5 transition-all shadow-xl shadow-legal-950/20 active:scale-95 disabled:opacity-30 disabled:translate-y-0 flex items-center justify-center group"
-            >
-              <Send size={28} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </button>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-              Enter para procesar consulta estratégica
-            </p>
-            {user ? (
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                Mensajes usados: {chatsUsed} / {chatsLimit} {isPremiumValid ? '(Trimestre)' : '(Hoy)'}
-              </p>
-            ) : (
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest cursor-pointer hover:text-legal-gold transition-colors" onClick={() => onUpgrade && onUpgrade()}>
-                Inicie sesión para chatear
-              </p>
-            )}
+        {/* Nueva Consulta / Carga de Documentos (Zona Activa) */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200/60 shadow-premium">
+          <h3 className="text-[12px] font-bold text-legal-950 uppercase tracking-widest mb-6 border-b border-slate-100 pb-3">Nueva Solicitud Técnica</h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Carga de Archivos */}
+            <div className="lg:col-span-5">
+               <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center relative hover:border-legal-gold/50 transition-all cursor-pointer h-full flex flex-col items-center justify-center">
+                  <input type="file" onChange={(e) => e.target.files && processFiles(Array.from(e.target.files))} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                  <div className="p-4 bg-white rounded-2xl w-fit mx-auto mb-4 shadow-sm">
+                     <Upload className="text-legal-gold" size={24} />
+                  </div>
+                  <h4 className="text-sm font-bold text-legal-950 mb-1">Añadir Expediente</h4>
+                  <p className="text-[11px] text-slate-500">Documento PDF o Imagen (Opcional)</p>
+                  
+                  {files.length > 0 && (
+                      <div className="mt-6 w-full relative z-20">
+                         {files.map((f, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl text-[11px] text-left shadow-sm">
+                            <span className="truncate max-w-[150px] font-bold text-slate-700 flex items-center gap-2">
+                                <FileText size={14} className="text-slate-400"/> {f.fileName}
+                            </span>
+                            <button onClick={(e) => { e.stopPropagation(); setFiles(prev => prev.filter((_, idx) => idx !== i))}} className="text-slate-300 hover:text-red-500 p-1"><X size={14}/></button>
+                          </div>
+                        ))}
+                      </div>
+                  )}
+               </div>
+            </div>
+
+            {/* Instrucción y Envío */}
+            <div className="lg:col-span-7 space-y-5 flex flex-col">
+              <textarea 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Describa el contexto laboral, formule su consulta específica o indique las instrucciones para analizar el documento adjunto..."
+                className="w-full flex-1 min-h-[140px] p-6 bg-slate-50 border border-slate-200 rounded-3xl text-[14px] outline-none focus:ring-4 ring-legal-gold/5 focus:border-legal-gold transition-all shadow-inner-soft leading-relaxed resize-none"
+              />
+              
+              {files.length > 0 && (
+                  <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200/60 rounded-xl">
+                    <input
+                      type="checkbox"
+                      id="privacy-consent"
+                      checked={privacyAccepted}
+                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                      className="mt-1 w-4 h-4 text-legal-gold cursor-pointer"
+                    />
+                    <label htmlFor="privacy-consent" className="text-[11px] text-slate-600 leading-relaxed cursor-pointer select-none">
+                      Confirmo que el documento no contiene datos sensibles. Autorizo el análisis automatizado.
+                    </label>
+                  </div>
+              )}
+
+              <button 
+                onClick={handleSend} 
+                disabled={isLoading || (!input.trim() && files.length === 0) || (files.length > 0 && !privacyAccepted)}
+                className="w-full py-5 bg-legal-950 text-legal-gold rounded-2xl font-bold shadow-xl shadow-legal-950/20 hover:bg-legal-900 hover:shadow-2xl hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0 transition-all active:scale-95 flex items-center justify-center gap-3"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    <span>Evaluando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap size={20} />
+                    <span>Ejecutar Análisis Técnico</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

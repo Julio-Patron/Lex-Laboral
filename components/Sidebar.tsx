@@ -50,8 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
   };
 
   const navItems = [
-    { id: AppView.CHAT, label: 'Asesoría Legal', icon: <MessageSquare size={18} /> },
-    { id: AppView.DOCUMENT_ANALYSIS, label: 'Auditoría Integral', icon: <FileText size={18} /> },
+    { id: AppView.CHAT, label: 'Consultas y análisis jurídico', icon: <MessageSquare size={18} /> },
     { id: AppView.DRAFTING, label: 'Ingeniería Jurídica', icon: <PenTool size={18} /> },
     { id: AppView.CALCULATOR, label: 'Cálculo Liquidación', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
@@ -61,7 +60,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
     // Webpack / Vite can prefetch dynamic imports if we call them silently
     switch (view) {
       case AppView.CHAT: import('./ChatInterface'); break;
-      case AppView.DOCUMENT_ANALYSIS: import('./DocumentAnalyzer'); break;
       case AppView.DRAFTING: import('./Drafter'); break;
       case AppView.CALCULATOR: import('./LaborCalculator'); break;
       case AppView.SOCIAL_SECURITY: import('./SocialSecurityCalculator'); break;

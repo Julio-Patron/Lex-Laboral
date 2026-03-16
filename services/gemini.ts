@@ -38,14 +38,39 @@ export const streamLegalChat = async (
     systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
   });
 
+  // The caller passes [...messages, userMsg], so the last item is the actual message to send.
+  const actualHistory = history.slice(0, -1);
+  const latestMessage = history[history.length - 1];
+
   const chat = model.startChat({
-    history: history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.text }]
-    })),
+    history: actualHistory.map(h => {
+      const parts: any[] = [{ text: h.text }];
+      if (h.attachment && h.attachment.type === 'file' && h.attachment.data) {
+        parts.push({
+          inlineData: {
+            mimeType: h.attachment.mimeType || 'application/pdf',
+            data: h.attachment.data
+          }
+        });
+      }
+      return {
+        role: h.role === 'user' ? 'user' : 'model',
+        parts
+      };
+    }),
   });
 
-  const result = await chat.sendMessage(newMessage);
+  const latestParts: any[] = [{ text: latestMessage.text || newMessage }];
+  if (latestMessage.attachment && latestMessage.attachment.type === 'file' && latestMessage.attachment.data) {
+    latestParts.push({
+      inlineData: {
+        mimeType: latestMessage.attachment.mimeType || 'application/pdf',
+        data: latestMessage.attachment.data
+      }
+    });
+  }
+
+  const result = await chat.sendMessage(latestParts);
   const response = await result.response;
   
   return {

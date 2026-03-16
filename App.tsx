@@ -8,18 +8,17 @@ import { PricingModal } from './components/PricingModal';
 
 // Code Splitting for Performance - Lazy loading large components
 const ChatInterface = lazy(() => import('./components/ChatInterface').then(module => ({ default: module.ChatInterface })));
-const DocumentAnalyzer = lazy(() => import('./components/DocumentAnalyzer').then(module => ({ default: module.DocumentAnalyzer })));
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
 const LaborCalculator = lazy(() => import('./components/LaborCalculator').then(module => ({ default: module.LaborCalculator })));
 const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityCalculator').then(module => ({ default: module.SocialSecurityCalculator })));
 import { auth, db } from './firebase.config';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState, DocumentAnalysisState } from './types';
+import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState } from './types';
 import { Shield, Menu, X } from 'lucide-react';
 
 function App() {
-  const [currentView, setCurrentView] = useState<AppView>(AppView.CALCULATOR);
+  const [currentView, setCurrentView] = useState<AppView>(AppView.CHAT);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -88,7 +87,6 @@ function App() {
   }]);
   const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
-  const [documentAnalysisState, setDocumentAnalysisState] = useState<DocumentAnalysisState>({ files: [], result: null, customInstruction: '' });
 
   const handleAddAnalysis = (item: AnalyzedDocumentHistory) => {
     setAnalysisHistory(prev => [item, ...prev]);
@@ -99,7 +97,6 @@ function App() {
     setChatHistory([{ role: 'model', text: 'Nueva sesión estratégica iniciada. Quedo a su disposición para cualquier consulta técnica.' }]);
     setAnalysisHistory([]);
     setDraftingState({ prompt: '', generatedDoc: '' });
-    setDocumentAnalysisState({ files: [], result: null, customInstruction: '' });
     setCurrentView(AppView.CHAT);
     notify("Memoria volátil purgada. Nueva sesión iniciada.", "info", "Sistema Reiniciado");
     setIsSidebarOpen(false);
@@ -139,17 +136,9 @@ function App() {
           {(() => {
             switch (currentView) {
               case AppView.CHAT:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} userData={userData} onUpgrade={() => openPricingModal('3-months')} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
               case AppView.DOCUMENT_ANALYSIS:
-                return <DocumentAnalyzer
-                  state={documentAnalysisState}
-                  setState={setDocumentAnalysisState}
-                  onAddAnalysis={handleAddAnalysis}
-                  notify={notify}
-                  user={user}
-                  userData={userData}
-                  onUpgrade={() => openPricingModal('audit')}
-                />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
               case AppView.DRAFTING:
                 return <Drafter
                   state={draftingState}
@@ -164,7 +153,7 @@ function App() {
               case AppView.SOCIAL_SECURITY:
                 return <SocialSecurityCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
               default:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} userData={userData} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} />;
             }
           })()}
         </Suspense>
