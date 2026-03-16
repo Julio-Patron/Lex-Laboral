@@ -58,10 +58,17 @@ describe('gemini service', () => {
   });
 
   describe('streamLegalChat', () => {
+    beforeEach(() => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true })
+      });
+    });
+
     it('should throw error when sendMessage fails', async () => {
       mockSendMessage.mockRejectedValueOnce(new Error('Error en la respuesta del motor legal'));
 
-      const mockHistory: ChatMessage[] = [];
+      const mockHistory: ChatMessage[] = [{ role: 'user', text: 'Hello' }];
       const mockNewMessage = 'Hello';
       const mockIdToken = 'token123';
 
@@ -71,14 +78,12 @@ describe('gemini service', () => {
     });
 
     it('should return a stream-like object when response is ok', async () => {
-      const mockText = 'Chat response';
+      const mockText = 'Respuesta de prueba';
       mockSendMessage.mockResolvedValueOnce({
-        response: {
-          text: () => mockText
-        }
+        response: { text: () => mockText }
       });
 
-      const mockHistory: ChatMessage[] = [];
+      const mockHistory: ChatMessage[] = [{ role: 'user', text: 'Hello' }];
       const mockNewMessage = 'Hello';
       const mockIdToken = 'token123';
 

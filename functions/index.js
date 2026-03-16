@@ -201,6 +201,24 @@ app.post('/api/legal/draft', authenticateUser, async (req, res) => {
   }
 });
 
+// Endpoint to verify and deduct usage before client-side Genkit SDK execution
+app.post('/api/legal/verify-usage', authenticateUser, async (req, res) => {
+  const { type } = req.body; // 'chat' or 'audits'
+  try {
+    if (type === 'chat') {
+      await checkChatUsage(req.user.uid);
+    } else if (type === 'audits') {
+      await checkUsage(req.user.uid, 'audits');
+    } else {
+      return res.status(400).json({ error: 'Invalid usage type requested.' });
+    }
+    res.json({ success: true, message: 'Usage verified and deducted.' });
+  } catch (error) {
+    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.post('/api/legal/calculator', authenticateUser, async (req, res) => {
   try {
     const userRef = db.collection('users').doc(req.user.uid);

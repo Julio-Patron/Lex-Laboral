@@ -33,14 +33,33 @@ export const streamLegalChat = async (
   focusMode?: 'standard' | 'individual' | 'collective' | 'procedural',
   analysisHistory: AnalyzedDocumentHistory[] = []
 ) => {
+  // The caller passes [...messages, userMsg], so the last item is the actual message to send.
+  const actualHistory = history.slice(0, -1);
+  const latestMessage = history[history.length - 1];
+
+  const hasAttachment = latestMessage.attachment && latestMessage.attachment.type === 'file' && latestMessage.attachment.data;
+  const usageType = hasAttachment ? 'audits' : 'chat';
+
+  // Verify and deduct usage on the backend before executing the model
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001/studio-6462708856-c0f94/us-central1/api';
+  const verifyRes = await fetch(`${apiUrl}/api/legal/verify-usage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+    body: JSON.stringify({ type: usageType })
+  });
+
+  if (!verifyRes.ok) {
+    const errorData = await verifyRes.json();
+    throw new Error(errorData.error || 'Failed to verify usage. Please check your credits.');
+  }
+
   const model = getGenerativeModel(ai, {
     model: useThinking ? MAIN_MODEL : FLASH_MODEL,
     systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
   });
-
-  // The caller passes [...messages, userMsg], so the last item is the actual message to send.
-  const actualHistory = history.slice(0, -1);
-  const latestMessage = history[history.length - 1];
 
   const chat = model.startChat({
     history: actualHistory.map(h => {
@@ -61,11 +80,11 @@ export const streamLegalChat = async (
   });
 
   const latestParts: any[] = [{ text: latestMessage.text || newMessage }];
-  if (latestMessage.attachment && latestMessage.attachment.type === 'file' && latestMessage.attachment.data) {
+  if (hasAttachment) {
     latestParts.push({
       inlineData: {
-        mimeType: latestMessage.attachment.mimeType || 'application/pdf',
-        data: latestMessage.attachment.data
+        mimeType: latestMessage.attachment!.mimeType || 'application/pdf',
+        data: latestMessage.attachment!.data
       }
     });
   }
