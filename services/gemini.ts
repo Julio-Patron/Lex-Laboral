@@ -22,8 +22,27 @@ REGLAS DE OPERACIÓN:
 No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio entre los factores de la producción y la excelencia técnica en el entorno laboral mexicano.
 `;
 
-const MAIN_MODEL = "gemini-2.5-pro";
-const FLASH_MODEL = "gemini-3-flash";
+const FALLBACK_MODELS_THINKING = ["gemini-2.5-pro", "gemini-3-flash", "gemini-2.5-flash"];
+const FALLBACK_MODELS_FAST = ["gemini-3-flash", "gemini-2.5-flash", "gemini-2.5-pro"];
+
+const executeWithGeminiFallback = async (useThinking: boolean, systemInstruction: string, executeFn: (model: any) => Promise<any>) => {
+  const modelsToTry = useThinking ? FALLBACK_MODELS_THINKING : FALLBACK_MODELS_FAST;
+  let lastError;
+  
+  for (const modelName of modelsToTry) {
+    try {
+      const model = getGenerativeModel(ai, {
+        model: modelName,
+        systemInstruction
+      });
+      return await executeFn(model);
+    } catch (error: any) {
+      console.warn(`[Fallback] Model ${modelName} failed:`, error.message);
+      lastError = error;
+    }
+  }
+  throw lastError;
+};
 
 export const streamLegalChat = async (
   history: ChatMessage[],
@@ -56,47 +75,46 @@ export const streamLegalChat = async (
     throw new Error(errorData.error || 'Failed to verify usage. Please check your credits.');
   }
 
-  const model = getGenerativeModel(ai, {
-    model: useThinking ? MAIN_MODEL : FLASH_MODEL,
-    systemInstruction: SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '')
-  });
-
-  const chat = model.startChat({
-    history: actualHistory.map(h => {
-      const parts: any[] = [{ text: h.text }];
-      if (h.attachment && h.attachment.type === 'file' && h.attachment.data) {
-        parts.push({
-          inlineData: {
-            mimeType: h.attachment.mimeType || 'application/pdf',
-            data: h.attachment.data
-          }
-        });
-      }
-      return {
-        role: h.role === 'user' ? 'user' : 'model',
-        parts
-      };
-    }),
-  });
-
-  const latestParts: any[] = [{ text: latestMessage.text || newMessage }];
-  if (hasAttachment) {
-    latestParts.push({
-      inlineData: {
-        mimeType: latestMessage.attachment!.mimeType || 'application/pdf',
-        data: latestMessage.attachment!.data
-      }
-    });
-  }
-
-  const result = await chat.sendMessage(latestParts);
-  const response = await result.response;
+  const systemInstruction = SYSTEM_INSTRUCTION + (focusMode ? `\nENFOQUE PRIORITARIO: ${focusMode}` : '');
   
-  return {
-    response: {
-      text: () => response.text()
+  return await executeWithGeminiFallback(useThinking, systemInstruction, async (model) => {
+    const chat = model.startChat({
+      history: actualHistory.map(h => {
+        const parts: any[] = [{ text: h.text }];
+        if (h.attachment && h.attachment.type === 'file' && h.attachment.data) {
+          parts.push({
+            inlineData: {
+              mimeType: h.attachment.mimeType || 'application/pdf',
+              data: h.attachment.data
+            }
+          });
+        }
+        return {
+          role: h.role === 'user' ? 'user' : 'model',
+          parts
+        };
+      }),
+    });
+
+    const latestParts: any[] = [{ text: latestMessage.text || newMessage }];
+    if (hasAttachment) {
+      latestParts.push({
+        inlineData: {
+          mimeType: latestMessage.attachment!.mimeType || 'application/pdf',
+          data: latestMessage.attachment!.data
+        }
+      });
     }
-  };
+
+    const result = await chat.sendMessage(latestParts);
+    const response = await result.response;
+    
+    return {
+      response: {
+        text: () => response.text()
+      }
+    };
+  });
 };
 
 export const analyzeLegalDocument = async (
@@ -104,11 +122,6 @@ export const analyzeLegalDocument = async (
   prompt: string,
   idToken: string // Kept for signature compatibility
 ) => {
-  const model = getGenerativeModel(ai, {
-    model: MAIN_MODEL,
-    systemInstruction: SYSTEM_INSTRUCTION
-  });
-
   // OCR extraction for images
   let extractedTexts = "";
   for (const file of files) {
@@ -136,22 +149,22 @@ export const analyzeLegalDocument = async (
     inlineData: { mimeType: file.mimeType, data: file.base64 }
   }));
 
-  const result = await model.generateContent([promptPart, ...fileParts]);
-  const response = await result.response;
-  return response.text();
+  return await executeWithGeminiFallback(true, SYSTEM_INSTRUCTION, async (model) => {
+    const result = await model.generateContent([promptPart, ...fileParts]);
+    const response = await result.response;
+    return response.text();
+  });
 };
 
 export const draftLegalDocument = async (
   requirements: string, 
   idToken: string // Kept for signature compatibility
 ) => {
-  const model = getGenerativeModel(ai, {
-    model: MAIN_MODEL,
-    systemInstruction: SYSTEM_INSTRUCTION
-  });
-
   const promptText = `TAREA: Proyecte el instrumento jurídico formal completo siguiendo la técnica legislativa y contractual mexicana.\n\nRequerimientos: ${requirements}`;
-  const result = await model.generateContent([promptText]);
-  const response = await result.response;
-  return response.text();
+  
+  return await executeWithGeminiFallback(true, SYSTEM_INSTRUCTION, async (model) => {
+    const result = await model.generateContent([promptText]);
+    const response = await result.response;
+    return response.text();
+  });
 };

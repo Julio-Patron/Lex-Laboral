@@ -81,15 +81,28 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
+const PLAN_PRICES = {
+  'audit': process.env.STRIPE_PRICE_AUDIT || 'price_1TApWv36rYdwQu28DCjR7H5e',
+  'draft_basic': process.env.STRIPE_PRICE_DRAFT || 'price_1TApYv36rYdwQu28o3LMAZjU',
+  'draft_custom': process.env.STRIPE_PRICE_DRAFT || 'price_1TApYv36rYdwQu28o3LMAZjU',
+  '3-months': process.env.STRIPE_PRICE_3_MONTHS || 'price_1TApaN36rYdwQu28h1Mfljni'
+};
+
 app.post('/api/create-checkout-session', async (req, res) => {
   const { userEmail, userId, plan } = req.body;
+  const priceId = PLAN_PRICES[plan];
+  
+  if (!priceId) {
+    return res.status(400).json({ error: 'Invalid plan selected' });
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: userEmail,
       client_reference_id: userId,
       metadata: { plan: plan },
-      line_items: [{ price: req.body.priceId || 'price_dummy', quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: (plan === '3-months') ? 'subscription' : 'payment',
       success_url: `${process.env.CLIENT_URL || 'https://studio-6462708856-c0f94.web.app'}/#payment-success`,
       cancel_url: `${process.env.CLIENT_URL || 'https://studio-6462708856-c0f94.web.app'}/#payment-cancelled`,
@@ -101,58 +114,27 @@ app.post('/api/create-checkout-session', async (req, res) => {
 });
 
 const SYSTEM_INSTRUCTION = `Eres "Lex Laboral", un motor de inteligencia jurídica de alto nivel en México especializado exclusivamente en Derecho Laboral Mexicano...`;
-const MAIN_MODEL = "gemini-2.5-pro";
-const FLASH_MODEL = "gemini-3-flash";
+const FALLBACK_MODELS_THINKING = ["gemini-2.5-pro", "gemini-3-flash", "gemini-2.5-flash"];
+const FALLBACK_MODELS_FAST = ["gemini-3-flash", "gemini-2.5-flash", "gemini-2.5-pro"];
 
-const getTodayString = () => new Date().toISOString().split('T')[0];
-
-async function checkChatUsage(userId) {
-  const userRef = db.collection('users').doc(userId);
-  const userDoc = await userRef.get();
-  if (!userDoc.exists) throw new Error("Usuario no encontrado");
+async function executeWithGeminiFallback(genAI, systemInstruction, useThinking, executeFn) {
+  const modelsToTry = useThinking ? FALLBACK_MODELS_THINKING : FALLBACK_MODELS_FAST;
+  let lastError;
   
-  const userData = userDoc.data();
-  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
-  
-  if (isPremiumValid) {
-    const chatUsage = userData.usage?.chats || 0;
-    if (chatUsage >= 100) throw new Error("Límite trimestral de chat alcanzado (100 consultas).");
-    await userRef.update({ 'usage.chats': admin.firestore.FieldValue.increment(1) });
-    return;
+  for (const modelName of modelsToTry) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemInstruction });
+      return await executeFn(model);
+    } catch (error) {
+      console.warn(`[Fallback] Model ${modelName} failed:`, error.message);
+      lastError = error;
+      // Do not fallback for logic limit errors
+      if (error.message.includes('Límite') || error.message.includes('Saldo')) {
+        throw error;
+      }
+    }
   }
-
-  // Usuario Gratis: 2 al día
-  const today = getTodayString();
-  const dailyChats = userData.dailyUsage?.date === today ? (userData.dailyUsage?.chats || 0) : 0;
-  
-  if (dailyChats >= 2) throw new Error("Límite diario de chat gratuito alcanzado (2). Adquiera un plan para continuar.");
-  
-  await userRef.set({ dailyUsage: { date: today, chats: dailyChats + 1, calculators: userData.dailyUsage?.date === today ? userData.dailyUsage.calculators : 0 } }, { merge: true });
-}
-
-async function checkUsage(userId, type) {
-  const userRef = db.collection('users').doc(userId);
-  const userDoc = await userRef.get();
-  if (!userDoc.exists) throw new Error("Usuario no encontrado");
-  
-  const userData = userDoc.data();
-  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
-  
-  if (isPremiumValid) {
-    const currentUsage = userData.usage?.[type === 'audits' ? 'audits' : 'generations'] || 0;
-    if (currentUsage >= 50) throw new Error(`Límite trimestral alcanzado para ${type} (50).`);
-    await userRef.update({ [`usage.${type === 'audits' ? 'audits' : 'generations'}`]: admin.firestore.FieldValue.increment(1) });
-    return;
-  }
-
-  // Verificar créditos a la carta
-  const credits = userData.credits?.[type] || 0;
-  if (credits > 0) {
-    await userRef.update({ [`credits.${type}`]: admin.firestore.FieldValue.increment(-1) });
-    return;
-  }
-  
-  throw new Error("Saldo insuficiente. Adquiera un crédito individual o el plan trimestral.");
+  throw lastError;
 }
 
 app.post('/api/legal/chat', authenticateUser, async (req, res) => {
@@ -160,12 +142,18 @@ app.post('/api/legal/chat', authenticateUser, async (req, res) => {
   try {
     await checkChatUsage(req.user.uid);
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: useThinking ? MAIN_MODEL : FLASH_MODEL, systemInstruction: SYSTEM_INSTRUCTION });
-    const chat = model.startChat({ history: history.slice(-10).map(h => ({ role: h.role, parts: [{ text: h.text }] })) });
-    const result = await chat.sendMessage(message);
-    res.json({ text: (await result.response).text() });
+    
+    const resultText = await executeWithGeminiFallback(genAI, SYSTEM_INSTRUCTION, useThinking, async (model) => {
+      const chat = model.startChat({ history: history.slice(-10).map(h => ({ role: h.role, parts: [{ text: h.text }] })) });
+      const result = await chat.sendMessage(message);
+      return (await result.response).text();
+    });
+    
+    res.json({ text: resultText });
   } catch (error) {
-    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
+    if (error.message && (error.message.includes('Límite') || error.message.includes('Saldo'))) {
+      return res.status(403).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -175,13 +163,20 @@ app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
   try {
     await checkUsage(req.user.uid, 'audits');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: MAIN_MODEL, systemInstruction: SYSTEM_INSTRUCTION });
+    
     const parts = files.map(f => ({ inlineData: { mimeType: f.mimeType, data: f.base64 } }));
     parts.push({ text: `Realice un Dictamen de Auditoría Integral exhaustivo. Petición: ${prompt}` });
-    const result = await model.generateContent(parts);
-    res.json({ text: (await result.response).text() });
+    
+    const resultText = await executeWithGeminiFallback(genAI, SYSTEM_INSTRUCTION, true, async (model) => {
+      const result = await model.generateContent(parts);
+      return (await result.response).text();
+    });
+    
+    res.json({ text: resultText });
   } catch (error) {
-    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
+    if (error.message && (error.message.includes('Límite') || error.message.includes('Saldo'))) {
+      return res.status(403).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -191,12 +186,19 @@ app.post('/api/legal/draft', authenticateUser, async (req, res) => {
   try {
     await checkUsage(req.user.uid, customInstructions ? 'draft_custom' : 'draft_basic');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: MAIN_MODEL, systemInstruction: SYSTEM_INSTRUCTION });
+    
     const promptText = `TAREA: Proyecte instrumento jurídico.\n\nRequerimientos: ${requirements}\nInstrucciones extra: ${customInstructions || 'Ninguna'}`;
-    const result = await model.generateContent(promptText);
-    res.json({ text: (await result.response).text() });
+    
+    const resultText = await executeWithGeminiFallback(genAI, SYSTEM_INSTRUCTION, true, async (model) => {
+      const result = await model.generateContent(promptText);
+      return (await result.response).text();
+    });
+    
+    res.json({ text: resultText });
   } catch (error) {
-    if (error.message.includes('Límite') || error.message.includes('Saldo')) return res.status(403).json({ error: error.message });
+    if (error.message && (error.message.includes('Límite') || error.message.includes('Saldo'))) {
+      return res.status(403).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
