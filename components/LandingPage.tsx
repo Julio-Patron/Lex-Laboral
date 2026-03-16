@@ -8,7 +8,7 @@ interface LandingPageProps {
   onTryCalculator: (type: 'labor' | 'social') => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onTryCalculator }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onTryCalculator }) => {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 overflow-hidden relative">
       {/* Background Decorative Elements */}
@@ -37,14 +37,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onTryCalculator }) => 
           Asesoría integral de derecho Laboral
         </p>
         
-        <button 
-          onClick={() => onTryCalculator('labor')}
-          className="group relative w-full bg-slate-950 text-legal-gold border border-legal-gold/30 hover:border-legal-gold py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center space-x-3 shadow-[0_0_20px_rgba(197,164,126,0.1)] overflow-hidden active:scale-95"
-        >
-          <span className="relative z-10 text-[13px]">Explorar Herramientas Gratuitas</span>
-          <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
-          <div className="absolute inset-0 bg-legal-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </button>
+        <div className="flex flex-col space-y-4">
+          <button 
+            onClick={onLogin}
+            className="group relative w-full bg-slate-950 text-white hover:text-legal-gold border border-slate-800 hover:border-legal-gold/50 py-4 rounded-xl font-bold uppercase tracking-[0.15em] text-xs transition-all flex items-center justify-center space-x-3 shadow-lg overflow-hidden active:scale-[0.98]"
+          >
+            <span className="relative z-10 text-[13px]">Acceder</span>
+            <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+            <div className="absolute inset-0 bg-legal-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </button>
+
+          <button 
+            onClick={() => onTryCalculator('labor')}
+            className="w-full bg-transparent text-legal-gold border border-legal-gold/30 hover:border-legal-gold hover:bg-legal-gold/5 py-4 rounded-xl font-bold uppercase tracking-[0.1em] text-[11px] transition-all flex items-center justify-center space-x-2 active:scale-[0.98]"
+          >
+            <Scale size={16} />
+            <span>Calcula tus Prestaciones</span>
+          </button>
+        </div>
       </motion.div>
       
       <div className="absolute bottom-8 text-[10px] font-bold text-slate-600 uppercase tracking-[0.3em] flex space-x-6">

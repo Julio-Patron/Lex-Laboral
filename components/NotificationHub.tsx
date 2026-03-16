@@ -28,11 +28,11 @@ export const NotificationHub: React.FC<NotificationHubProps> = ({ notifications,
   };
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center space-y-3 w-full max-w-md px-4 pointer-events-none">
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end space-y-3 w-full max-w-sm px-4 pointer-events-none">
       {notifications.map((n) => (
         <div 
           key={n.id}
-          className={`w-full pointer-events-auto flex items-start p-4 rounded-xl border shadow-lg animate-in slide-in-from-top-4 duration-300 ${getBgColor(n.type)}`}
+          className={`w-full pointer-events-auto flex items-start p-4 rounded-xl border-l-4 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${getBgColor(n.type)}`}
         >
           <div className="flex-shrink-0 mt-0.5">
             {getIcon(n.type)}

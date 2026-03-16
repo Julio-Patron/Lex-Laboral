@@ -398,21 +398,23 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
             </div>
           </div>
           
-          <div className="flex flex-wrap bg-white p-1 rounded-xl border border-slate-200 shadow-sm self-start gap-1">
-            {(['injustificado', 'renuncia', 'rescision_patron'] as DismissalType[]).map((type) => (
-              <button
-                key={type}
-                onClick={() => setDismissalType(type)}
-                className={`flex-1 min-w-[100px] px-3 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold transition-all transform active:scale-95 ${
-                  dismissalType === type 
-                    ? 'bg-legal-950 text-legal-gold shadow-lg ring-2 ring-legal-gold/20 scale-[1.02]' 
-                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {type === 'injustificado' ? 'Injustificado' : type === 'renuncia' ? 'Renuncia' : 'Rescisión'}
-              </button>
-            ))}
-          </div>
+          {user && (
+            <div className="flex flex-wrap bg-white p-1 rounded-xl border border-slate-200 shadow-sm self-start gap-1">
+              {(['injustificado', 'renuncia', 'rescision_patron'] as DismissalType[]).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setDismissalType(type)}
+                  className={`flex-1 min-w-[100px] px-3 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold transition-all transform active:scale-95 ${
+                    dismissalType === type 
+                      ? 'bg-legal-950 text-legal-gold shadow-lg ring-2 ring-legal-gold/20 scale-[1.02]' 
+                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {type === 'injustificado' ? 'Injustificado' : type === 'renuncia' ? 'Renuncia' : 'Rescisión'}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -571,21 +573,23 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                   ) : null}
               </div>
 
-              <div className="pt-2">
-                <button
-                  onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Settings2 size={18} className="text-legal-gold" />
-                    <div className="text-left">
-                      <span className="block text-sm font-bold text-slate-900">Ajustar prestaciones y detalles</span>
-                      <span className="block text-[11px] text-slate-500">Modo avanzado</span>
+              {user && (
+                <div className="pt-2">
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Settings2 size={18} className="text-legal-gold" />
+                      <div className="text-left">
+                        <span className="block text-sm font-bold text-slate-900">Ajustar prestaciones y detalles</span>
+                        <span className="block text-[11px] text-slate-500">Modo avanzado</span>
+                      </div>
                     </div>
-                  </div>
-                  <ChevronDown size={18} className={`text-slate-400 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                </button>
-              </div>
+                    <ChevronDown size={18} className={`text-slate-400 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+              )}
 
               <AnimatePresence>
                 {showAdvanced && (

@@ -339,10 +339,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify })
                   
                   {mode !== 'forgotPassword' && mode !== 'planSelection' && (
                     <button 
+                      type="button"
+                      disabled={loading}
                       onClick={handleGoogleSignIn}
-                      className="w-full py-3.5 border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center space-x-3"
+                      className="w-full py-3.5 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold text-slate-700 hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center relative overflow-hidden active:scale-[0.98] disabled:opacity-70 disabled:hover:translate-y-0"
                     >
-                      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                      <div className="absolute left-1 top-1 bottom-1 w-12 flex items-center justify-center bg-white rounded-xl">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                      </div>
                       <span>{mode === 'login' ? 'Acceder con Google' : 'Continuar con Google'}</span>
                     </button>
                   )}

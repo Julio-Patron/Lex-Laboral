@@ -45,7 +45,7 @@ function App() {
     const id = crypto.randomUUID();
     setNotifications(prev => [...prev, { id, type, message, title }]);
     if (type === 'success' || type === 'info') {
-      setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), 5000);
+      setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), 3000);
     }
   }, []);
 
