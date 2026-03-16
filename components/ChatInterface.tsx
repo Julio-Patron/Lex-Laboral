@@ -10,7 +10,8 @@ export const ChatInterface: React.FC<{
   analysisHistory?: AnalyzedDocumentHistory[];
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
-}> = ({ messages, setMessages, analysisHistory = [], notify, user }) => {
+  onAuthRequired?: () => void;
+}> = ({ messages, setMessages, analysisHistory = [], notify, user, onAuthRequired }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<AnalyzedFile[]>([]);
@@ -42,6 +43,12 @@ export const ChatInterface: React.FC<{
   };
 
   const handleSend = async () => {
+    if (!user) {
+      notify("Debe iniciar sesión para usar el asistente.", "warning", "Acceso Restringido");
+      if (onAuthRequired) onAuthRequired();
+      return;
+    }
+
     if ((!input.trim() && files.length === 0) || isLoading) return;
     if (files.length > 0 && !privacyAccepted) {
         notify("Debe aceptar el Aviso de Privacidad para analizar documentos", "warning", "Consentimiento Requerido");

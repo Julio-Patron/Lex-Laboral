@@ -70,6 +70,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
     }
   };
 
+  const handleNavClick = (viewId: AppView) => {
+    if (isGuest && (viewId === AppView.CHAT || viewId === AppView.DRAFTING)) {
+      if (notify) notify("Debe iniciar sesión para usar las herramientas de IA", "warning", "Acceso Restringido");
+      // Trigger login modal logic if provided or just block
+      return;
+    }
+    onChangeView(viewId);
+  };
+
   return (
     <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.05),transparent_50%)] pointer-events-none" />
@@ -89,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
           {navItems.map((item) => (
             <li key={item.id}>
               <button
-                onClick={() => onChangeView(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 onMouseEnter={() => prefetchModule(item.id)}
                 className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[13px] font-semibold transition-all group ${
                   currentView === item.id

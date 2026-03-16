@@ -135,6 +135,12 @@ function App() {
   };
 
   const handleNewCase = () => {
+    if (isGuestMode) {
+      notify("Debe iniciar sesión para crear una nueva consulta jurídica.", "warning", "Acceso Restringido");
+      setAuthMode('signup');
+      setIsAuthModalOpen(true);
+      return;
+    }
     setIsConfirmModalOpen(true);
   };
 
@@ -167,9 +173,9 @@ function App() {
           {(() => {
             switch (currentView) {
               case AppView.CHAT:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
               case AppView.DOCUMENT_ANALYSIS:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
               case AppView.DRAFTING:
                 return <Drafter
                   state={draftingState}
@@ -178,13 +184,14 @@ function App() {
                   user={user}
                   userData={userData}
                   onUpgrade={(plan) => openPricingModal(plan || 'draft_basic')}
+                  onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
                 />;
               case AppView.CALCULATOR:
                 return <LaborCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
               case AppView.SOCIAL_SECURITY:
                 return <SocialSecurityCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
               default:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} />;
+                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
             }
           })()}
         </Suspense>

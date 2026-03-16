@@ -13,7 +13,8 @@ export const Drafter: React.FC<{
   user: User | null;
   userData?: any;
   onUpgrade?: (plan?: 'draft_basic' | 'draft_custom') => void;
-}> = ({ state, setState, notify, user, userData, onUpgrade }) => {
+  onAuthRequired?: () => void;
+}> = ({ state, setState, notify, user, userData, onUpgrade, onAuthRequired }) => {
   const { prompt, generatedDoc } = state;
   const [isDrafting, setIsDrafting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -60,13 +61,15 @@ export const Drafter: React.FC<{
   ];
 
   const handleDraft = async () => {
+    if (!user) {
+      notify("Debe iniciar sesión para proyectar instrumentos.", "warning", "Acceso Restringido");
+      if (onAuthRequired) onAuthRequired();
+      return;
+    }
+
     if (!prompt.trim()) return;
     setIsDrafting(true);
     try {
-      if (!user) {
-        notify("Debe iniciar sesión para proyectar instrumentos", "error");
-        return;
-      }
       notify("Proyectando instrumento jurídico...", "info");
       const idToken = await user.getIdToken();
       const doc = await draftLegalDocument(prompt, idToken);
