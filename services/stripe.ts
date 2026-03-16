@@ -17,9 +17,9 @@ const PRICE_IDS = {
 
 export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => {
   // Use configured API URL for Firebase Functions or local dev server
-  const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001/studio-6462708856-c0f94/us-central1/api';
   
-  const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+  const response = await fetch(`${API_URL}/create-checkout-session`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

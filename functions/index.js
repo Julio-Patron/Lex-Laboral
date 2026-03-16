@@ -23,7 +23,7 @@ const app = express();
 app.use(cors({ origin: true, optionsSuccessStatus: 200 }));
 
 // Webhook para procesar pagos
-app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
   try {
@@ -88,7 +88,7 @@ const PLAN_PRICES = {
   '3-months': process.env.STRIPE_PRICE_3_MONTHS || 'price_1TApaN36rYdwQu28h1Mfljni'
 };
 
-app.post('/api/create-checkout-session', async (req, res) => {
+app.post('/create-checkout-session', async (req, res) => {
   const { userEmail, userId, plan } = req.body;
   const priceId = PLAN_PRICES[plan];
   
@@ -137,7 +137,61 @@ async function executeWithGeminiFallback(genAI, systemInstruction, useThinking, 
   throw lastError;
 }
 
-app.post('/api/legal/chat', authenticateUser, async (req, res) => {
+const getTodayString = () => new Date().toISOString().split('T')[0];
+
+async function checkUsage(uid, type) {
+  const userRef = db.collection('users').doc(uid);
+  const userDoc = await userRef.get();
+  const userData = userDoc.data() || {};
+
+  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
+
+  if (isPremiumValid) {
+    if (userData.usage?.[type] >= 100) {
+      throw new Error('Límite de uso Premium alcanzado para esta función.');
+    }
+    await userRef.set({ usage: { [type]: admin.firestore.FieldValue.increment(1) } }, { merge: true });
+  } else {
+    const credits = (userData.credits && userData.credits[type]) || 0;
+    if (credits <= 0) {
+      throw new Error('No cuenta con créditos suficientes para esta acción.');
+    }
+    await userRef.set({ credits: { [type]: admin.firestore.FieldValue.increment(-1) } }, { merge: true });
+  }
+}
+
+async function checkChatUsage(uid) {
+  const userRef = db.collection('users').doc(uid);
+  const userDoc = await userRef.get();
+  const userData = userDoc.data() || {};
+
+  const isPremiumValid = userData.isPremium && (!userData.expiresAt || userData.expiresAt.toDate() >= new Date());
+
+  if (!isPremiumValid) {
+     const today = getTodayString();
+     const dailyChats = userData.dailyUsage?.date === today ? (userData.dailyUsage?.chats || 0) : 0;
+     if (dailyChats >= 5) {
+       throw new Error('Límite diario de consultas jurídicas gratuito alcanzado (5).');
+     }
+     await userRef.set({ 
+       dailyUsage: { 
+         date: today, 
+         chats: dailyChats + 1, 
+         calculators: userData.dailyUsage?.date === today ? userData.dailyUsage.calculators : 0 
+       } 
+     }, { merge: true });
+  } else {
+    // Premium usage tracking
+    if (userData.usage?.chats >= 100) {
+        throw new Error('Límite de consultas jurídicas Premium alcanzado.');
+    }
+    await userRef.set({ 
+        usage: { chats: admin.firestore.FieldValue.increment(1) } 
+    }, { merge: true });
+  }
+}
+
+app.post('/legal/chat', authenticateUser, async (req, res) => {
   const { history, message, useThinking, focusMode } = req.body;
   try {
     await checkChatUsage(req.user.uid);
@@ -158,7 +212,7 @@ app.post('/api/legal/chat', authenticateUser, async (req, res) => {
   }
 });
 
-app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
+app.post('/legal/analyze', authenticateUser, async (req, res) => {
   const { files, prompt } = req.body;
   try {
     await checkUsage(req.user.uid, 'audits');
@@ -181,7 +235,7 @@ app.post('/api/legal/analyze', authenticateUser, async (req, res) => {
   }
 });
 
-app.post('/api/legal/draft', authenticateUser, async (req, res) => {
+app.post('/legal/draft', authenticateUser, async (req, res) => {
   const { requirements, customInstructions } = req.body;
   try {
     await checkUsage(req.user.uid, customInstructions ? 'draft_custom' : 'draft_basic');
@@ -204,7 +258,7 @@ app.post('/api/legal/draft', authenticateUser, async (req, res) => {
 });
 
 // Endpoint to verify and deduct usage before client-side Genkit SDK execution
-app.post('/api/legal/verify-usage', authenticateUser, async (req, res) => {
+app.post('/legal/verify-usage', authenticateUser, async (req, res) => {
   const { type } = req.body; // 'chat' or 'audits'
   try {
     if (type === 'chat') {
@@ -221,7 +275,7 @@ app.post('/api/legal/verify-usage', authenticateUser, async (req, res) => {
   }
 });
 
-app.post('/api/legal/calculator', authenticateUser, async (req, res) => {
+app.post('/legal/calculator', authenticateUser, async (req, res) => {
   try {
     const userRef = db.collection('users').doc(req.user.uid);
     const userDoc = await userRef.get();

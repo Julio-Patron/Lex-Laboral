@@ -59,13 +59,10 @@ export const streamLegalChat = async (
   const hasAttachment = latestMessage.attachment && latestMessage.attachment.type === 'file' && latestMessage.attachment.data;
   const usageType = hasAttachment ? 'audits' : 'chat';
 
-  // Usar rutas relativas en producción para aprovechar Vercel rewrites (vercel.json)
-  // En desarrollo local (vite dev), conectar al localhost indicado en .env
-  const apiUrl = import.meta.env.DEV 
-    ? (import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001/studio-6462708856-c0f94/us-central1/api')
-    : '';
+  // Use absolute API URL from environment variables in production (Vercel), or a local default for development.
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001/studio-6462708856-c0f94/us-central1/api';
 
-  const verifyRes = await fetch(`${apiUrl}/api/legal/verify-usage`, {
+  const verifyRes = await fetch(`${apiUrl}/legal/verify-usage`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
