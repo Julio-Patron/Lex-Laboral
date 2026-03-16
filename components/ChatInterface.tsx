@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, AnalyzedDocumentHistory, NotificationType, AnalyzedFile } from '../types';
 import { streamLegalChat } from '../services/gemini';
-import { Zap, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink, Upload, FileText, X, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { Zap, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink, Upload, FileText, X, LayoutDashboard, ShieldCheck, Scale } from 'lucide-react';
 import { User } from 'firebase/auth';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export const ChatInterface: React.FC<{
   messages: ChatMessage[];
@@ -125,9 +127,9 @@ export const ChatInterface: React.FC<{
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="text-3xl font-serif font-bold text-legal-950 tracking-tight">Auditoría y Consulta Jurídica</h2>
+                <h2 className="text-3xl font-serif font-bold text-legal-950 tracking-tight">Consulta y Análisis Jurídico</h2>
               </div>
-              <p className="text-slate-500 text-sm mt-1 font-medium italic">Diagnóstico exhaustivo y orientación normativa en materia laboral.</p>
+              <p className="text-slate-500 text-sm mt-1 font-medium italic">Diagnóstico exhaustivo, análisis documental y orientación normativa en materia laboral.</p>
             </div>
           </div>
           <div className="flex items-center gap-1 p-1 bg-white rounded-2xl border border-slate-200/50 shadow-sm">
@@ -148,7 +150,7 @@ export const ChatInterface: React.FC<{
         </header>
 
         {/* Historial de Dictámenes (Resultados Anteriores) */}
-        {pastMessages.length > 0 && (
+        {pastMessages.length > 0 ? (
           <div className="space-y-8 mb-12">
             {pastMessages.map((msg, idx) => (
               <div key={idx} className="animate-fade-in-up">
@@ -173,8 +175,34 @@ export const ChatInterface: React.FC<{
                             <span className="font-serif italic text-base">Generando Dictamen Técnico...</span>
                           </div>
                         ) : (
-                            <div className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-legal-950 prose-a:text-legal-gold">
-                                {msg.text}
+                            <div className="prose prose-slate max-w-none">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h1: ({node, ...props}) => <h1 className="text-xl font-serif font-bold text-legal-950 mt-6 mb-3 pb-2 border-b border-slate-200" {...props} />,
+                                h2: ({node, ...props}) => <h2 className="text-lg font-serif font-bold text-legal-950 mt-5 mb-2" {...props} />,
+                                h3: ({node, ...props}) => <h3 className="text-base font-bold text-legal-900 mt-4 mb-1.5" {...props} />,
+                                p: ({node, ...props}) => <p className="text-[14px] leading-relaxed text-slate-700 mb-3" {...props} />,
+                                strong: ({node, ...props}) => <strong className="font-bold text-legal-950" {...props} />,
+                                em: ({node, ...props}) => <em className="italic text-slate-600" {...props} />,
+                                ul: ({node, ...props}) => <ul className="list-disc list-outside ml-5 space-y-1.5 mb-4" {...props} />,
+                                ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-5 space-y-1.5 mb-4" {...props} />,
+                                li: ({node, ...props}) => <li className="text-[14px] text-slate-700 leading-relaxed" {...props} />,
+                                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-legal-gold/50 pl-4 py-2 my-4 bg-legal-gold/5 rounded-r-xl italic text-slate-600 text-[13px]" {...props} />,
+                                code: ({node, inline, ...props}: any) => inline
+                                  ? <code className="bg-slate-100 text-legal-900 px-1.5 py-0.5 rounded text-[12px] font-mono" {...props} />
+                                  : <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl text-[12px] overflow-x-auto my-4 font-mono"><code {...props} /></pre>,
+                                table: ({node, ...props}) => <div className="overflow-x-auto my-4"><table className="w-full text-[13px] border-collapse" {...props} /></div>,
+                                thead: ({node, ...props}) => <thead className="bg-slate-100" {...props} />,
+                                th: ({node, ...props}) => <th className="text-left px-4 py-2.5 font-bold text-legal-950 border border-slate-200 text-[12px] uppercase tracking-wide" {...props} />,
+                                td: ({node, ...props}) => <td className="px-4 py-2.5 border border-slate-200 text-slate-700" {...props} />,
+                                tr: ({node, ...props}) => <tr className="even:bg-slate-50" {...props} />,
+                                a: ({node, ...props}) => <a className="text-legal-gold hover:text-legal-gold/80 underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props} />,
+                                hr: ({node, ...props}) => <hr className="border-slate-200 my-6" {...props} />,
+                              }}
+                            >
+                              {msg.text}
+                            </ReactMarkdown>
                             </div>
                         )}
                     </div>
@@ -183,10 +211,27 @@ export const ChatInterface: React.FC<{
             ))}
             <div ref={messagesEndRef} />
           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+            {[
+              { icon: <Briefcase className="text-legal-gold" size={18} />, text: "¿Cómo se calcula mi finiquito?" },
+              { icon: <Scale className="text-legal-gold" size={18} />, text: "¿Cuáles son mis días de vacaciones?" },
+              { icon: <Gavel className="text-legal-gold" size={18} />, text: "Analizar irregularidades en contrato." }
+            ].map((s, i) => (
+              <button
+                key={i}
+                onClick={() => setInput(s.text)}
+                className="bg-white border border-slate-200 p-6 rounded-[2rem] text-left hover:border-legal-gold/40 hover:shadow-lg transition-all group"
+              >
+                <div className="mb-4 p-3 bg-slate-50 rounded-2xl w-fit group-hover:bg-legal-gold/5 transition-colors">{s.icon}</div>
+                <p className="text-[13px] font-bold text-legal-950 leading-relaxed">{s.text}</p>
+              </button>
+            ))}
+          </div>
         )}
 
         {/* Nueva Consulta / Carga de Documentos (Zona Activa) */}
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200/60 shadow-premium">
+        <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-200/60 shadow-premium">
           <h3 className="text-[12px] font-bold text-legal-950 uppercase tracking-widest mb-6 border-b border-slate-100 pb-3">Nueva Solicitud Técnica</h3>
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

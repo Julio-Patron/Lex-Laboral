@@ -17,12 +17,20 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   notify: (m: string, t?: NotificationType) => void;
+  initialMode?: AuthMode;
 }
 
 type AuthMode = 'login' | 'signup' | 'planSelection' | 'forgotPassword';
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify }) => {
-  const [mode, setMode] = useState<AuthMode>('login');
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, initialMode = 'login' }) => {
+  const [mode, setMode] = React.useState<AuthMode>(initialMode);
+
+  // Sync mode if it changes from outside when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+    }
+  }, [isOpen, initialMode]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

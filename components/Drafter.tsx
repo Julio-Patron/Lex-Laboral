@@ -167,8 +167,8 @@ export const Drafter: React.FC<{
         </div>
 
 
-      <div className="flex-1 flex flex-col lg:flex-row p-10 pt-2 gap-8 overflow-hidden">
-        <div className="w-full lg:w-1/3 flex flex-col bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+      <div className="flex-1 flex flex-col lg:flex-row p-8 lg:p-12 pt-2 gap-8 overflow-hidden">
+        <div className="w-full lg:w-1/3 flex flex-col bg-white rounded-[2rem] shadow-sm border border-slate-200 p-8">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Instrucciones de Redacción</label>
           <textarea
             value={prompt}
@@ -186,7 +186,7 @@ export const Drafter: React.FC<{
           </button>
         </div>
 
-        <div className="w-full lg:w-2/3 flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-200 relative overflow-hidden">
+        <div className="w-full lg:w-2/3 flex flex-col bg-white rounded-[2rem] shadow-2xl border border-slate-200 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-6 flex gap-3 z-10">
             {generatedDoc && (
               <>

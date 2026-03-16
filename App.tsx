@@ -175,7 +175,7 @@ function App() {
           <div className="h-full w-full min-h-[600px] flex items-center justify-center animate-in fade-in duration-500">
              <div className="flex flex-col items-center">
                 <div className="w-10 h-10 border-4 border-legal-gold/20 border-t-legal-gold rounded-full animate-spin mb-3"></div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Iniciando Módulo...</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">Iniciando Módulo Específicamente...</span>
              </div>
           </div>
         }>
@@ -196,7 +196,7 @@ function App() {
                   onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
                 />;
               case AppView.CALCULATOR:
-                return <LaborCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
+                return <LaborCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} isSimplified={isGuestMode} />;
               case AppView.SOCIAL_SECURITY:
                 return <SocialSecurityCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
               default:
@@ -250,6 +250,7 @@ function App() {
           isOpen={isAuthModalOpen} 
           onClose={() => setIsAuthModalOpen(false)} 
           notify={notify}
+          initialMode={authMode}
         />
       </>
     );
@@ -260,7 +261,7 @@ function App() {
       <NotificationHub notifications={notifications} onDismiss={dismissNotification} />
       
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5">
+      <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
         <div className="flex items-center space-x-2">
            <img src="/assets/logo.png" alt="Logo" className="w-8 h-8 rounded-lg" />
            <span className="font-serif font-bold text-lg">Lex Laboral</span>
@@ -312,6 +313,7 @@ function App() {
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
         notify={notify}
+        initialMode={authMode}
       />
       <PricingModal 
         isOpen={isPricingModalOpen} 

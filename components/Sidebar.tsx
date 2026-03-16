@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
   };
 
   const navItems = [
-    { id: AppView.CHAT, label: 'Consultas y análisis jurídico', icon: <MessageSquare size={18} /> },
+    { id: AppView.CHAT, label: 'Consulta y Análisis Jurídico', icon: <MessageSquare size={18} /> },
     { id: AppView.DRAFTING, label: 'Ingeniería Jurídica', icon: <PenTool size={18} /> },
     { id: AppView.CALCULATOR, label: 'Cálculo Liquidación', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
@@ -95,27 +95,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
       <nav className="mt-4 px-4 flex-1 overflow-y-auto custom-scrollbar">
         <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Capacidades</p>
         <ul className="space-y-1.5">
-          {navItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => handleNavClick(item.id)}
-                onMouseEnter={() => prefetchModule(item.id)}
-                className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[13px] font-semibold transition-all group ${
-                  currentView === item.id
-                    ? 'bg-white/10 text-legal-gold shadow-inner'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <div className="flex items-center space-x-4">
-                  <span className={currentView === item.id ? 'text-legal-gold' : 'text-slate-500 group-hover:text-slate-300'}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </div>
-                {currentView === item.id && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
-              </button>
-            </li>
-          ))}
+          {navItems.map((item) => {
+            const isRestricted = isGuest && (item.id === AppView.CHAT || item.id === AppView.DRAFTING);
+            return (
+              <li key={item.id}>
+                <button
+                  onClick={() => handleNavClick(item.id)}
+                  onMouseEnter={() => !isRestricted && prefetchModule(item.id)}
+                  className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[13px] font-semibold transition-all group ${
+                    currentView === item.id
+                      ? 'bg-white/10 text-legal-gold shadow-inner'
+                      : isRestricted
+                        ? 'text-slate-600 cursor-not-allowed'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-4">
+                    <span className={currentView === item.id ? 'text-legal-gold' : isRestricted ? 'text-slate-700' : 'text-slate-500 group-hover:text-slate-300'}>
+                      {item.icon}
+                    </span>
+                    <span className={isRestricted ? 'opacity-50' : ''}>{item.label}</span>
+                  </div>
+                  {currentView === item.id && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
+                  {isRestricted && <Shield size={12} className="text-slate-700" />}
+                </button>
+              </li>
+            );
+          })}
         </ul>
 
         {sessions.length > 0 && (

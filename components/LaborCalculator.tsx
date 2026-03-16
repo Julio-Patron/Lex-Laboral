@@ -17,7 +17,8 @@ import {
   User,
   FileDown,
   CheckCircle2,
-  Settings2
+  Settings2,
+  Sparkles
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -39,7 +40,9 @@ export const LaborCalculator: React.FC<{
   user?: any;
   userData?: any;
   onAuthRequired?: () => void;
-}> = ({ notify, user, userData, onAuthRequired }) => {
+  isSimplified?: boolean;
+}> = ({ notify, user, userData, onAuthRequired, isSimplified = false }) => {
+  const [step, setStep] = useState(1);
   const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
@@ -384,43 +387,11 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
     notify("Simulación exportada (TXT)", "success");
   };
 
-  return (
-    <div className="h-full overflow-y-auto p-4 md:p-10 bg-[#f8fafc]">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center">
-               <Calculator className="text-legal-gold" size={28} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Cálculo de Liquidación LFT</h2>
-              <p className="text-slate-500 text-sm font-medium">Determinación técnica de indemnizaciones y finiquitos legales.</p>
-            </div>
-          </div>
-          
-          {user && (
-            <div className="flex flex-wrap bg-white p-1 rounded-xl border border-slate-200 shadow-sm self-start gap-1">
-              {(['injustificado', 'renuncia', 'rescision_patron'] as DismissalType[]).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setDismissalType(type)}
-                  className={`flex-1 min-w-[100px] px-3 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold transition-all transform active:scale-95 ${
-                    dismissalType === type 
-                      ? 'bg-legal-950 text-legal-gold shadow-lg ring-2 ring-legal-gold/20 scale-[1.02]' 
-                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {type === 'injustificado' ? 'Injustificado' : type === 'renuncia' ? 'Renuncia' : 'Rescisión'}
-                </button>
-              ))}
-            </div>
-          )}
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Panel de Entradas */}
-          <div className="lg:col-span-5 space-y-6">
-            <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+  const renderProfessionalView = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Panel de Entradas */}
+      <div className="lg:col-span-5 space-y-6">
+        <section className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
               <div className="flex items-center gap-2 text-slate-900 mb-2">
                 <User size={18} className="text-legal-gold" />
                 <h3 className="text-sm font-bold uppercase tracking-wider">Datos del Trabajador</h3>
@@ -896,7 +867,190 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
               )}
             </AnimatePresence>
           </div>
-        </div>
+    </div>
+  );
+
+  const renderSimplifiedStepper = () => (
+    <div className="max-w-3xl mx-auto border border-slate-200 rounded-[2rem] bg-white shadow-xl overflow-hidden min-h-[600px] flex flex-col">
+      {/* Stepper Header */}
+      <div className="bg-slate-50 border-b border-slate-100 p-8 flex justify-between items-center">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${step >= s ? 'bg-legal-950 text-legal-gold shadow-lg' : 'bg-white border border-slate-200 text-slate-400'}`}>
+              {step > s ? <CheckCircle2 size={18} /> : s}
+            </div>
+            <span className={`text-[10px] font-bold uppercase tracking-widest hidden md:block ${step === s ? 'text-slate-900' : 'text-slate-400'}`}>
+              {s === 1 ? 'Sueldo y Fechas' : s === 2 ? 'Motivo de Baja' : 'Resultado'}
+            </span>
+            {s < 3 && <div className={`w-12 h-0.5 rounded-full hidden md:block ${step > s ? 'bg-legal-950' : 'bg-slate-200'}`} />}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex-1 p-10">
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+              <div className="space-y-2">
+                <h3 className="text-xl font-serif font-bold text-slate-900">Configure su Salario</h3>
+                <p className="text-sm text-slate-500">Ingrese su salario bruto antes de impuestos.</p>
+              </div>
+
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-6">
+                <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                  {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
+                    <button key={p} onClick={() => setSalaryPeriod(p)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white shadow' : 'text-slate-400 hover:bg-slate-50'}`}>
+                      {p === 'daily' ? 'Día' : p === 'weekly' ? 'Semana' : p === 'biweekly' ? 'Quincena' : 'Mes'}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative group">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                  <input type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="w-full pl-10 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-lg font-bold outline-none focus:ring-4 focus:ring-legal-gold/10" placeholder="0.00" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fecha de Ingreso</label>
+                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fecha de Baja</label>
+                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+              <div className="space-y-2">
+                <h3 className="text-xl font-serif font-bold text-slate-900">Motivo del Término</h3>
+                <p className="text-sm text-slate-500">Seleccione la causa que mejor describa su salida.</p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {[
+                  { id: 'injustificado', title: 'Despido Injustificado', desc: 'La empresa terminó la relación sin causa legal.' },
+                  { id: 'renuncia', title: 'Renuncia Voluntaria', desc: 'Usted decidió dejar el empleo voluntariamente.' },
+                  { id: 'rescision_patron', title: 'Rescisión Justificada', desc: 'La empresa terminó la relación por una falta cometida.' }
+                ].map((m) => (
+                  <button key={m.id} onClick={() => setDismissalType(m.id as DismissalType)} className={`p-6 rounded-2xl border-2 text-left transition-all ${dismissalType === m.id ? 'border-legal-gold bg-legal-gold/5 shadow-lg' : 'border-slate-100 hover:border-slate-200'}`}>
+                    <h4 className="font-bold text-slate-900">{m.title}</h4>
+                    <p className="text-xs text-slate-500 mt-1">{m.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 3 && results && (
+            <motion.div key="step3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8 text-center py-6">
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={40} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-3xl font-serif font-bold text-slate-900">Total Proyectado</h3>
+                <p className="text-5xl font-serif font-bold text-legal-gold mt-2">
+                  ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+                <p className="text-sm text-slate-400 font-medium">Pesos Mexicanos (MXN)</p>
+              </div>
+
+              <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 grid grid-cols-2 gap-4">
+                <div className="text-left bg-white p-4 rounded-xl shadow-sm">
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Finiquito</p>
+                   <p className="text-lg font-bold text-slate-800">${results.finiquito.toLocaleString()}</p>
+                </div>
+                <div className="text-left bg-white p-4 rounded-xl shadow-sm">
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Liquidación</p>
+                   <p className="text-lg font-bold text-slate-800">${results.liquidacion.toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+                 <button onClick={onAuthRequired} className="w-full py-4 bg-legal-950 text-legal-gold rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                    <Sparkles size={18} />
+                    <span>Obtener Dictamen PDF Completo</span>
+                 </button>
+                 <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Inicie sesión para descargar el desglose técnico</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="bg-slate-50 p-8 border-t border-slate-100 flex justify-between items-center">
+        {step > 1 && step < 3 && (
+          <button onClick={() => setStep(step - 1)} className="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-colors">
+            Anterior
+          </button>
+        )}
+        <div className="flex-1" />
+        {step < 3 ? (
+          <button 
+            onClick={() => {
+              if (step === 1) {
+                if (dailySalary > 0 && startDate && endDate) setStep(2);
+                else notify("Complete los datos requeridos", "warning");
+              } else if (step === 2) {
+                calculate();
+                setStep(3);
+              }
+            }} 
+            className="px-8 py-3.5 bg-legal-950 text-legal-gold rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
+          >
+            <span>{step === 2 ? 'Ver Resultados' : 'Siguiente'}</span>
+            <ChevronRight size={18} />
+          </button>
+        ) : (
+          <button onClick={() => { setResults(null); setStep(1); }} className="px-8 py-3.5 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-all">
+            Nuevo Cálculo
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="h-full overflow-y-auto p-4 md:p-10 bg-[#f8fafc]">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center text-legal-gold">
+               <Calculator size={28} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">
+                {isSimplified ? 'Asistente de Liquidación' : 'Cálculo de Liquidación LFT'}
+              </h2>
+              <p className="text-slate-500 text-sm font-medium">
+                {isSimplified ? 'Proyección simplificada de finiquitos legales.' : 'Determinación técnica de indemnizaciones y finiquitos legales.'}
+              </p>
+            </div>
+          </div>
+          
+          {!isSimplified && user && (
+            <div className="flex flex-wrap bg-white p-1 rounded-xl border border-slate-200 shadow-sm self-start gap-1">
+              {(['injustificado', 'renuncia', 'rescision_patron'] as DismissalType[]).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setDismissalType(type)}
+                  className={`flex-1 min-w-[100px] px-3 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold transition-all transform active:scale-95 ${
+                    dismissalType === type 
+                      ? 'bg-legal-950 text-legal-gold shadow-lg ring-2 ring-legal-gold/20 scale-[1.02]' 
+                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {type === 'injustificado' ? 'Injustificado' : type === 'renuncia' ? 'Renuncia' : 'Rescisión'}
+                </button>
+              ))}
+            </div>
+          )}
+        </header>
+
+        {isSimplified ? renderSimplifiedStepper() : renderProfessionalView()}
       </div>
     </div>
   );
