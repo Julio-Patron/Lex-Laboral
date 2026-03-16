@@ -7,7 +7,7 @@ import { getAI, GoogleAIBackend } from "firebase/ai";
 const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "studio-6462708856-c0f94";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBXM2oj2V77iAXFVMzgKpZ8J28ET8Sq9Go",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "studio-6462708856-c0f94.firebaseapp.com",
   projectId: projectId,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "studio-6462708856-c0f94.firebasestorage.app",
