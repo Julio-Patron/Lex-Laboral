@@ -14,16 +14,25 @@ const generateTitle = (messages: ChatMessage[]): string => {
 // Utility to clean up Base64 data from attachments before saving
 const cleanMessagesForStorage = (messages: ChatMessage[]): ChatMessage[] => {
   return messages.map(msg => {
-    if (msg.attachment && msg.attachment.type === 'file') {
-      return {
-        ...msg,
-        attachment: {
-          ...msg.attachment,
-          data: '' // Remove base64 to save Firestore space
-        }
+    const cleanMsg = { ...msg };
+    
+    // Remove base64 to save Firestore space
+    if (cleanMsg.attachment && cleanMsg.attachment.type === 'file') {
+      cleanMsg.attachment = {
+        ...cleanMsg.attachment,
+        data: '' 
       };
     }
-    return msg;
+    
+    // Firestore throws error on undefined fields, so we remove them
+    Object.keys(cleanMsg).forEach(key => {
+      const k = key as keyof ChatMessage;
+      if (cleanMsg[k] === undefined) {
+        delete cleanMsg[k];
+      }
+    });
+    
+    return cleanMsg;
   });
 };
 
