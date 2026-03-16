@@ -13,6 +13,14 @@ export interface ChatMessage {
   attachment?: Attachment;
 }
 
+export interface ChatSession {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: ChatMessage[];
+}
+
 export enum AppView {
   CHAT = 'CHAT',
   DOCUMENT_ANALYSIS = 'DOCUMENT_ANALYSIS',

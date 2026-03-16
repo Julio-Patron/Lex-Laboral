@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AppView } from '../types';
+import { AppView, ChatSession } from '../types';
 import { 
   Scale, 
   MessageSquare, 
@@ -13,7 +13,8 @@ import {
   ShieldCheck, 
   LogOut, 
   User as UserIcon,
-  Crown
+  Crown,
+  Clock
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
@@ -29,9 +30,12 @@ interface SidebarProps {
   isGuest: boolean;
   notify?: (m: string, t?: any, tit?: string) => void;
   onOpenPricing?: (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => void;
+  sessions?: ChatSession[];
+  currentSessionId?: string;
+  onSelectSession?: (id: string) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, userData, isPremium, isGuest, notify, onOpenPricing }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, userData, isPremium, isGuest, notify, onOpenPricing, sessions = [], currentSessionId, onSelectSession }) => {
   const handleUpgrade = async () => {
     if (onOpenPricing) {
       onOpenPricing('3-months');
@@ -83,15 +87,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
         </div>
       </div>
       
-      <nav className="mt-8 px-4 flex-1 overflow-y-auto custom-scrollbar">
-        <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Capacidades</p>
-        <ul className="space-y-2">
+      <nav className="mt-4 px-4 flex-1 overflow-y-auto custom-scrollbar">
+        <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Capacidades</p>
+        <ul className="space-y-1.5">
           {navItems.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => onChangeView(item.id)}
                 onMouseEnter={() => prefetchModule(item.id)}
-                className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[13px] font-semibold transition-all group ${
+                className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[13px] font-semibold transition-all group ${
                   currentView === item.id
                     ? 'bg-white/10 text-legal-gold shadow-inner'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -109,7 +113,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
           ))}
         </ul>
 
-        <div className="mt-10 mb-6 px-5 space-y-4">
+        {sessions.length > 0 && (
+          <div className="mt-8 mb-4">
+            <p className="px-5 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Clock size={12} /> Expedientes Recientes
+            </p>
+            <ul className="space-y-1">
+              {sessions.slice(0, 5).map(session => (
+                <li key={session.id}>
+                  <button
+                    onClick={() => {
+                      if (onSelectSession) onSelectSession(session.id);
+                      onChangeView(AppView.CHAT);
+                    }}
+                    className={`w-full text-left px-5 py-2.5 rounded-xl text-[12px] transition-all truncate ${
+                      currentSessionId === session.id && currentView === AppView.CHAT
+                        ? 'bg-legal-gold/10 text-legal-gold font-bold border border-legal-gold/20'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5 font-medium'
+                    }`}
+                  >
+                    {session.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-8 mb-6 px-5 space-y-4">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Información Legal</p>
           <button className="block text-[11px] font-bold text-slate-400 hover:text-legal-gold transition-colors text-left uppercase tracking-tighter">
             Términos y Condiciones

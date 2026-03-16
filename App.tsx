@@ -5,6 +5,7 @@ import { NotificationHub } from './components/NotificationHub';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
 import { PricingModal } from './components/PricingModal';
+import { saveSession, getUserSessions } from './services/history';
 
 // Code Splitting for Performance - Lazy loading large components
 const ChatInterface = lazy(() => import('./components/ChatInterface').then(module => ({ default: module.ChatInterface })));
@@ -14,7 +15,7 @@ const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityC
 import { auth, db } from './firebase.config';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState } from './types';
+import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState, ChatSession } from './types';
 import { Shield, Menu, X } from 'lucide-react';
 
 function App() {
@@ -31,6 +32,15 @@ function App() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft_basic' | 'draft_custom' | '3-months'>('3-months');
   
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string>(crypto.randomUUID());
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([{ 
+    role: 'model', 
+    text: 'Sistema Lex Laboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?' 
+  }]);
+  const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
+  const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
+
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
     setNotifications(prev => [...prev, { id, type, message, title }]);
@@ -70,10 +80,15 @@ function App() {
           await setDoc(userDocRef, initialData);
           setUserData(initialData);
         }
+        
+        // Load sessions
+        getUserSessions(firebaseUser.uid).then(setSessions);
+        
         setIsGuestMode(false);
         notify(`Bienvenido, ${firebaseUser.email?.split('@')[0]}`, 'success', 'Sesión Iniciada');
       } else {
         setUserData(null);
+        setSessions([]);
       }
       setLoading(false);
     });
@@ -81,12 +96,27 @@ function App() {
     return () => unsubscribe();
   }, [notify]);
 
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([{ 
-    role: 'model', 
-    text: 'Sistema Lex Laboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?' 
-  }]);
-  const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
-  const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
+  // Auto-save session when chat history changes
+  useEffect(() => {
+    if (user && chatHistory.length > 1) {
+      // Small delay to prevent too many writes if typing fast (though handlesend is sequential)
+      const timeout = setTimeout(() => {
+        saveSession(user.uid, currentSessionId, chatHistory).then(() => {
+          getUserSessions(user.uid).then(setSessions);
+        }).catch(err => console.error("Auto-save failed", err));
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [chatHistory, currentSessionId, user]);
+
+  const loadSession = (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId);
+    if (session) {
+      setCurrentSessionId(sessionId);
+      setChatHistory(session.messages);
+      setCurrentView(AppView.CHAT);
+    }
+  };
 
   const handleAddAnalysis = (item: AnalyzedDocumentHistory) => {
     setAnalysisHistory(prev => [item, ...prev]);
@@ -94,6 +124,7 @@ function App() {
   };
 
   const executeNewCase = () => {
+    setCurrentSessionId(crypto.randomUUID());
     setChatHistory([{ role: 'model', text: 'Nueva sesión estratégica iniciada. Quedo a su disposición para cualquier consulta técnica.' }]);
     setAnalysisHistory([]);
     setDraftingState({ prompt: '', generatedDoc: '' });
@@ -249,6 +280,9 @@ function App() {
           isGuest={isGuestMode}
           notify={notify}
           onOpenPricing={openPricingModal}
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          onSelectSession={loadSession}
         />
       </div>
 
