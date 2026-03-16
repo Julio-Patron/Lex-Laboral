@@ -246,11 +246,10 @@ function App() {
     return (
       <>
         <LandingPage 
-          onGetStarted={() => { setAuthMode('signup'); setIsAuthModalOpen(true); }} 
           onLogin={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
-          onTryCalculator={(type) => {
+          onTryCalculator={() => {
             setIsGuestMode(true);
-            setCurrentView(type === 'labor' ? AppView.CALCULATOR : AppView.SOCIAL_SECURITY);
+            setCurrentView(AppView.CALCULATOR);
           }}
         />
         <AuthModal 
