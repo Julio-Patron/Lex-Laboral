@@ -210,7 +210,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Soporte Técnico</p>
           <div className="space-y-4">
             <a 
-              href="mailto:soporte@lexilaboral.com" 
+              href="mailto:admin@lexlaboral.com.mx" 
               className="flex items-center space-x-3 text-slate-400 hover:text-white transition-all group bg-white/0 hover:bg-legal-gold/10 p-2.5 rounded-xl border border-transparent hover:border-legal-gold/20"
             >
               <div className="w-9 h-9 rounded-lg bg-legal-gold/10 flex items-center justify-center group-hover:bg-legal-gold/20 transition-all shadow-sm">
