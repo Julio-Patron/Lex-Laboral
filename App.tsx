@@ -1,6 +1,7 @@
 
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { LegalView } from './components/LegalView';
 import { NotificationHub } from './components/NotificationHub';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
@@ -210,6 +211,10 @@ function App() {
                 return <LaborCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} isSimplified={isGuestMode} />;
               case AppView.SOCIAL_SECURITY:
                 return <SocialSecurityCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
+              case AppView.TERMS:
+                return <LegalView type={AppView.TERMS} onBack={() => setCurrentView(AppView.CHAT)} />;
+              case AppView.PRIVACY:
+                return <LegalView type={AppView.PRIVACY} onBack={() => setCurrentView(AppView.CHAT)} />;
               default:
                 return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
             }
@@ -254,6 +259,14 @@ function App() {
           onTryCalculator={() => {
             setIsGuestMode(true);
             setCurrentView(AppView.CALCULATOR);
+          }}
+          onViewTerms={() => {
+            setIsGuestMode(true);
+            setCurrentView(AppView.TERMS);
+          }}
+          onViewPrivacy={() => {
+            setIsGuestMode(true);
+            setCurrentView(AppView.PRIVACY);
           }}
         />
         <AuthModal 

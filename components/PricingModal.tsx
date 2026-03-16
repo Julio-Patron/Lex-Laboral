@@ -98,7 +98,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       features: [
         '50 Auditorías Integrales',
         '50 Generaciones de Documentos',
-        '100 Consultas en Chat Legal',
+        '100 Consultas y Análisis Jurídico',
         'Calculadoras Ilimitadas'
       ],
       color: 'gold'

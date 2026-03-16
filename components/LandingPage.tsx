@@ -5,9 +5,11 @@ import { Scale, ArrowRight, Shield, FileSearch, MessageSquare } from 'lucide-rea
 interface LandingPageProps {
   onLogin: () => void;
   onTryCalculator: () => void;
+  onViewTerms: () => void;
+  onViewPrivacy: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onTryCalculator }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onTryCalculator, onViewTerms, onViewPrivacy }) => {
   const features = [
     {
       icon: <MessageSquare className="text-legal-gold" size={18} />,
@@ -85,10 +87,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onTryCalculat
           </button>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 text-[10px] font-medium text-slate-600 uppercase tracking-[0.2em] flex items-center justify-center gap-6">
-          <span className="flex items-center gap-2"><Shield size={12} className="text-emerald-500/60" /> LFT 2026</span>
-          <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-          <span>Soporte México</span>
+        <div className="mt-10 pt-6 border-t border-white/5 text-[10px] font-medium text-slate-600 uppercase tracking-[0.2em] flex flex-col items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-6">
+            <span className="flex items-center gap-2"><Shield size={12} className="text-emerald-500/60" /> LFT 2026</span>
+            <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+            <span>Soporte México</span>
+          </div>
+          <div className="flex items-center justify-center gap-4 opacity-50 hover:opacity-100 transition-opacity">
+            <button onClick={onViewTerms} className="hover:text-legal-gold transition-colors">Términos y Condiciones</button>
+            <span className="text-slate-800">•</span>
+            <button onClick={onViewPrivacy} className="hover:text-legal-gold transition-colors">Aviso de Privacidad</button>
+          </div>
         </div>
       </motion.div>
     </div>

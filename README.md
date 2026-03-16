@@ -6,7 +6,7 @@ Lex Laboral es una plataforma avanzada impulsada por inteligencia artificial (Ge
 
 ## 🚀 Funcionalidades Principales
 
-*   **💬 Chat Jurídico Inteligente:** Interfaz conversacional especializada en derecho laboral para resolver dudas y obtener orientación legal inmediata.
+*   **💬 Consulta y Análisis Jurídico:** Interfaz conversacional especializada en derecho laboral para resolver dudas y obtener orientación legal inmediata.
 *   **📄 Analizador de Documentos:** Herramienta de carga y procesamiento de archivos (PDF/Docs) para extraer cláusulas clave, detectar irregularidades y resumir contratos.
 *   **🖋️ Redactor Legal Automatizado (Drafter):** Generación de borradores de demandas, contratos, cartas de despido y otros documentos legales con estructura profesional.
 *   **🧮 Calculadora Laboral 2026:** Motor de cálculo actualizado (SMG $312.41) para finiquitos, indemnizaciones por despido, horas extra y salarios.

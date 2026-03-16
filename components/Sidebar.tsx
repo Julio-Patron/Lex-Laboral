@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
   };
 
   const navItems = [
-    { id: AppView.CHAT, label: 'Chat Jurídico IA', icon: <MessageSquare size={18} /> },
+    { id: AppView.CHAT, label: 'Consulta y Análisis Jurídico', icon: <MessageSquare size={18} /> },
     { id: AppView.DRAFTING, label: 'Redacción Documental', icon: <PenTool size={18} /> },
     { id: AppView.CALCULATOR, label: 'Calculadora Laboral', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
@@ -219,12 +219,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
         <div className="flex items-center justify-between px-1 mt-3 opacity-60">
             <button className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors">Soporte</button>
             <span className="text-slate-700 text-[9px]">•</span>
-            <button className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors">Privacidad</button>
+            <button 
+              onClick={() => onChangeView(AppView.PRIVACY)}
+              className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Privacidad
+            </button>
             <span className="text-slate-700 text-[9px]">•</span>
-            <div className="flex items-center gap-1 text-[9px] text-emerald-500/80">
-              <Shield size={8} />
-              <span>Seguro</span>
-            </div>
+            <button 
+              onClick={() => onChangeView(AppView.TERMS)}
+              className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Términos
+            </button>
         </div>
       </div>
     </div>
