@@ -21,14 +21,14 @@ export default defineConfig(({ mode }) => {
       build: {
         rollupOptions: {
           output: {
-            manualChunks: {
-              'vendor-react': ['react', 'react-dom'],
-              'vendor-supabase': ['@supabase/supabase-js'],
-              'vendor-ai': ['@google/generative-ai'],
-              'vendor-charts': ['recharts'],
-              'vendor-pdf': ['jspdf', 'jspdf-autotable'],
-              'vendor-ocr': ['tesseract.js'],
-              'vendor-ui': ['framer-motion', 'lucide-react', 'react-markdown'],
+            manualChunks(id) {
+              if (id.includes('node_modules')) {
+                if (id.includes('recharts')) return 'vendor-charts';
+                if (id.includes('jspdf')) return 'vendor-pdf';
+                if (id.includes('tesseract')) return 'vendor-ocr';
+                if (id.includes('@supabase')) return 'vendor-supabase';
+                if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('react-markdown')) return 'vendor-ui';
+              }
             }
           }
         }
