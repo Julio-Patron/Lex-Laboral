@@ -125,7 +125,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
 
         <section>
           <h2 className="text-xl font-bold text-slate-800 mb-3">Responsable</h2>
-          <p><strong>Lex Laboral</strong>, con correo de contacto para temas de privacidad: soporte@lexlaboral.com.mex.</p>
+          <p><strong>Lex Laboral</strong>, con correo de contacto para temas de privacidad: soporte@lexlaboral.com.mx.</p>
         </section>
 
         <section>

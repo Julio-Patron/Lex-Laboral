@@ -2,7 +2,7 @@
 
 Lex Laboral es una plataforma avanzada impulsada por inteligencia artificial (Gemini) diseñada para asistir a profesionales del derecho y trabajadores en la gestión de asuntos laborales en México. Ofrece herramientas de análisis, cálculo y redacción automatizada para optimizar procesos legales complejos con parámetros vigentes a **Marzo de 2026**.
 
-**🌐 Accede a la aplicación:** [https://studio-6462708856-c0f94.web.app/](https://studio-6462708856-c0f94.web.app/)
+**🌐 Accede a la aplicación:** [https://lexlaboral.com.mx](https://lexlaboral.com.mx)
 
 ## 🚀 Funcionalidades Principales
 
@@ -15,9 +15,10 @@ Lex Laboral es una plataforma avanzada impulsada por inteligencia artificial (Ge
 
 ## 🛠️ Tecnologías
 
-*   **Frontend:** React con TypeScript y Vite.
+*   **Frontend:** React con TypeScript y Vite, desplegado en **Vercel**.
+*   **Backend/Auth/DB:** **Supabase** (PostgreSQL + Auth).
 *   **IA:** Google Gemini API para el procesamiento de lenguaje natural.
-*   **Despliegue:** Optimizado para Firebase Hosting.
+*   **Pagos:** Stripe.
 
 ## 📜 Licencia
 
