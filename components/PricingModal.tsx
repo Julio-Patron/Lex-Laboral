@@ -48,17 +48,17 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 
   const plans = [
     {
-      id: 'audit',
-      name: 'Análisis y Auditoría',
-      description: 'Análisis profundo de un expediente laboral completo.',
+      id: 'analisis',
+      name: 'Análisis + Consultas',
+      description: '1 análisis de documento + 2 consultas en chat.',
       price: '$49',
-      unit: 'por auditoría',
+      unit: 'único',
       icon: <FileText className="text-blue-500" size={24} />, 
       features: [
-        'Análisis de 3 pilares (LFT, Colectivo, IMSS)',
-        'Detección de contingencias críticas',
-        'Puntaje de riesgo estratégico',
-        'Dictamen exportable'
+        'Análisis de documento PDF o imagen',
+        '2 consultas sobre el análisis',
+        'Dictamen exportable',
+        'Válido por 30 días'
       ],
       color: 'blue'
     },
@@ -73,23 +73,23 @@ export const PricingModal: React.FC<PricingModalProps> = ({
         'Técnica legislativa mexicana',
         'Estructura de cláusulas formal',
         'Formatos LFT validados',
-        'Exportación inmediata'
+        'Exportación PDF'
       ],
       color: 'purple'
     },
     {
-      id: 'monthly',
-      name: 'Suscripción Mensual',
-      description: 'Acceso ilimitado a la calculadora y hasta 15 análisis y 15 generaciones de documentos al mes.',
+      id: 'mensualidad',
+      name: 'Suscripción Premium',
+      description: 'Acceso completo a todos los módulos con límites mensuales.',
       price: '$299',
       unit: 'al mes',
       icon: <Crown className="text-legal-gold" size={24} />, 
       popular: true,
       features: [
-        'Calculadora ilimitada',
-        '15 análisis de documentos al mes',
-        '15 generaciones de documentos al mes',
-        'Soporte prioritario'
+        '15 análisis de documentos',
+        '30 consultas en chat',
+        '15 generaciones de documentos',
+        'Calculadora ilimitada'
       ],
       color: 'gold'
     }

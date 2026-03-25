@@ -264,7 +264,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
                          <h3 className="font-bold text-slate-900 text-base">Premium Trimestral</h3>
                          <span className="text-legal-gold font-black">$1,499 MXN</span>
                       </div>
-                      <p className="text-xs text-slate-500">Acceso total. Incluye 50 auditorías, 50 redacciones y 100 consultas y análisis jurídico.</p>
+                      <p className="text-xs text-slate-500">Acceso total. Incluye 15 análisis, 30 consultas y 15 documentos al mes.</p>
                     </div>
 
                     <div className="text-center pt-2">
