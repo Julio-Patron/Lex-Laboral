@@ -32,32 +32,31 @@ export default async function handler(req: any, res: any) {
     const plan = session.metadata?.plan;
 
     try {
-      if (plan === 'audit') {
+      if (plan === 'analisis') {
         const { data } = await supabaseAdmin.from('user_credits').select('audits_balance').eq('user_id', userId).single();
         await supabaseAdmin.from('user_credits').update({ audits_balance: (data?.audits_balance || 0) + 1 }).eq('user_id', userId);
       } else if (plan === 'draft_basic') {
         const { data } = await supabaseAdmin.from('user_credits').select('draft_basic_balance').eq('user_id', userId).single();
         await supabaseAdmin.from('user_credits').update({ draft_basic_balance: (data?.draft_basic_balance || 0) + 1 }).eq('user_id', userId);
-      } else if (plan === 'draft_custom') {
-        const { data } = await supabaseAdmin.from('user_credits').select('draft_custom_balance').eq('user_id', userId).single();
-        await supabaseAdmin.from('user_credits').update({ draft_custom_balance: (data?.draft_custom_balance || 0) + 1 }).eq('user_id', userId);
-      } else if (plan === '3-months') {
+      } else if (plan === 'mensualidad') {
         const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + 3);
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
 
         await supabaseAdmin.from('users').update({ 
           is_premium: true, 
-          license_type: '3-months',
+          license_type: 'mensualidad',
           access_until: expiresAt.toISOString(),
           updated_at: new Date().toISOString()
         }).eq('id', userId);
-        
-        // Reset usage on new subscription
+        // Reset usage mensual
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         await supabaseAdmin.from('user_usage').upsert({
           user_id: userId,
-          date: new Date().toISOString().split('T')[0],
-          chats_count: 0,
-          audits_count: 0,
+          month: currentMonth,
+          draft_basic_month_count: 0,
+          draft_custom_month_count: 0
+        }, { onConflict: 'user_id,month' });
           calculators_count: 0
         }, { onConflict: 'user_id,date' });
       }

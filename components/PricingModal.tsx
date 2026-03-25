@@ -53,7 +53,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       description: 'Análisis profundo de un expediente laboral completo.',
       price: '$49',
       unit: 'por auditoría',
-      icon: <FileText className="text-blue-500" size={24} />,
+      icon: <FileText className="text-blue-500" size={24} />, 
       features: [
         'Análisis de 3 pilares (LFT, Colectivo, IMSS)',
         'Detección de contingencias críticas',
@@ -64,11 +64,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({
     },
     {
       id: 'draft_basic',
-      name: 'Documento Estándar',
-      description: 'Generación de instrumento jurídico sin indicaciones personalizadas.',
+      name: 'Documento Legal',
+      description: 'Generación de instrumento jurídico profesional.',
       price: '$79',
       unit: 'por documento',
-      icon: <PenTool className="text-purple-500" size={24} />,
+      icon: <PenTool className="text-purple-500" size={24} />, 
       features: [
         'Técnica legislativa mexicana',
         'Estructura de cláusulas formal',
@@ -78,33 +78,18 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       color: 'purple'
     },
     {
-      id: 'draft_custom',
-      name: 'Documento a Medida',
-      description: 'Generación de instrumento jurídico con instrucciones específicas avanzadas.',
+      id: 'monthly',
+      name: 'Suscripción Mensual',
+      description: 'Acceso ilimitado a la calculadora y hasta 15 análisis y 15 generaciones de documentos al mes.',
       price: '$299',
-      unit: 'por documento',
-      icon: <Zap className="text-orange-500" size={24} />,
-      features: [
-        'Instrucciones personalizadas',
-        'Ingeniería de prompts avanzados',
-        'Cláusulas a la medida',
-        'Alta precisión jurídica'
-      ],
-      color: 'orange'
-    },
-    {
-      id: '3-months',
-      name: 'Premium Trimestral',
-      description: 'Acceso corporativo para profesionales y despachos.',
-      price: '$1,499',
-      unit: 'pago único',
-      icon: <Crown className="text-legal-gold" size={24} />,
+      unit: 'al mes',
+      icon: <Crown className="text-legal-gold" size={24} />, 
       popular: true,
       features: [
-        '50 Auditorías Integrales',
-        '50 Generaciones de Documentos',
-        '100 Consultas y Análisis Jurídico',
-        'Calculadoras Ilimitadas'
+        'Calculadora ilimitada',
+        '15 análisis de documentos al mes',
+        '15 generaciones de documentos al mes',
+        'Soporte prioritario'
       ],
       color: 'gold'
     }
