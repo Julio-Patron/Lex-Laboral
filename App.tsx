@@ -56,6 +56,19 @@ function App() {
   const dismissNotification = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
 
   useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error('Session init error:', e);
+        setLoading(false);
+      }
+    };
+    initAuth();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         const supabaseUser = session?.user || null;
