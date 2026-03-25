@@ -20,19 +20,12 @@ import {
   Settings2,
   Sparkles
 } from 'lucide-react';
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  Tooltip as RechartsTooltip, 
-  Legend 
-} from 'recharts';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { supabase } from '../lib/supabase';
+import { BreakdownChart } from './BreakdownChart';
 
 type DismissalType = 'injustificado' | 'renuncia' | 'rescision_patron' | 'rescision_trabajador';
 
@@ -756,27 +749,7 @@ Este documento es una simulación técnica. No constituye asesoría legal vincul
                       <div className="p-8 border-b md:border-b-0 md:border-r border-slate-100">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Distribución de Prestaciones</h4>
                         <div className="h-[240px] w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={chartData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                              >
-                                {chartData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <RechartsTooltip 
-                                formatter={(value: number) => `$${value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                              />
-                            </PieChart>
-                          </ResponsiveContainer>
+                          <BreakdownChart data={chartData} />
                         </div>
                         <div className="grid grid-cols-2 gap-2 mt-4">
                           {chartData.map((d, i) => (

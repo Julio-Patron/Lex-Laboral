@@ -31,8 +31,14 @@ export const streamLegalChat = async (
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to generate response');
+    let errorMessage = 'Failed to generate response';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      errorMessage = `Server error: ${response.status}`;
+    }
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();
@@ -78,8 +84,14 @@ export const analyzeLegalDocument = async (
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to analyze document');
+    let errorMessage = 'Failed to analyze document';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      errorMessage = `Server error: ${response.status}`;
+    }
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();
@@ -100,8 +112,14 @@ export const draftLegalDocument = async (
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to draft document');
+    let errorMessage = 'Failed to draft document';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      errorMessage = `Server error: ${response.status}`;
+    }
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();

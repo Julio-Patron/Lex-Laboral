@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabase';
 import { ChatSession, ChatMessage } from '../types';
 
+const SESSION_CACHE_TTL = 60000;
+const sessionCache = new Map<string, { data: ChatSession[]; timestamp: number }>();
+
 // Utility to generate a concise title from the first user message
 const generateTitle = (messages: ChatMessage[]): string => {
   const firstUserMsg = messages.find(m => m.role === 'user');
@@ -51,23 +54,33 @@ export const saveSession = async (userId: string, sessionId: string, messages: C
   }
 };
 
-export const getUserSessions = async (userId: string): Promise<ChatSession[]> => {
+export const getUserSessions = async (userId: string, limit = 20): Promise<ChatSession[]> => {
+  const cached = sessionCache.get(userId);
+  if (cached && Date.now() - cached.timestamp < SESSION_CACHE_TTL) {
+    return cached.data.slice(0, limit);
+  }
+
   try {
     const { data, error } = await supabase
       .from('chat_sessions')
       .select('*')
       .eq('user_id', userId)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(100);
 
     if (error) throw error;
     
-    return (data || []).map(row => ({
+    const sessions = (data || []).map(row => ({
       id: row.id,
       title: row.title,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       messages: row.messages
     }));
+
+    sessionCache.set(userId, { data: sessions, timestamp: Date.now() });
+    
+    return sessions.slice(0, limit);
   } catch (error) {
     console.error("Error getting sessions:", error);
     return [];
@@ -76,6 +89,7 @@ export const getUserSessions = async (userId: string): Promise<ChatSession[]> =>
 
 export const deleteSession = async (userId: string, sessionId: string) => {
   try {
+    sessionCache.delete(userId);
     const { error } = await supabase
       .from('chat_sessions')
       .delete()
@@ -86,5 +100,13 @@ export const deleteSession = async (userId: string, sessionId: string) => {
   } catch (error) {
     console.error("Error deleting session:", error);
     throw error;
+  }
+};
+
+export const clearSessionCache = (userId?: string) => {
+  if (userId) {
+    sessionCache.delete(userId);
+  } else {
+    sessionCache.clear();
   }
 };

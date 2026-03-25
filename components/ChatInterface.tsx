@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage, AnalyzedDocumentHistory, NotificationType, AnalyzedFile } from '../types';
 import { streamLegalChat } from '../services/gemini';
 import { Zap, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink, Upload, FileText, X, LayoutDashboard, ShieldCheck, Scale } from 'lucide-react';
@@ -7,14 +7,16 @@ import { supabase } from '../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export const ChatInterface: React.FC<{
+interface ChatInterfaceProps {
   messages: ChatMessage[];
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   analysisHistory?: AnalyzedDocumentHistory[];
   notify: (m: string, t?: NotificationType, tit?: string) => void;
   user: User | null;
   onAuthRequired?: () => void;
-}> = ({ messages, setMessages, analysisHistory = [], notify, user, onAuthRequired }) => {
+}
+
+export const ChatInterface = React.memo<ChatInterfaceProps>(({ messages, setMessages, analysisHistory = [], notify, user, onAuthRequired }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<AnalyzedFile[]>([]);
@@ -30,7 +32,7 @@ export const ChatInterface: React.FC<{
     scrollToBottom();
   }, [messages]);
 
-  const processFiles = (newFiles: File[]) => {
+  const processFiles = useCallback((newFiles: File[]) => {
     newFiles.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -43,9 +45,9 @@ export const ChatInterface: React.FC<{
       };
       reader.readAsDataURL(file);
     });
-  };
+  }, []);
 
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!user) {
       notify("Debe iniciar sesión para usar el asistente.", "warning", "Acceso Restringido");
       if (onAuthRequired) onAuthRequired();
@@ -114,7 +116,7 @@ export const ChatInterface: React.FC<{
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [messages, input, files, focusMode, analysisHistory, notify, user, onAuthRequired]);
 
   // Separar los mensajes en los que ya ocurrieron y el "nuevo" que se va a enviar
   const pastMessages = messages.filter(m => m.text !== 'Sistema Lex Laboral activo. Estoy a su disposición para brindarle asesoría técnica estratégica en materia de Derecho Laboral Mexicano, Seguridad Social y Relaciones Colectivas. ¿En qué puedo asistirle en esta sesión?');
@@ -310,4 +312,4 @@ export const ChatInterface: React.FC<{
       </div>
     </div>
   );
-};
+});

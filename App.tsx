@@ -109,7 +109,7 @@ function App() {
         saveSession(user.id, currentSessionId, chatHistory).then(() => {
           getUserSessions(user.id).then(setSessions);
         }).catch(err => console.error("Auto-save failed", err));
-      }, 1000);
+      }, 2000);
       return () => clearTimeout(timeout);
     }
   }, [chatHistory, currentSessionId, user]);
@@ -218,10 +218,8 @@ function App() {
       notify("¡Pago procesado con éxito! Tu cuenta se está actualizando.", "success", "Suscripción Activa");
       window.location.hash = '';
       if (user) {
-         const userRef = doc(db, 'users', user.uid);
-         getDoc(userRef).then(docSnap => {
-           if (docSnap.exists()) setUserData(docSnap.data() as any);
-         });
+        supabase.from('users').select('*, user_credits(*)').eq('id', user.id).single()
+          .then(({ data }) => { if (data) setUserData(data); });
       }
     } else if (window.location.hash === '#payment-cancelled') {
       notify("El proceso de pago fue cancelado.", "info", "Pago Cancelado");
@@ -275,7 +273,7 @@ function App() {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
         <div className="flex items-center space-x-2">
-           <img src="/assets/logo.png" alt="Logo" className="w-8 h-8 rounded-lg" />
+           <img src="/assets/logo.webp" alt="Logo" className="w-8 h-8 rounded-lg" loading="lazy" />
            <span className="font-serif font-bold text-lg">Lex Laboral</span>
         </div>
         <button 

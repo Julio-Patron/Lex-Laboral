@@ -1,10 +1,6 @@
-import Stripe from 'stripe';
 import { buffer } from 'micro';
 import { supabaseAdmin } from '../../lib/supabase-admin';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27-acacia' as any
-});
+import { getStripe } from '../../lib/stripe';
 
 export const config = {
   api: {
@@ -13,17 +9,18 @@ export const config = {
 };
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
+  const stripe = getStripe();
 
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(buf.toString(), sig, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err: any) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
   if (event.type === 'checkout.session.completed') {
@@ -31,13 +28,46 @@ export default async function handler(req: any, res: any) {
     const userId = session.client_reference_id;
     const plan = session.metadata?.plan;
 
+    if (!userId || !plan) {
+      console.error('Webhook error: Missing userId or plan', { userId, plan });
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     try {
       if (plan === 'analisis') {
-        const { data } = await supabaseAdmin.from('user_credits').select('audits_balance').eq('user_id', userId).single();
-        await supabaseAdmin.from('user_credits').update({ audits_balance: (data?.audits_balance || 0) + 1 }).eq('user_id', userId);
+        const { data: existingData } = await supabaseAdmin
+          .from('user_credits')
+          .select('audits_balance')
+          .eq('user_id', userId)
+          .single();
+        
+        if (existingData) {
+          await supabaseAdmin
+            .from('user_credits')
+            .update({ audits_balance: (existingData.audits_balance || 0) + 1 })
+            .eq('user_id', userId);
+        } else {
+          await supabaseAdmin
+            .from('user_credits')
+            .insert({ user_id: userId, audits_balance: 1 });
+        }
       } else if (plan === 'draft_basic') {
-        const { data } = await supabaseAdmin.from('user_credits').select('draft_basic_balance').eq('user_id', userId).single();
-        await supabaseAdmin.from('user_credits').update({ draft_basic_balance: (data?.draft_basic_balance || 0) + 1 }).eq('user_id', userId);
+        const { data: existingData } = await supabaseAdmin
+          .from('user_credits')
+          .select('draft_basic_balance')
+          .eq('user_id', userId)
+          .single();
+        
+        if (existingData) {
+          await supabaseAdmin
+            .from('user_credits')
+            .update({ draft_basic_balance: (existingData.draft_basic_balance || 0) + 1 })
+            .eq('user_id', userId);
+        } else {
+          await supabaseAdmin
+            .from('user_credits')
+            .insert({ user_id: userId, draft_basic_balance: 1 });
+        }
       } else if (plan === 'mensualidad') {
         const expiresAt = new Date();
         expiresAt.setMonth(expiresAt.getMonth() + 1);
@@ -57,6 +87,9 @@ export default async function handler(req: any, res: any) {
           draft_basic_month_count: 0,
           draft_custom_month_count: 0
         }, { onConflict: 'user_id,month' });
+        await supabaseAdmin.from('user_usage').upsert({
+          user_id: userId,
+          date: new Date().toISOString().split('T')[0],
           calculators_count: 0
         }, { onConflict: 'user_id,date' });
       }

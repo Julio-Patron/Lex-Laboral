@@ -1,9 +1,5 @@
-import Stripe from 'stripe';
 import { authenticateUser } from './_utils/auth';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27-acacia' as any
-});
+import { getStripe } from '../lib/stripe';
 
 const PLAN_PRICES: Record<string, string> = {
   'analisis': process.env.VITE_STRIPE_PRICE_ANALISIS || 'price_1TApWv36rYdwQu28DCjR7H5e',
@@ -21,6 +17,7 @@ export default async function handler(req: any, res: any) {
     if (!priceId) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: user.email,

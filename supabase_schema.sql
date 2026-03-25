@@ -41,6 +41,9 @@ create table public.chat_sessions (
   messages jsonb default '[]'::jsonb
 );
 
+-- INDEX FOR PERFORMANCE
+create index if not exists idx_chat_sessions_user_updated on public.chat_sessions (user_id, updated_at desc);
+
 -- RLS POLICIES
 alter table public.users enable row level security;
 alter table public.user_usage enable row level security;

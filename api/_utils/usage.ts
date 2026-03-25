@@ -93,58 +93,35 @@ export async function checkUsage(uid: string, type: 'audits' | 'draft_basic' | '
 }
 
 export async function checkChatUsage(uid: string) {
-  const { data: userData, error: userError } = await supabaseAdmin
-    .from('users')
+  const today = getTodayString();
+  
+  const { data: usageData } = await supabaseAdmin
+    .from('user_usage')
     .select('*')
+    .eq('user_id', uid)
+    .eq('date', today)
+    .single();
+
+  const dailyChats = (usageData as any)?.chats_count || 0;
+  
+  const { data: userData } = await supabaseAdmin
+    .from('users')
+    .select('is_premium, access_until')
     .eq('id', uid)
     .single();
 
-  if (userError || !userData) throw new Error('Usuario no encontrado');
+  const isPremiumValid = userData?.is_premium && (!userData.access_until || new Date(userData.access_until) >= new Date());
+  const limit = isPremiumValid ? 100 : 5;
 
-  const isPremiumValid = userData.is_premium && (!userData.access_until || new Date(userData.access_until) >= new Date());
-  const today = getTodayString();
-
-  if (!isPremiumValid) {
-    // Free usage check
-    const { data: usageData } = await supabaseAdmin
-      .from('user_usage')
-      .select('*')
-      .eq('user_id', uid)
-      .eq('date', today)
-      .single();
-
-    const dailyChats = (usageData as any)?.chats_count || 0;
-    if (dailyChats >= 5) {
-      throw new Error('Límite diario de consultas jurídicas gratuito alcanzado (5).');
-    }
-
-    await supabaseAdmin
-      .from('user_usage')
-      .upsert({ 
-        user_id: uid, 
-        date: today, 
-        chats_count: dailyChats + 1 
-      }, { onConflict: 'user_id,date' });
-  } else {
-    // Premium usage tracking
-    const { data: usageData } = await supabaseAdmin
-      .from('user_usage')
-      .select('*')
-      .eq('user_id', uid)
-      .eq('date', today)
-      .single();
-
-    const dailyChats = (usageData as any)?.chats_count || 0;
-    if (dailyChats >= 100) {
-      throw new Error('Límite de consultas jurídicas Premium alcanzado.');
-    }
-
-    await supabaseAdmin
-      .from('user_usage')
-      .upsert({ 
-        user_id: uid, 
-        date: today, 
-        chats_count: dailyChats + 1 
-      }, { onConflict: 'user_id,date' });
+  if (dailyChats >= limit) {
+    throw new Error(`Límite de consultas jurídicas ${isPremiumValid ? 'Premium' : 'gratuito'} alcanzado (${limit}).`);
   }
+
+  await supabaseAdmin
+    .from('user_usage')
+    .upsert({ 
+      user_id: uid, 
+      date: today, 
+      chats_count: dailyChats + 1 
+    }, { onConflict: 'user_id,date' });
 }

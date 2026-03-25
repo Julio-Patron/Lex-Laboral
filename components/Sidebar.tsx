@@ -36,7 +36,7 @@ interface SidebarProps {
   onSelectSession?: (id: string) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onNewCase, onLogout, user, userData, isPremium, isGuest, notify, onOpenPricing, sessions = [], currentSessionId, onSelectSession }) => {
+export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, onLogout, user, userData, isPremium, isGuest, notify, onOpenPricing, sessions = [], currentSessionId, onSelectSession }) => {
   const handleUpgrade = async () => {
     if (onOpenPricing) {
       onOpenPricing('3-months');
@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
       <div className="p-6 pb-2 space-y-6">
         <div className="flex items-center space-x-3 px-2">
           <div className="w-8 h-8 bg-black/40 border border-white/10 rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
-            <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-cover" />
+            <img src="/assets/logo.webp" alt="Logo" className="w-full h-full object-cover" loading="lazy" />
           </div>
           <h1 className="font-serif font-bold text-lg tracking-tight text-white">Lex Laboral</h1>
         </div>
@@ -241,4 +241,4 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
       </div>
     </div>
   );
-};
+});

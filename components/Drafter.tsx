@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { PenTool, Download, Copy, RefreshCw, ShieldAlert, FileSignature, Gavel, Users, Zap, FileText, Home, FileKey, Shield, Briefcase, Coins, Scale, HelpCircle, Eye, X, Printer, Sparkles } from 'lucide-react';
 import { draftLegalDocument } from '../services/gemini';
 import { User } from '@supabase/supabase-js';
@@ -7,7 +7,7 @@ import { ChatMessage, NotificationType, DraftingState } from '../types';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export const Drafter: React.FC<{
+interface DrafterProps {
   state: DraftingState;
   setState: React.Dispatch<React.SetStateAction<DraftingState>>;
   notify: (m: string, t?: NotificationType, tit?: string) => void;
@@ -15,13 +15,34 @@ export const Drafter: React.FC<{
   userData?: any;
   onUpgrade?: (plan?: 'draft_basic' | 'draft_custom') => void;
   onAuthRequired?: () => void;
-}> = ({ state, setState, notify, user, userData, onUpgrade, onAuthRequired }) => {
+}
+
+export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, user, userData, onUpgrade, onAuthRequired }) => {
   const { prompt, generatedDoc } = state;
   const [isDrafting, setIsDrafting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const setPrompt = (p: string) => setState(prev => ({ ...prev, prompt: p }));
-  const setGeneratedDoc = (d: string) => setState(prev => ({ ...prev, generatedDoc: d }));
+  const setPrompt = useCallback((p: string) => setState(prev => ({ ...prev, prompt: p })), []);
+  const setGeneratedDoc = useCallback((d: string) => setState(prev => ({ ...prev, generatedDoc: d })), []);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(state.generatedDoc);
+    notify("Texto copiado", "success");
+  }, [state.generatedDoc, notify]);
+
+  const handleDownload = () => {
+    const file = new Blob([state.generatedDoc], {type: 'text/plain'});
+    const element = document.createElement("a");
+    element.href = URL.createObjectURL(file);
+    element.download = `LexLaboral_Instrumento_${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(element);
+    element.click();
+    notify("Descarga iniciada", "success");
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const draftingModels = [
     { 
@@ -61,7 +82,7 @@ export const Drafter: React.FC<{
     }
   ];
 
-  const handleDraft = async () => {
+  const handleDraft = useCallback(async () => {
     if (!user) {
       notify("Debe iniciar sesión para proyectar instrumentos.", "warning", "Acceso Restringido");
       if (onAuthRequired) onAuthRequired();
@@ -95,26 +116,7 @@ export const Drafter: React.FC<{
     } finally {
       setIsDrafting(false);
     }
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(generatedDoc);
-    notify("Texto copiado", "success");
-  };
-
-  const handleDownload = () => {
-    const element = document.createElement("a");
-    const file = new Blob([generatedDoc], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `LexLaboral_Instrumento_${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(element);
-    element.click();
-    notify("Descarga iniciada", "success");
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
+  }, [user, prompt, notify, onAuthRequired, onUpgrade, setGeneratedDoc]);
 
   return (
     <div className="h-full flex flex-col bg-slate-50 no-print">
@@ -303,4 +305,4 @@ export const Drafter: React.FC<{
       </div>
     </div>
   );
-};
+});
