@@ -22,21 +22,42 @@ No uses lenguaje coloquial. Tu objetivo es la justicia social, el equilibrio ent
 const FALLBACK_MODELS_THINKING = ["gemini-2.5-pro", "gemini-3-flash", "gemini-2.5-flash"];
 const FALLBACK_MODELS_FAST = ["gemini-3-flash", "gemini-2.5-flash", "gemini-2.5-pro"];
 
+const REQUEST_TIMEOUT_MS = 60000;
+
 export async function executeWithGeminiFallback(genAI: any, systemInstruction: string, useThinking: boolean, executeFn: (model: any) => Promise<any>) {
   const modelsToTry = useThinking ? FALLBACK_MODELS_THINKING : FALLBACK_MODELS_FAST;
   let lastError;
+  const failedModels: string[] = [];
   
   for (const modelName of modelsToTry) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemInstruction });
-      return await executeFn(model);
+      return await withTimeout(executeFn(model), REQUEST_TIMEOUT_MS, modelName);
     } catch (error: any) {
+      failedModels.push(modelName);
       console.warn(`[Fallback] Model ${modelName} failed:`, error.message);
       lastError = error;
-      if (error.message.includes('Límite') || error.message.includes('Saldo')) {
+      if (error.message.includes('Límite') || error.message.includes('Saldo') || error.message.includes('timeout')) {
         throw error;
       }
     }
   }
+  console.error(`[AI] All models failed: ${failedModels.join(', ')}`);
   throw lastError;
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, modelName: string): Promise<T> {
+  let timeoutId: NodeJS.Timeout;
+  
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`Timeout de ${ms/1000}s en modelo ${modelName}`));
+    }, ms);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId!);
+  }
 }
