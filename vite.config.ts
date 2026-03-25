@@ -17,6 +17,21 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'vendor-react': ['react', 'react-dom'],
+              'vendor-supabase': ['@supabase/supabase-js'],
+              'vendor-ai': ['@google/generative-ai'],
+              'vendor-charts': ['recharts'],
+              'vendor-pdf': ['jspdf', 'jspdf-autotable'],
+              'vendor-ocr': ['tesseract.js'],
+              'vendor-ui': ['framer-motion', 'lucide-react', 'react-markdown'],
+            }
+          }
+        }
       }
     };
 });

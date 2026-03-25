@@ -1,11 +1,12 @@
 
-import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, lazy, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { LegalView } from './components/LegalView';
 import { NotificationHub } from './components/NotificationHub';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
 import { PricingModal } from './components/PricingModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { saveSession, getUserSessions } from './services/history';
 
 // Code Splitting for Performance - Lazy loading large components
@@ -40,6 +41,9 @@ function App() {
   }]);
   const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userRef = useRef(user);
+  userRef.current = user;
 
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -104,15 +108,25 @@ function App() {
 
   // Auto-save session when chat history changes
   useEffect(() => {
-    if (user && chatHistory.length > 1) {
-      const timeout = setTimeout(() => {
-        saveSession(user.id, currentSessionId, chatHistory).then(() => {
-          getUserSessions(user.id).then(setSessions);
-        }).catch(err => console.error("Auto-save failed", err));
+    if (userRef.current && chatHistory.length > 1) {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        const currentUser = userRef.current;
+        if (currentUser) {
+          saveSession(currentUser.id, currentSessionId, chatHistory).then(() => {
+            getUserSessions(currentUser.id).then(setSessions);
+          }).catch(err => console.error("Auto-save failed", err));
+        }
       }, 2000);
-      return () => clearTimeout(timeout);
     }
-  }, [chatHistory, currentSessionId, user]);
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [chatHistory, currentSessionId]);
 
 
   const loadSession = (sessionId: string) => {
@@ -267,8 +281,9 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden font-sans selection:bg-legal-gold/30">
-      <NotificationHub notifications={notifications} onDismiss={dismissNotification} />
+    <ErrorBoundary>
+      <div className="flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden font-sans selection:bg-legal-gold/30">
+        <NotificationHub notifications={notifications} onDismiss={dismissNotification} />
       
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
@@ -361,7 +376,8 @@ function App() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 

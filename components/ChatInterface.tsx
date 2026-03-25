@@ -97,7 +97,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ messages, setMess
         analysisHistory
       );
 
-      const fullResponse = (result.response as any).text();
+      const fullResponse = result.response.text();
       
       setMessages(prev => {
         const newArr = [...prev];

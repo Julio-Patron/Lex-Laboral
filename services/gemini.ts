@@ -3,6 +3,12 @@ import Tesseract from 'tesseract.js';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+interface StreamResponse {
+  response: {
+    text: () => string;
+  };
+}
+
 export const streamLegalChat = async (
   history: ChatMessage[],
   newMessage: string,
@@ -10,7 +16,7 @@ export const streamLegalChat = async (
   accessToken: string,
   focusMode?: 'standard' | 'individual' | 'collective' | 'procedural',
   analysisHistory: AnalyzedDocumentHistory[] = []
-) => {
+): Promise<StreamResponse> => {
   const latestMessage = history[history.length - 1];
   const hasAttachment = latestMessage.attachment && latestMessage.attachment.type === 'file' && latestMessage.attachment.data;
 
