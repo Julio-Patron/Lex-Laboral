@@ -18,6 +18,7 @@ import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState, ChatSession } from './types';
 import { Shield, Menu, X } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>(AppView.CHAT);
@@ -390,6 +391,7 @@ function App() {
         </div>
       )}
       </div>
+      <SpeedInsights />
     </ErrorBoundary>
   );
 }
