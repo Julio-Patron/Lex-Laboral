@@ -2,9 +2,9 @@ import { authenticateUser } from './_utils/auth';
 import { getStripe } from '../lib/stripe';
 
 const PLAN_PRICES: Record<string, string> = {
-  'analisis': process.env.VITE_STRIPE_PRICE_AUDIT || 'price_1TApWv36rYdwQu28DCjR7H5e',
+  'analisis': process.env.VITE_STRIPE_PRICE_ANALISIS || 'price_1TApWv36rYdwQu28DCjR7H5e',
   'draft_basic': process.env.VITE_STRIPE_PRICE_DRAFT || 'price_1TApYv36rYdwQu28o3LMAZjU',
-  'mensualidad': process.env.VITE_STRIPE_PRICE_3_MONTHS || 'price_1TApaN36rYdwQu28h1Mfljni'
+  'mensualidad': process.env.VITE_STRIPE_PRICE_MENSUALIDAD || 'price_1TApaN36rYdwQu28h1Mfljni'
 };
 
 export default async function handler(req: any, res: any) {
