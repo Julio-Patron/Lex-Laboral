@@ -16,7 +16,8 @@ import {
   Crown,
   Clock
 } from 'lucide-react';
-import { User } from 'firebase/auth';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
 
 interface SidebarProps {
@@ -45,7 +46,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
     if (!user) return;
     try {
       if (notify) notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      const { id: sessionId } = await createCheckoutSession(user.email || '', user.uid, '3-months'); 
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || '';
+      
+      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, '3-months', accessToken); 
       await redirectToCheckout(sessionId);
     } catch (error) {
       console.error('Stripe error:', error);
@@ -168,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onN
              <div className="bg-white/5 rounded-xl p-3 border border-white/5 hover:border-white/10 transition-colors">
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
-                    {user?.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={16} className="text-slate-400" />}
+                    {user?.user_metadata?.avatar_url ? <img src={user.user_metadata.avatar_url} alt="Avatar" /> : <UserIcon size={16} className="text-slate-400" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-bold text-white truncate">{user?.email?.split('@')[0]}</p>

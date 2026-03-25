@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { PenTool, Download, Copy, RefreshCw, ShieldAlert, FileSignature, Gavel, Users, Zap, FileText, Home, FileKey, Shield, Briefcase, Coins, Scale, HelpCircle, Eye, X, Printer, Sparkles } from 'lucide-react';
 import { draftLegalDocument } from '../services/gemini';
-import { User } from 'firebase/auth';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { ChatMessage, NotificationType, DraftingState } from '../types';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,8 +72,9 @@ export const Drafter: React.FC<{
     setIsDrafting(true);
     try {
       notify("Proyectando instrumento jurídico...", "info");
-      const idToken = await user.getIdToken();
-      const doc = await draftLegalDocument(prompt, idToken);
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || '';
+      const doc = await draftLegalDocument(prompt, accessToken);
       setGeneratedDoc(doc);
       notify("Instrumento proyectado exitosamente", "success");
     } catch (error) {

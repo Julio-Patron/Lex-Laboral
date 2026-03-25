@@ -1,4 +1,3 @@
-
 import { loadStripe } from '@stripe/stripe-js';
 
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -7,27 +6,18 @@ if (!stripePublishableKey) {
 }
 export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
 
-// Map your plan names to Stripe Price IDs here
-const PRICE_IDS = {
-  'audit': import.meta.env.VITE_STRIPE_PRICE_AUDIT || 'price_placeholder_audit',
-  'draft_basic': import.meta.env.VITE_STRIPE_PRICE_DRAFT_BASIC || 'price_placeholder_draft_basic',
-  'draft_custom': import.meta.env.VITE_STRIPE_PRICE_DRAFT_CUSTOM || 'price_placeholder_draft_custom',
-  '3-months': import.meta.env.VITE_STRIPE_PRICE_3_MONTHS || 'price_placeholder_3mo',
-};
-
-export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => {
-  // Use configured API URL for Firebase Functions or local dev server
-  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5001/studio-6462708856-c0f94/us-central1/api';
+export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months', accessToken: string) => {
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
   
   const response = await fetch(`${API_URL}/create-checkout-session`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
     },
     body: JSON.stringify({ 
       userEmail, 
       userId, 
-      priceId: PRICE_IDS[plan],
       plan: plan
     }),
   });

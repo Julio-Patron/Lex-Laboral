@@ -1,5 +1,4 @@
-import { db } from '../firebase.config';
-import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { ChatSession, ChatMessage } from '../types';
 
 // Utility to generate a concise title from the first user message
@@ -16,7 +15,7 @@ const cleanMessagesForStorage = (messages: ChatMessage[]): ChatMessage[] => {
   return messages.map(msg => {
     const cleanMsg = { ...msg };
     
-    // Remove base64 to save Firestore space
+    // Remove base64 to save DB space
     if (cleanMsg.attachment && cleanMsg.attachment.type === 'file') {
       cleanMsg.attachment = {
         ...cleanMsg.attachment,
@@ -24,38 +23,28 @@ const cleanMessagesForStorage = (messages: ChatMessage[]): ChatMessage[] => {
       };
     }
     
-    // Firestore throws error on undefined fields, so we remove them
-    Object.keys(cleanMsg).forEach(key => {
-      const k = key as keyof ChatMessage;
-      if (cleanMsg[k] === undefined) {
-        delete cleanMsg[k];
-      }
-    });
-    
     return cleanMsg;
   });
 };
 
 export const saveSession = async (userId: string, sessionId: string, messages: ChatMessage[]) => {
   try {
-    const sessionRef = doc(db, 'users', userId, 'sessions', sessionId);
-    
     const cleanedMessages = cleanMessagesForStorage(messages);
     const title = generateTitle(messages);
 
-    const sessionData: ChatSession = {
-      id: sessionId,
-      title,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(), // In a real scenario, keep original if updating
-      messages: cleanedMessages
-    };
+    const { error } = await supabase
+      .from('chat_sessions')
+      .upsert({
+        id: sessionId,
+        user_id: userId,
+        title,
+        messages: cleanedMessages,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
 
-    // To prevent overwriting the original createdAt, we could do a merge or just update the whole object
-    // For simplicity, we just set the document (it will overwrite createdAt, but we can fix that logic in App.tsx)
-    await setDoc(sessionRef, sessionData, { merge: true });
+    if (error) throw error;
     
-    return sessionData;
+    return { id: sessionId, title, messages: cleanedMessages };
   } catch (error) {
     console.error("Error saving session:", error);
     throw error;
@@ -64,16 +53,21 @@ export const saveSession = async (userId: string, sessionId: string, messages: C
 
 export const getUserSessions = async (userId: string): Promise<ChatSession[]> => {
   try {
-    const sessionsRef = collection(db, 'users', userId, 'sessions');
-    const q = query(sessionsRef, orderBy('updatedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
+    const { data, error } = await supabase
+      .from('chat_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
     
-    const sessions: ChatSession[] = [];
-    querySnapshot.forEach((doc) => {
-      sessions.push(doc.data() as ChatSession);
-    });
-    
-    return sessions;
+    return (data || []).map(row => ({
+      id: row.id,
+      title: row.title,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      messages: row.messages
+    }));
   } catch (error) {
     console.error("Error getting sessions:", error);
     return [];
@@ -82,7 +76,13 @@ export const getUserSessions = async (userId: string): Promise<ChatSession[]> =>
 
 export const deleteSession = async (userId: string, sessionId: string) => {
   try {
-    await deleteDoc(doc(db, 'users', userId, 'sessions', sessionId));
+    const { error } = await supabase
+      .from('chat_sessions')
+      .delete()
+      .eq('id', sessionId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
   } catch (error) {
     console.error("Error deleting session:", error);
     throw error;

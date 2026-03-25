@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, AnalyzedDocumentHistory, NotificationType, AnalyzedFile } from '../types';
 import { streamLegalChat } from '../services/gemini';
 import { Zap, Loader2, Briefcase, Gavel, Users, Sparkles, HelpCircle, ExternalLink, Upload, FileText, X, LayoutDashboard, ShieldCheck, Scale } from 'lucide-react';
-import { User } from 'firebase/auth';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -81,17 +82,19 @@ export const ChatInterface: React.FC<{
       notify("Procesando consulta jurídica...", "info");
       setMessages(prev => [...prev, { role: 'model', text: '', isThinking: true }]);
 
-      const idToken = user ? await user.getIdToken() : '';
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || '';
       
       // Llamada al servicio (Asegúrate de que streamLegalChat soporte attachments)
       const result = await streamLegalChat(
         [...messages, userMsg], // Enviamos el historial + el nuevo mensaje
         currentInput, 
         true, 
-        idToken,
+        accessToken,
         focusMode, 
         analysisHistory
       );
+
       const fullResponse = (result.response as any).text();
       
       setMessages(prev => {

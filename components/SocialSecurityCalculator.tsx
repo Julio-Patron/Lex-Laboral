@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabase';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
@@ -92,9 +93,9 @@ export const SocialSecurityCalculator: React.FC<{
         localStorage.setItem(usageKey, (currentUsage + 1).toString());
       } else {
         try {
-          const auth = (await import('../firebase.config')).auth;
-          const token = await auth.currentUser?.getIdToken();
-          const response = await fetch('https://us-central1-studio-6462708856-c0f94.cloudfunctions.net/api/api/legal/calculator', {
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token || '';
+          const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/calculator`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

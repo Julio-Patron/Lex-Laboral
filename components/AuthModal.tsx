@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Shield, ArrowRight, Loader2 } from 'lucide-react';
-import { auth, db } from '../firebase.config';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  signInWithPopup,
-  sendPasswordResetEmail 
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
 import { NotificationType } from '../types';
 
@@ -44,24 +36,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
     
     try {
       if (mode === 'login') {
-        await signInWithEmailAndPassword(auth, email, password);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
         onClose();
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-        // Go to plan selection instead of bypassing
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        // Go to plan selection
         setMode('planSelection');
         notify("Cuenta creada. Seleccione su nivel de acceso.", "success");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth error:', error);
-      const err = error as { code?: string; message?: string };
-      let message = "Error en la autenticación";
-      const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'unknown';
-      if (errorCode === "auth/email-already-in-use") message = "El correo ya está registrado";
-      if (errorCode === "auth/invalid-credential") message = "Credenciales inválidas o cuenta no registrada";
-      if (errorCode === "auth/weak-password") message = "La contraseña es muy débil (mínimo 6 caracteres)";
-      if (errorCode === "auth/unauthorized-domain") message = "Dominio no autorizado en Firebase. Contacte a soporte.";
-      setError(`${message} (${errorCode})`);
+      setError(error.message || "Error en la autenticación");
     } finally {
       setLoading(false);
     }
@@ -76,13 +63,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
     setLoading(true);
     setError(null);
     try {
-      await sendPasswordResetEmail(auth, email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
       notify("Correo de recuperación enviado", "success");
       setMode('login');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Reset error:', error);
-      const err = error as { message?: string };
-      setError(`Error: ${err.message || 'Verifique su correo'}`);
+      setError(`Error: ${error.message || 'Verifique su correo'}`);
     } finally {
       setLoading(false);
     }
@@ -92,10 +81,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
     setLoading(true);
     setError(null);
     try {
-      const user = auth.currentUser;
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuario no encontrado");
       
-      const session = await createCheckoutSession(user.email || '', user.uid, selectedPlan);
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      
+      const session = await createCheckoutSession(user.email || '', user.id, selectedPlan, authSession?.access_token || '');
       await redirectToCheckout(session.id);
     } catch (error) {
       console.error(error);
@@ -109,24 +100,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
     setLoading(true);
     setError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      // Temporary bypass: Always close modal on Google Sign-in
-      onClose();
-      notify("Sesión iniciada correctamente.", "success");
-    } catch (error) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+      // Note: redirectTo will handle the modal closing
+    } catch (error: any) {
       console.error('Google Auth error:', error);
-      const err = error as { code?: string };
-      let message = "Error en la autenticación con Google";
-      const errorCode = err instanceof Error && 'code' in err ? (err as any).code : 'error';
-      if (errorCode === "auth/unauthorized-domain") {
-        message = "Dominio no autorizado. Agregue el dominio actual a dominios permitidos en Firebase.";
-      }
-      setError(`${message} (${errorCode})`);
+      setError(error.message || "Error en la autenticación con Google");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <AnimatePresence>

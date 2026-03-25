@@ -32,6 +32,7 @@ import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { supabase } from '../lib/supabase';
 
 type DismissalType = 'injustificado' | 'renuncia' | 'rescision_patron' | 'rescision_trabajador';
 
@@ -145,9 +146,9 @@ export const LaborCalculator: React.FC<{
         localStorage.setItem(usageKey, (currentUsage + 1).toString());
       } else {
         try {
-          const auth = (await import('../firebase.config')).auth;
-          const token = await auth.currentUser?.getIdToken();
-          const response = await fetch('https://us-central1-studio-6462708856-c0f94.cloudfunctions.net/api/api/legal/calculator', {
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token || '';
+          const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/calculator`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -13,9 +13,8 @@ const ChatInterface = lazy(() => import('./components/ChatInterface').then(modul
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
 const LaborCalculator = lazy(() => import('./components/LaborCalculator').then(module => ({ default: module.LaborCalculator })));
 const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityCalculator').then(module => ({ default: module.SocialSecurityCalculator })));
-import { auth, db } from './firebase.config';
-import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { supabase } from './lib/supabase';
+import { User } from '@supabase/supabase-js';
 import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState, ChatSession } from './types';
 import { Shield, Menu, X } from 'lucide-react';
 
@@ -53,44 +52,35 @@ function App() {
   const dismissNotification = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
-        setUser(firebaseUser);
-        if (firebaseUser) {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userDocRef);
+        const supabaseUser = session?.user || null;
+        setUser(supabaseUser);
+        
+        if (supabaseUser) {
+          const { data: profile, error } = await supabase
+            .from('users')
+            .select('*, user_credits(*)')
+            .eq('id', supabaseUser.id)
+            .single();
           
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.isPremium && data.expiresAt) {
+          if (!error && profile) {
+            if (profile.is_premium && profile.access_until) {
               const now = new Date();
-              const expiration = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+              const expiration = new Date(profile.access_until);
               if (now > expiration) {
-                data.isPremium = false;
+                profile.is_premium = false;
                 notify("Su licencia de Lex Laboral ha expirado.", "warning", "Licencia Vencida");
               }
             }
-            setUserData(data);
-          } else {
-            // Updated to match firestore.rules requirements
-            const initialData = {
-              email: firebaseUser.email,
-              isPremium: false,
-              licenseType: 'free',
-              accessUntil: new Date(new Date().getFullYear() + 10, 0, 1).toISOString(), // Dummy date for free users
-              usage: { audits: 0, generations: 0, chats: 0 },
-              credits: { audits: 0, draft_basic: 0, draft_custom: 0 },
-              createdAt: new Date().toISOString()
-            };
-            await setDoc(userDocRef, initialData);
-            setUserData(initialData);
+            setUserData(profile);
           }
           
           // Load sessions
-          getUserSessions(firebaseUser.uid).then(setSessions);
+          getUserSessions(supabaseUser.id).then(setSessions);
           
           setIsGuestMode(false);
-          notify(`Bienvenido, ${firebaseUser.email?.split('@')[0]}`, 'success', 'Sesión Iniciada');
+          notify(`Bienvenido, ${supabaseUser.email?.split('@')[0]}`, 'success', 'Sesión Iniciada');
         } else {
           setUserData(null);
           setSessions([]);
@@ -104,27 +94,26 @@ function App() {
         }
       } catch (error) {
         console.error("Auth status sync error:", error);
-        // Don't notify on every check, but log it
       } finally {
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, [notify]);
 
   // Auto-save session when chat history changes
   useEffect(() => {
     if (user && chatHistory.length > 1) {
-      // Small delay to prevent too many writes if typing fast (though handlesend is sequential)
       const timeout = setTimeout(() => {
-        saveSession(user.uid, currentSessionId, chatHistory).then(() => {
-          getUserSessions(user.uid).then(setSessions);
+        saveSession(user.id, currentSessionId, chatHistory).then(() => {
+          getUserSessions(user.id).then(setSessions);
         }).catch(err => console.error("Auto-save failed", err));
       }, 1000);
       return () => clearTimeout(timeout);
     }
   }, [chatHistory, currentSessionId, user]);
+
 
   const loadSession = (sessionId: string) => {
     const session = sessions.find(s => s.id === sessionId);
@@ -176,7 +165,7 @@ function App() {
       setIsGuestMode(false);
       return;
     }
-    await signOut(auth);
+    await supabase.auth.signOut();
     notify("Sesión cerrada correctamente", "info", "Adiós");
   };
 

@@ -3,7 +3,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Zap, Crown, Shield, FileText, PenTool, Sparkles } from 'lucide-react';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
-import { User } from 'firebase/auth';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -31,7 +32,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({
     setLoading(plan);
     try {
       notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      const { id: sessionId } = await createCheckoutSession(user.email || '', user.uid, plan);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || '';
+      
+      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, plan, accessToken);
       await redirectToCheckout(sessionId);
     } catch (error) {
       console.error('Stripe error:', error);
