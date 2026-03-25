@@ -2,33 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { analyzeLegalDocument, streamLegalChat, draftLegalDocument } from '../gemini';
 import { ChatMessage } from "../../types";
 
-// Simulamos la configuración de firebase para evitar que intente conectarse de verdad
-vi.mock('../firebase.config', () => ({
-  ai: {}
-}));
-
-// Creamos funciones simuladas que podemos controlar en cada prueba
-const mockGenerateContent = vi.fn();
-const mockSendMessage = vi.fn();
-
-// Simulamos el SDK de Firebase AI
-vi.mock('firebase/ai', () => ({
-  getGenerativeModel: vi.fn(() => ({
-    generateContent: mockGenerateContent,
-    startChat: vi.fn(() => ({
-      sendMessage: mockSendMessage
-    }))
-  }))
-}));
-
 describe('gemini service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn();
   });
 
   describe('analyzeLegalDocument', () => {
-    it('should throw error when generateContent fails', async () => {
-      mockGenerateContent.mockRejectedValueOnce(new Error('Error al analizar el documento'));
+    it('should throw error when fetch fails', async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'Error al analizar el documento' })
+      } as Response);
 
       const mockFiles = [{ base64: 'test', mimeType: 'text/plain', name: 'test.txt' }];
       const mockPrompt = 'Analyze this';
@@ -41,11 +26,10 @@ describe('gemini service', () => {
 
     it('should return text when response is ok', async () => {
       const mockText = 'Analysis result';
-      mockGenerateContent.mockResolvedValueOnce({
-        response: {
-          text: () => mockText
-        }
-      });
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ text: mockText })
+      } as Response);
 
       const mockFiles = [{ base64: 'test', mimeType: 'text/plain', name: 'test.txt' }];
       const mockPrompt = 'Analyze this';
@@ -58,15 +42,11 @@ describe('gemini service', () => {
   });
 
   describe('streamLegalChat', () => {
-    beforeEach(() => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true })
-      });
-    });
-
-    it('should throw error when sendMessage fails', async () => {
-      mockSendMessage.mockRejectedValueOnce(new Error('Error en la respuesta del motor legal'));
+    it('should throw error when fetch fails', async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'Error en la respuesta del motor legal' })
+      } as Response);
 
       const mockHistory: ChatMessage[] = [{ role: 'user', text: 'Hello' }];
       const mockNewMessage = 'Hello';
@@ -79,9 +59,10 @@ describe('gemini service', () => {
 
     it('should return a stream-like object when response is ok', async () => {
       const mockText = 'Respuesta de prueba';
-      mockSendMessage.mockResolvedValueOnce({
-        response: { text: () => mockText }
-      });
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ text: mockText })
+      } as Response);
 
       const mockHistory: ChatMessage[] = [{ role: 'user', text: 'Hello' }];
       const mockNewMessage = 'Hello';
@@ -96,8 +77,11 @@ describe('gemini service', () => {
   });
 
   describe('draftLegalDocument', () => {
-    it('should throw error when generateContent fails', async () => {
-      mockGenerateContent.mockRejectedValueOnce(new Error('Error al generar el borrador'));
+    it('should throw error when fetch fails', async () => {
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'Error al generar el borrador' })
+      } as Response);
 
       const mockRequirements = 'Create a contract';
       const mockIdToken = 'token123';
@@ -109,11 +93,10 @@ describe('gemini service', () => {
 
     it('should return text when response is ok', async () => {
       const mockText = 'Draft result';
-      mockGenerateContent.mockResolvedValueOnce({
-        response: {
-          text: () => mockText
-        }
-      });
+      vi.mocked(global.fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ text: mockText })
+      } as Response);
 
       const mockRequirements = 'Create a contract';
       const mockIdToken = 'token123';
