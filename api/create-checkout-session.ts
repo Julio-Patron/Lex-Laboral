@@ -31,6 +31,7 @@ export default async function handler(req: any, res: any) {
     res.json({ id: session.id });
   } catch (error: any) {
     console.error('Stripe Session Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    const errorMessage = error?.message || 'Internal Server Error';
+    res.status(500).json({ error: errorMessage });
   }
 }
