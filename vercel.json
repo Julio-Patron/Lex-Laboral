@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://api-dvg6h4rhtq-uc.a.run.app/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

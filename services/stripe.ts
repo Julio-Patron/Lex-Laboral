@@ -6,7 +6,7 @@ if (!stripePublishableKey) {
 }
 export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
 
-export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months', accessToken: string) => {
+export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'analisis' | 'draft_basic' | 'mensualidad', accessToken: string) => {
   const API_URL = import.meta.env.VITE_API_URL || '/api';
   
   const response = await fetch(`${API_URL}/create-checkout-session`, {

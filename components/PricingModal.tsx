@@ -11,7 +11,7 @@ interface PricingModalProps {
   onClose: () => void;
   user: User | null;
   notify: (m: string, t?: any, tit?: string) => void;
-  initialPlan?: 'audit' | 'draft_basic' | 'draft_custom' | '3-months';
+  initialPlan?: 'analisis' | 'draft_basic' | 'mensualidad';
 }
 
 export const PricingModal: React.FC<PricingModalProps> = ({ 
@@ -19,11 +19,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   onClose, 
   user, 
   notify, 
-  initialPlan = '3-months' 
+  initialPlan = 'mensualidad' 
 }) => {
   const [loading, setLoading] = React.useState<string | null>(null);
 
-  const handlePurchase = async (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => {
+  const handlePurchase = async (plan: 'analisis' | 'draft_basic' | 'mensualidad') => {
     if (!user) {
       notify("Por favor, inicie sesión para continuar con la compra.", "warning");
       return;

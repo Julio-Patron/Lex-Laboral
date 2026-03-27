@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, User, Shield, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Mail, Lock, User, Shield, ArrowRight, Loader2, Chrome } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
 import { NotificationType } from '../types';
@@ -17,7 +17,6 @@ type AuthMode = 'login' | 'signup' | 'planSelection' | 'forgotPassword';
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, initialMode = 'login' }) => {
   const [mode, setMode] = React.useState<AuthMode>(initialMode);
 
-  // Sync mode if it changes from outside when modal opens
   React.useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
@@ -27,7 +26,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft_basic' | 'draft_custom' | '3-months'>('3-months');
+  const [selectedPlan, setSelectedPlan] = useState<'analisis' | 'draft_basic' | 'mensualidad'>('mensualidad');
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Google auth error:', error);
+      setError(error.message || 'Error con Google');
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,12 +237,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
                         </>
                       )}
                     </button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-slate-200" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-slate-400">O</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={handleGoogleLogin}
+                      className="w-full bg-white border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold flex items-center justify-center space-x-2 hover:bg-slate-50 active:scale-[0.98] transition-all disabled:opacity-70"
+                    >
+                      <Chrome size={20} />
+                      <span>Continuar con Google</span>
+                    </button>
                   </form>
                 ) : (
                   <div className="space-y-4 text-left">
                     <div 
-                      onClick={() => setSelectedPlan('audit')}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'audit' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                      onClick={() => setSelectedPlan('analisis')}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'analisis' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
                     >
                       <div className="flex justify-between items-center mb-1">
                          <h3 className="font-bold text-slate-900 text-base">Auditoría Jurídica (1 Crédito)</h3>
@@ -246,19 +282,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, notify, i
                     </div>
 
                     <div 
-                      onClick={() => setSelectedPlan('draft_custom')}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'draft_custom' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                         <h3 className="font-bold text-slate-900 text-base">Documento A Medida (1 Crédito)</h3>
-                         <span className="text-legal-gold font-black">$299 MXN</span>
-                      </div>
-                      <p className="text-xs text-slate-500">Generación con instrucciones específicas.</p>
-                    </div>
-
-                    <div 
-                      onClick={() => setSelectedPlan('3-months')}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === '3-months' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
+                      onClick={() => setSelectedPlan('mensualidad')}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPlan === 'mensualidad' ? 'border-legal-gold bg-legal-gold/5' : 'border-slate-100 hover:border-slate-200'}`}
                     >
                       <div className="flex justify-between items-center mb-1">
                          <h3 className="font-bold text-slate-900 text-base">Premium Trimestral</h3>

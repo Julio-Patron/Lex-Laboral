@@ -31,7 +31,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'audit' | 'draft_basic' | 'draft_custom' | '3-months'>('3-months');
+  const [selectedPlan, setSelectedPlan] = useState<'analisis' | 'draft_basic' | 'mensualidad'>('mensualidad');
   
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>(crypto.randomUUID());
@@ -177,7 +177,7 @@ function App() {
     setIsConfirmModalOpen(true);
   };
 
-  const openPricingModal = (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months' = '3-months') => {
+  const openPricingModal = (plan: 'analisis' | 'draft_basic' | 'mensualidad' = 'mensualidad') => {
     if (!user) {
       setAuthMode('login');
       setIsAuthModalOpen(true);
@@ -220,7 +220,7 @@ function App() {
                   notify={notify}
                   user={user}
                   userData={userData}
-                  onUpgrade={(plan) => openPricingModal(plan || 'draft_basic')}
+                  onUpgrade={(plan) => openPricingModal((plan || 'draft_basic') as 'analisis' | 'draft_basic' | 'mensualidad')}
                   onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
                 />;
               case AppView.CALCULATOR:

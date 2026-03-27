@@ -30,7 +30,7 @@ interface SidebarProps {
   isPremium: boolean;
   isGuest: boolean;
   notify?: (m: string, t?: any, tit?: string) => void;
-  onOpenPricing?: (plan: 'audit' | 'draft_basic' | 'draft_custom' | '3-months') => void;
+  onOpenPricing?: (plan: 'analisis' | 'draft_basic' | 'mensualidad') => void;
   sessions?: ChatSession[];
   currentSessionId?: string;
   onSelectSession?: (id: string) => void;
@@ -39,7 +39,7 @@ interface SidebarProps {
 export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, onLogout, user, userData, isPremium, isGuest, notify, onOpenPricing, sessions = [], currentSessionId, onSelectSession }) => {
   const handleUpgrade = async () => {
     if (onOpenPricing) {
-      onOpenPricing('3-months');
+      onOpenPricing('mensualidad');
       return;
     }
     // Fallback if prop not provided
@@ -50,7 +50,7 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token || '';
       
-      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, '3-months', accessToken); 
+      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, 'mensualidad', accessToken); 
       await redirectToCheckout(sessionId);
     } catch (error) {
       console.error('Stripe error:', error);
