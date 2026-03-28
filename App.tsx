@@ -6,6 +6,8 @@ import { LegalView } from './components/LegalView';
 import { NotificationHub } from './components/NotificationHub';
 import { PricingModal } from './components/PricingModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useAuth } from './components/AuthProvider';
+import { LoginModal } from './components/LoginModal';
 
 // Lazy loading components
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
@@ -20,8 +22,11 @@ function App() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'draft_basic' | 'mensualidad'>('draft_basic');
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
+
+  const { user, credits } = useAuth();
 
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -58,15 +63,13 @@ function App() {
                   state={draftingState}
                   setState={setDraftingState}
                   notify={notify}
-                  user={null}
-                  userData={null}
                   onUpgrade={(plan) => openPricingModal((plan || 'draft_basic') as 'draft_basic' | 'mensualidad')}
-                  onAuthRequired={() => notify("Esta función requiere un pago por uso.", "info", "Pay-to-Go")}
+                  onAuthRequired={() => setIsLoginModalOpen(true)}
                 />;
               case AppView.CALCULATOR:
-                return <LaborCalculator notify={notify} user={null} userData={null} onAuthRequired={() => {}} isSimplified={false} />;
+                return <LaborCalculator notify={notify} />;
               case AppView.SOCIAL_SECURITY:
-                return <SocialSecurityCalculator notify={notify} user={null} userData={null} onAuthRequired={() => {}} />;
+                return <SocialSecurityCalculator notify={notify} />;
               case AppView.TERMS:
                 return <LegalView type={AppView.TERMS} onBack={() => setCurrentView(AppView.HOME)} />;
               case AppView.PRIVACY:
@@ -85,48 +88,52 @@ function App() {
       <div className="flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden font-sans selection:bg-legal-gold/30">
         <NotificationHub notifications={notifications} onDismiss={dismissNotification} />
       
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
-        <div 
-          className="flex items-center space-x-2 cursor-pointer"
-          onClick={() => setCurrentView(AppView.HOME)}
-        >
-           <img src="/assets/logo.webp" alt="Logo" className="w-8 h-8 rounded-lg" loading="lazy" />
-           <span className="font-serif font-bold text-lg">Lex Laboral</span>
-        </div>
-        <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all"
-        >
-          {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
+      {currentView !== AppView.HOME && (
+        <>
+          {/* Mobile Header */}
+          <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
+            <div 
+              className="flex items-center space-x-2 cursor-pointer"
+              onClick={() => setCurrentView(AppView.HOME)}
+            >
+               <img src="/assets/logo.webp" alt="Logo" className="w-8 h-8 rounded-lg" loading="lazy" />
+               <span className="font-serif font-bold text-lg">Lex Laboral</span>
+            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all"
+            >
+              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
 
-      {/* Sidebar Overlay for Mobile */}
-      <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 md:hidden ${
-          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsSidebarOpen(false)}
-      />
+          {/* Sidebar Overlay for Mobile */}
+          <div 
+            className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 md:hidden ${
+              isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            onClick={() => setIsSidebarOpen(false)}
+          />
 
-      {/* Sidebar Container */}
-      <div className={`fixed inset-y-0 left-0 z-[70] transition-transform duration-300 transform md:relative md:translate-x-0 ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <Sidebar 
-          currentView={currentView} 
-          onChangeView={(v) => { setCurrentView(v); setIsSidebarOpen(false); }} 
-          onNewCase={() => setCurrentView(AppView.HOME)} 
-          onLogout={() => {}}
-          user={null}
-          userData={null}
-          isPremium={false}
-          isGuest={true}
-          notify={notify}
-          onOpenPricing={openPricingModal}
-        />
-      </div>
+          {/* Sidebar Container */}
+          <div className={`fixed inset-y-0 left-0 z-[70] transition-transform duration-300 transform md:relative md:translate-x-0 ${
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}>
+            <Sidebar 
+              currentView={currentView} 
+              onChangeView={(v) => { setCurrentView(v); setIsSidebarOpen(false); }} 
+              onNewCase={() => setCurrentView(AppView.HOME)} 
+              onLogout={() => {}}
+              user={null}
+              userData={null}
+              isPremium={false}
+              isGuest={true}
+              notify={notify}
+              onOpenPricing={openPricingModal}
+            />
+          </div>
+        </>
+      )}
 
       <main className="flex-1 relative overflow-hidden flex flex-col h-full bg-slate-50">
         <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -137,9 +144,14 @@ function App() {
       <PricingModal 
         isOpen={isPricingModalOpen} 
         onClose={() => setIsPricingModalOpen(false)} 
-        user={null} 
         notify={notify} 
         initialPlan={selectedPlan}
+        onRequireLogin={() => setIsLoginModalOpen(true)}
+      />
+
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
       />
       </div>
     </ErrorBoundary>

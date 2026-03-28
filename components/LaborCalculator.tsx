@@ -49,7 +49,8 @@ export const LaborCalculator: React.FC<{
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
   const [dismissalType, setDismissalType] = useState<DismissalType>('injustificado');
-  const [minWage, setMinWage] = useState<number>(312.41); 
+  const [minWage, setMinWage] = useState<number>(248.93); 
+  const [umaValue, setUmaValue] = useState<number>(108.57);
   const [showErrors, setShowErrors] = useState(false);
 
   React.useEffect(() => {
@@ -252,8 +253,8 @@ export const LaborCalculator: React.FC<{
                <Calculator size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">Ingeniería de Liquidación</h2>
-              <p className="text-slate-500 text-sm font-medium mt-1">Simulación profesional bajo estándares de la Ley Federal del Trabajo.</p>
+              <h2 className="text-4xl font-serif font-extrabold text-slate-900 tracking-tight">Ingeniería de Liquidación</h2>
+              <p className="text-slate-500 text-sm font-medium mt-1 max-w-xl">Simulación profesional bajo estándares de la Ley Federal del Trabajo.</p>
             </div>
           </div>
 
@@ -282,10 +283,10 @@ export const LaborCalculator: React.FC<{
               <div className="space-y-6">
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Configuración de Salario</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Configuración de Salario</label>
                       <div className="flex gap-1">
                         {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
-                          <button key={p} onClick={() => setSalaryPeriod(p)} className={`px-2 py-1 text-[9px] font-bold rounded-md transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white' : 'text-slate-400 hover:bg-white'}`}>
+                          <button key={p} onClick={() => setSalaryPeriod(p)} className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white' : 'text-slate-400 hover:bg-white'}`}>
                             {p === 'daily' ? 'D' : p === 'weekly' ? 'S' : p === 'biweekly' ? 'Q' : 'M'}
                           </button>
                         ))}
@@ -297,7 +298,7 @@ export const LaborCalculator: React.FC<{
                    </div>
                    {isSdiCalculated && baseSalary > 0 && (
                       <div className="flex items-center justify-between px-2 pt-1">
-                        <span className="text-[10px] text-slate-400 font-medium">SDI Integrado:</span>
+                        <span className="text-xs text-slate-400 font-medium">SDI Integrado:</span>
                         <span className="text-xs font-bold text-emerald-600">${dailySalary.toFixed(2)}</span>
                       </div>
                    )}
@@ -305,13 +306,13 @@ export const LaborCalculator: React.FC<{
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                       <Calendar size={12} className="text-legal-gold" /> Ingreso
                     </label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:bg-white focus:ring-4 focus:ring-legal-gold/5 transition-all" />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                       <Calendar size={12} className="text-legal-gold" /> Baja
                     </label>
                     <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:bg-white focus:ring-4 focus:ring-legal-gold/5 transition-all" />
@@ -330,20 +331,29 @@ export const LaborCalculator: React.FC<{
                   {showAdvanced && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-slate-50/50 rounded-2xl p-6 border border-slate-100 grid grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Aguinaldo (Días)</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aguinaldo (Días)</label>
                         <input type="number" value={aguinaldoDays} onChange={(e) => setAguinaldoDays(Number(e.target.value))} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs" />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Vacaciones (Días)</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Vacaciones (Días)</label>
                         <input type="number" value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Salario Mínimo Vigente</label>
+                        <input type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">UMA Vigente</label>
+                        <input type="number" value={umaValue} onChange={(e) => setUmaValue(Number(e.target.value))} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs" />
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <button onClick={calculate} className="w-full py-5 bg-legal-950 text-legal-gold rounded-[1.5rem] font-bold shadow-2xl shadow-legal-950/20 hover:bg-legal-900 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-                  <TrendingUp size={20} />
-                  <span>Generar Dictamen Técnico</span>
+                <button onClick={calculate} className="w-full py-5 bg-gradient-to-r from-legal-950 to-slate-900 text-legal-gold rounded-[1.5rem] font-bold shadow-2xl shadow-legal-950/20 hover:shadow-legal-950/40 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group relative overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
+                  <span className="tracking-wide">Generar Dictamen Técnico</span>
                 </button>
               </div>
             </section>
@@ -367,7 +377,7 @@ export const LaborCalculator: React.FC<{
                   <div className="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
                     <div className="p-10 border-b border-slate-50 bg-gradient-to-br from-slate-900 to-legal-950 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                       <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Global Proyectado</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Global Proyectado</span>
                         <div className="flex items-baseline gap-3 mt-2">
                           <h3 className="text-5xl font-serif font-bold text-legal-gold">
                             ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
@@ -387,14 +397,14 @@ export const LaborCalculator: React.FC<{
 
                     <div className="grid grid-cols-1 md:grid-cols-2">
                       <div className="p-10 border-b md:border-b-0 md:border-r border-slate-50">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Composición Legal</h4>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Composición Legal</h4>
                         <div className="h-[280px]">
                           <BreakdownChart data={chartData} />
                         </div>
                       </div>
 
                       <div className="p-10 space-y-4 max-h-[500px] overflow-y-auto no-scrollbar">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Desglose Técnico</h4>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Desglose Técnico</h4>
                         {[
                           { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo },
                           { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations },
@@ -407,11 +417,24 @@ export const LaborCalculator: React.FC<{
                               <span className="text-xs font-bold text-slate-700">{item.label}</span>
                               <span className="text-sm font-serif font-bold text-slate-900">${item.val.toLocaleString()}</span>
                             </div>
-                            <div className="p-3 bg-slate-50 rounded-xl text-[10px] text-slate-500 font-mono leading-relaxed border border-slate-100">
+                            <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 font-mono leading-relaxed border border-slate-100">
                               {item.f.split('\n')[item.f.split('\n').length - 1]}
                             </div>
                           </div>
                         ))}
+                        
+                        <div className="mt-8 p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-start gap-3">
+                          <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-xs font-bold text-orange-800 tracking-wide uppercase">Cálculo Bruto de ISR</span>
+                            <p className="text-xs text-orange-600/80 mt-1 leading-relaxed">
+                              El monto calculado es <strong className="font-bold text-orange-700">bruto</strong>. 
+                              Recuerde que están exentos de ISR: Aguinaldo hasta 30 UMAS (${(umaValue * 30).toLocaleString()}) 
+                              y Prima Vacacional hasta 15 UMAS (${(umaValue * 15).toLocaleString()}). 
+                              Para indemnizaciones es exento 90 UMAS (${(umaValue * 90).toLocaleString()}) por año de servicio.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

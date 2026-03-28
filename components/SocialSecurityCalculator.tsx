@@ -10,6 +10,7 @@ import {
   Download, 
   AlertCircle,
   Stethoscope,
+  Settings2,
   Users,
   Zap
 } from 'lucide-react';
@@ -32,8 +33,9 @@ export const SocialSecurityCalculator: React.FC<{
   const [n_workers, setN_workers] = useState<number>(1); 
   const [m_min, setM_min] = useState<number>(0.0050); 
   
-  const UMA = 119.35; 
-  const MIN_WAGE = 312.41; 
+  const [umaValue, setUmaValue] = useState<number>(108.57); 
+  const [minWage, setMinWage] = useState<number>(248.93);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [results, setResults] = useState<{
     employer: {
@@ -65,8 +67,8 @@ export const SocialSecurityCalculator: React.FC<{
       notify("El Salario Base de Cotización debe ser un número positivo", "error");
       return;
     }
-    if (sbc < MIN_WAGE) {
-      notify(`El SBC no puede ser menor al salario mínimo ($${MIN_WAGE})`, "warning");
+    if (sbc < minWage) {
+      notify(`El SBC no puede ser menor al salario mínimo ($${minWage})`, "warning");
       return;
     }
     if (riskClass === 0) {
@@ -74,8 +76,8 @@ export const SocialSecurityCalculator: React.FC<{
       return;
     }
 
-    const fixed = (UMA * 0.204) * days;
-    const excedenteBase = Math.max(0, sbc - (3 * UMA));
+    const fixed = (umaValue * 0.204) * days;
+    const excedenteBase = Math.max(0, sbc - (3 * umaValue));
     const empExcedente = (excedenteBase * 0.011) * days;
     const empDinero = (sbc * 0.007) * days;
     const empPensionados = (sbc * 0.0105) * days;
@@ -84,17 +86,17 @@ export const SocialSecurityCalculator: React.FC<{
     const empRiesgo = (sbc * (riskClass / 100)) * days;
     const empRetiro = (sbc * 0.02) * days;
     
-    const ratio = sbc / UMA;
+    const ratio = sbc / umaValue;
     let cesantiaRate = 0.0315; 
     
-    if (sbc > MIN_WAGE) {
-      if (ratio <= 1.50) cesantiaRate = 0.03899;
-      else if (ratio <= 2.00) cesantiaRate = 0.04246;
-      else if (ratio <= 2.50) cesantiaRate = 0.04593;
-      else if (ratio <= 3.00) cesantiaRate = 0.04939;
-      else if (ratio <= 3.50) cesantiaRate = 0.05286;
-      else if (ratio <= 4.00) cesantiaRate = 0.05633;
-      else cesantiaRate = 0.06326; 
+    if (sbc > minWage) {
+      if (ratio <= 1.50) cesantiaRate = 0.03567;
+      else if (ratio <= 2.00) cesantiaRate = 0.04230;
+      else if (ratio <= 2.50) cesantiaRate = 0.04894;
+      else if (ratio <= 3.00) cesantiaRate = 0.05558;
+      else if (ratio <= 3.50) cesantiaRate = 0.06221;
+      else if (ratio <= 4.00) cesantiaRate = 0.06885;
+      else cesantiaRate = 0.08241; 
     }
     
     const empCesantia = (sbc * cesantiaRate) * days;
@@ -169,8 +171,8 @@ export const SocialSecurityCalculator: React.FC<{
                <ShieldCheck size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">Cálculo de Seguridad Social</h2>
-              <p className="text-slate-500 text-sm font-medium mt-1">Determinación técnica de cuotas IMSS e INFONAVIT.</p>
+              <h2 className="text-4xl font-serif font-extrabold text-slate-900 tracking-tight">Cálculo de Seguridad Social</h2>
+              <p className="text-slate-500 text-sm font-medium mt-1 max-w-xl">Determinación técnica de cuotas IMSS e INFONAVIT.</p>
             </div>
           </div>
         </header>
@@ -180,7 +182,7 @@ export const SocialSecurityCalculator: React.FC<{
             <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-8">
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Salario Base de Cotización (SBC)</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Salario Base de Cotización (SBC)</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">$</span>
                     <input type="number" value={sbc || ''} onChange={(e) => setSbc(Number(e.target.value))} className="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-bold outline-none focus:bg-white focus:ring-4 focus:ring-legal-gold/5 transition-all" placeholder="0.00" />
@@ -189,8 +191,8 @@ export const SocialSecurityCalculator: React.FC<{
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Clase de Riesgo</label>
-                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="text-[10px] font-bold text-legal-gold hover:underline">Variable</button>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Clase de Riesgo</label>
+                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="text-xs font-bold text-legal-gold hover:underline">Variable</button>
                   </div>
                   <select value={riskClass} onChange={(e) => setRiskClass(Number(e.target.value))} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:bg-white transition-all">
                     <option value={0}>Seleccione clase...</option>
@@ -203,12 +205,36 @@ export const SocialSecurityCalculator: React.FC<{
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Días</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Días</label>
                   <input type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:bg-white transition-all" />
                 </div>
 
-                <button onClick={calculate} className="w-full py-5 bg-legal-950 text-legal-gold rounded-2xl font-bold shadow-2xl shadow-legal-950/20 hover:bg-legal-900 transition-all active:scale-[0.98]">
-                  Proyectar Cuotas
+                <button onClick={() => setShowAdvanced(!showAdvanced)} className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl text-slate-500 hover:bg-slate-100 transition-all">
+                  <div className="flex items-center gap-3">
+                    <Settings2 size={16} />
+                    <span className="text-xs font-bold uppercase tracking-wider">Ajustes Constantes (2026+)</span>
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {showAdvanced && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-slate-50/50 rounded-2xl p-6 border border-slate-100 space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Salario Mínimo Vigente</label>
+                        <input type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">UMA Vigente</label>
+                        <input type="number" value={umaValue} onChange={(e) => setUmaValue(Number(e.target.value))} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs" />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button onClick={calculate} className="w-full py-5 bg-gradient-to-r from-legal-950 to-slate-900 text-legal-gold rounded-[1.5rem] font-bold shadow-2xl shadow-legal-950/20 hover:shadow-legal-950/40 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group relative overflow-hidden">
+                  <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
+                  <span className="tracking-wide">Proyectar Cuotas</span>
                 </button>
               </div>
             </section>
@@ -225,15 +251,15 @@ export const SocialSecurityCalculator: React.FC<{
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Patrón</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Patrón</span>
                       <p className="text-2xl font-serif font-bold text-slate-900 mt-2">${results.employer.total.toLocaleString()}</p>
                     </div>
                     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trabajador</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Trabajador</span>
                       <p className="text-2xl font-serif font-bold text-legal-gold mt-2">${results.employee.total.toLocaleString()}</p>
                     </div>
                     <div className="bg-legal-950 p-8 rounded-3xl shadow-xl text-center">
-                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total</span>
+                      <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Total</span>
                       <p className="text-2xl font-serif font-bold text-white mt-2">${results.total.toLocaleString()}</p>
                     </div>
                   </div>
@@ -247,22 +273,30 @@ export const SocialSecurityCalculator: React.FC<{
                       <table className="w-full text-left">
                         <thead>
                           <tr className="bg-slate-50">
-                            <th className="p-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Concepto</th>
-                            <th className="p-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Monto</th>
+                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-left">Concepto</th>
+                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Patrón</th>
+                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Trabajador</th>
+                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Total</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                           {[
-                            { label: 'Cuota Fija', val: results.employer.fixed },
-                            { label: 'Excedente 3 UMA', val: results.employer.excedente + results.employee.excedente },
-                            { label: 'Prestaciones en Dinero', val: results.employer.dinero + results.employee.dinero },
-                            { label: 'Riesgo de Trabajo', val: results.employer.riesgo },
-                            { label: 'Retiro, Cesantía y Vejez', val: results.employer.cesantia + results.employee.cesantia + results.employer.retiro },
-                            { label: 'INFONAVIT 5%', val: results.employer.infonavit },
+                            { label: 'Enf. y Mat. (Cuota Fija)', pat: results.employer.fixed, trab: 0 },
+                            { label: 'Enf. y Mat. (Excedente 3 UMA)', pat: results.employer.excedente, trab: results.employee.excedente },
+                            { label: 'Enf. y Mat. (Prest. en Dinero)', pat: results.employer.dinero, trab: results.employee.dinero },
+                            { label: 'Enf. y Mat. (Gastos Méd. Pens.)', pat: results.employer.pensionados, trab: results.employee.pensionados },
+                            { label: 'Invalidez y Vida', pat: results.employer.invalidez, trab: results.employee.invalidez },
+                            { label: 'Riesgos de Trabajo', pat: results.employer.riesgo, trab: 0 },
+                            { label: 'Guarderías y Prest. Sociales', pat: results.employer.guarderia, trab: 0 },
+                            { label: 'Retiro', pat: results.employer.retiro, trab: 0 },
+                            { label: 'Cesantía en Edad Avanzada y Vejez', pat: results.employer.cesantia, trab: results.employee.cesantia },
+                            { label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
                           ].map((row, i) => (
                             <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                               <td className="p-6 text-sm font-medium text-slate-700">{row.label}</td>
-                              <td className="p-6 text-right font-serif font-bold text-slate-900">${row.val.toLocaleString()}</td>
+                              <td className="p-6 text-right font-serif font-bold text-slate-500">${row.pat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-6 text-right font-serif font-bold text-slate-500">${row.trab.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-6 text-right font-serif font-bold text-slate-900">${(row.pat + row.trab).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             </tr>
                           ))}
                         </tbody>

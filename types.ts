@@ -28,3 +28,14 @@ export interface AppNotification {
   message: string;
   title?: string;
 }
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+}
+
+export interface AnalyzedDocumentHistory {
+  date: string;
+  name: string;
+  summary: string;
+}

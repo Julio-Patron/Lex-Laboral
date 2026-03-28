@@ -1,4 +1,3 @@
-
 import { getStripe } from '../lib/stripe';
 
 const PLAN_PRICES: Record<string, string> = {
@@ -10,17 +9,22 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { plan, email } = req.body;
+    const { plan, userEmail, userId } = req.body;
     const priceId = PLAN_PRICES[plan];
     
     if (!priceId) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
 
+    if (!userId) {
+      return res.status(401).json({ error: 'User must be authenticated to purchase.' });
+    }
+
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      customer_email: email || undefined,
+      customer_email: userEmail || undefined,
+      client_reference_id: userId,
       metadata: { plan: plan },
       line_items: [{ price: priceId, quantity: 1 }],
       mode: plan === 'mensualidad' ? 'subscription' : 'payment',

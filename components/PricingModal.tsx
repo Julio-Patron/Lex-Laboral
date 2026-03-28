@@ -3,27 +3,37 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Crown, Shield, PenTool, Sparkles, Calculator } from 'lucide-react';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
+import { useAuth } from './AuthProvider';
 
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
   notify: (m: string, t?: any, tit?: string) => void;
   initialPlan?: 'draft_basic' | 'mensualidad';
+  onRequireLogin?: () => void;
 }
 
 export const PricingModal: React.FC<PricingModalProps> = ({ 
   isOpen, 
   onClose, 
   notify, 
-  initialPlan = 'draft_basic' 
+  initialPlan = 'draft_basic',
+  onRequireLogin
 }) => {
   const [loading, setLoading] = React.useState<string | null>(null);
-
+  const { user } = useAuth();
   const handlePurchase = async (plan: 'draft_basic' | 'mensualidad') => {
+    if (!user) {
+      onClose();
+      if (onRequireLogin) onRequireLogin();
+      return;
+    }
+
     setLoading(plan);
     try {
       notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      const { id: sessionId } = await createCheckoutSession('', '', plan, '');
+      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, plan, '');
+      
       await redirectToCheckout(sessionId);
     } catch (error) {
       console.error('Stripe error:', error);
@@ -103,7 +113,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                 </div>
                 <div>
                   <h2 className="text-2xl font-serif font-bold text-legal-950 tracking-tight">Seleccione su Plan</h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sin registros, pago por uso inmediato</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Sin registros, pago por uso inmediato</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-3 hover:bg-slate-100 rounded-2xl transition-all text-slate-400 hover:text-legal-950"><X size={24} /></button>
@@ -115,7 +125,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                 {plans.map((plan) => (
                   <div key={plan.id} className={`relative flex flex-col bg-white rounded-[2rem] p-8 border ${plan.popular ? 'border-legal-gold ring-4 ring-legal-gold/5 shadow-xl' : 'border-slate-200 shadow-sm'}`}>
                     {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-legal-gold text-legal-950 px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-legal-gold text-legal-950 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
                         <Sparkles size={10} /> Recomendado
                       </div>
                     )}
@@ -124,7 +134,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                       <div className="p-3 rounded-2xl bg-slate-50">{plan.icon}</div>
                       <div className="text-right">
                         <div className="text-2xl font-serif font-bold text-legal-950">{plan.price}</div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase">{plan.unit}</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase">{plan.unit}</div>
                       </div>
                     </div>
 
@@ -143,7 +153,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                     <button 
                       onClick={() => plan.action()}
                       disabled={loading !== null}
-                      className={`w-full py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+                      className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
                         plan.popular 
                           ? 'bg-legal-950 text-legal-gold shadow-lg hover:bg-legal-900' 
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'

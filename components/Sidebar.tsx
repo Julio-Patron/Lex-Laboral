@@ -51,7 +51,7 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
       
       {/* Navigation */}
       <nav className="px-4 flex-1 overflow-y-auto custom-scrollbar mt-4">
-        <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Herramientas</p>
+        <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Herramientas</p>
         <ul className="space-y-1">
           {navItems.map((item) => {
             return (
@@ -82,20 +82,20 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
       <div className="p-4 mt-auto border-t border-white/5 bg-black/20">
         <div className="bg-white/5 rounded-xl p-4 border border-white/5 mb-4 text-center">
             <p className="text-[11px] font-bold text-slate-300 mb-1">Versión Pay-to-Go</p>
-            <p className="text-[9px] text-slate-500">Sin registros, pago por uso inmediato.</p>
+            <p className="text-xs text-slate-500">Sin registros, pago por uso inmediato.</p>
         </div>
 
         <div className="flex items-center justify-between px-1 opacity-60">
             <button 
               onClick={() => onChangeView(AppView.PRIVACY)}
-              className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
             >
               Privacidad
             </button>
-            <span className="text-slate-700 text-[9px]">•</span>
+            <span className="text-slate-700 text-xs">•</span>
             <button 
               onClick={() => onChangeView(AppView.TERMS)}
-              className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
             >
               Términos
             </button>

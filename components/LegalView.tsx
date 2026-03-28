@@ -203,7 +203,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
           {content}
           
           <div className="mt-16 pt-8 border-t border-slate-100 text-center">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
               Lex Laboral • Sistema de Protección de Datos y Cumplimiento Normativo
             </p>
           </div>

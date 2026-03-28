@@ -5,7 +5,6 @@ if (!stripePublishableKey) {
   console.warn('VITE_STRIPE_PUBLISHABLE_KEY is not defined. Stripe features will be disabled.');
 }
 export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
-
 export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'analisis' | 'draft_basic' | 'mensualidad', accessToken: string) => {
   const API_URL = import.meta.env.VITE_API_URL || '/api';
   
@@ -28,7 +27,7 @@ export const createCheckoutSession = async (userEmail: string, userId: string, p
   }
 
   const session = await response.json();
-  return session;
+  return session as { id: string };
 };
 
 export const redirectToCheckout = async (sessionId: string) => {
