@@ -1,49 +1,27 @@
 
-import React, { useState, useCallback, useEffect, Suspense, lazy, useRef } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { Home } from './components/Home';
 import { LegalView } from './components/LegalView';
 import { NotificationHub } from './components/NotificationHub';
-import { LandingPage } from './components/LandingPage';
-import { AuthModal } from './components/AuthModal';
 import { PricingModal } from './components/PricingModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { saveSession, getUserSessions } from './services/history';
 
-// Code Splitting for Performance - Lazy loading large components
-const ChatInterface = lazy(() => import('./components/ChatInterface').then(module => ({ default: module.ChatInterface })));
+// Lazy loading components
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
 const LaborCalculator = lazy(() => import('./components/LaborCalculator').then(module => ({ default: module.LaborCalculator })));
 const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityCalculator').then(module => ({ default: module.SocialSecurityCalculator })));
-import { supabase } from './lib/supabase';
-import { User } from '@supabase/supabase-js';
-import { AppView, ChatMessage, AnalyzedDocumentHistory, AppNotification, NotificationType, DraftingState, ChatSession } from './types';
-import { Shield, Menu, X } from 'lucide-react';
+
+import { AppView, AppNotification, NotificationType, DraftingState } from './types';
+import { Menu, X } from 'lucide-react';
 
 function App() {
-  const [currentView, setCurrentView] = useState<AppView>(AppView.CHAT);
+  const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<any>(null);
-  const [isGuestMode, setIsGuestMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'analisis' | 'draft_basic' | 'mensualidad'>('mensualidad');
-  
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<string>(crypto.randomUUID());
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([{ 
-    role: 'model', 
-    text: 'Bienvenido a Lex Laboral. Soy su asistente jurídico especializado en Derecho Laboral y Seguridad Social. Puedo ayudarle con análisis de contratos, cálculo de prestaciones o interpretación de la LFT. ¿Por dónde le gustaría comenzar?' 
-  }]);
-  const [analysisHistory, setAnalysisHistory] = useState<AnalyzedDocumentHistory[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<'draft_basic' | 'mensualidad'>('draft_basic');
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
-  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const userRef = useRef(user);
-  userRef.current = user;
 
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -55,145 +33,9 @@ function App() {
 
   const dismissNotification = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          setLoading(false);
-        }
-      } catch (e) {
-        console.error('Session init error:', e);
-        setLoading(false);
-      }
-    };
-    initAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      try {
-        const supabaseUser = session?.user || null;
-        setUser(supabaseUser);
-        
-        if (supabaseUser) {
-          const { data: profile, error } = await supabase
-            .from('users')
-            .select('*, user_credits(*)')
-            .eq('id', supabaseUser.id)
-            .single();
-          
-          if (!error && profile) {
-            if (profile.is_premium && profile.access_until) {
-              const now = new Date();
-              const expiration = new Date(profile.access_until);
-              if (now > expiration) {
-                profile.is_premium = false;
-                notify("Su licencia de Lex Laboral ha expirado.", "warning", "Licencia Vencida");
-              }
-            }
-            setUserData(profile);
-          }
-          
-          // Load sessions
-          getUserSessions(supabaseUser.id).then(setSessions);
-          
-          setIsGuestMode(false);
-          notify(`Bienvenido, ${supabaseUser.email?.split('@')[0]}`, 'success', 'Sesión Iniciada');
-        } else {
-          setUserData(null);
-          setSessions([]);
-          // Reset state on logout
-          setChatHistory([{ 
-            role: 'model', 
-            text: 'Bienvenido a Lex Laboral. Soy su asistente jurídico especializado en Derecho Laboral y Seguridad Social. Puedo ayudarle con análisis de contratos, cálculo de prestaciones o interpretación de la LFT. ¿Por dónde le gustaría comenzar?' 
-          }]);
-          setAnalysisHistory([]);
-          setCurrentSessionId(crypto.randomUUID());
-        }
-      } catch (error) {
-        console.error("Auth status sync error:", error);
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [notify]);
-
-  // Auto-save session when chat history changes
-  useEffect(() => {
-    if (userRef.current && chatHistory.length > 1) {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-      autoSaveTimeoutRef.current = setTimeout(() => {
-        const currentUser = userRef.current;
-        if (currentUser) {
-          saveSession(currentUser.id, currentSessionId, chatHistory).then(() => {
-            getUserSessions(currentUser.id).then(setSessions);
-          }).catch(err => console.error("Auto-save failed", err));
-        }
-      }, 2000);
-    }
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, [chatHistory, currentSessionId]);
-
-
-  const loadSession = (sessionId: string) => {
-    const session = sessions.find(s => s.id === sessionId);
-    if (session) {
-      setCurrentSessionId(sessionId);
-      setChatHistory(session.messages);
-      setCurrentView(AppView.CHAT);
-    }
-  };
-
-  const handleAddAnalysis = (item: AnalyzedDocumentHistory) => {
-    setAnalysisHistory(prev => [item, ...prev]);
-    notify("Expediente incorporado satisfactoriamente", "success", "Análisis Completado");
-  };
-
-  const executeNewCase = () => {
-    setCurrentSessionId(crypto.randomUUID());
-    setChatHistory([{ role: 'model', text: 'Nueva sesión estratégica iniciada. Quedo a su disposición para cualquier consulta técnica.' }]);
-    setAnalysisHistory([]);
-    setDraftingState({ prompt: '', generatedDoc: '' });
-    setCurrentView(AppView.CHAT);
-    notify("Memoria volátil purgada. Nueva sesión iniciada.", "info", "Sistema Reiniciado");
-    setIsSidebarOpen(false);
-    setIsConfirmModalOpen(false);
-  };
-
-  const handleNewCase = () => {
-    if (isGuestMode) {
-      notify("Debe iniciar sesión para crear una nueva consulta jurídica.", "warning", "Acceso Restringido");
-      setAuthMode('signup');
-      setIsAuthModalOpen(true);
-      return;
-    }
-    setIsConfirmModalOpen(true);
-  };
-
-  const openPricingModal = (plan: 'analisis' | 'draft_basic' | 'mensualidad' = 'mensualidad') => {
-    if (!user) {
-      setAuthMode('login');
-      setIsAuthModalOpen(true);
-      return;
-    }
+  const openPricingModal = (plan: 'draft_basic' | 'mensualidad' = 'draft_basic') => {
     setSelectedPlan(plan);
     setIsPricingModalOpen(true);
-  };
-
-  const handleLogout = async () => {
-    if (isGuestMode) {
-      setIsGuestMode(false);
-      return;
-    }
-    await supabase.auth.signOut();
-    notify("Sesión cerrada correctamente", "info", "Adiós");
   };
 
   const renderView = () => {
@@ -203,95 +45,40 @@ function App() {
           <div className="h-full w-full min-h-[600px] flex items-center justify-center animate-in fade-in duration-500">
              <div className="flex flex-col items-center">
                 <div className="w-10 h-10 border-4 border-legal-gold/20 border-t-legal-gold rounded-full animate-spin mb-3"></div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">Iniciando Módulo Específicamente...</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">Iniciando Herramienta...</span>
              </div>
           </div>
         }>
           {(() => {
             switch (currentView) {
-              case AppView.CHAT:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
-              case AppView.DOCUMENT_ANALYSIS:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} analysisHistory={analysisHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
+              case AppView.HOME:
+                return <Home onNavigate={setCurrentView} />;
               case AppView.DRAFTING:
                 return <Drafter
                   state={draftingState}
                   setState={setDraftingState}
                   notify={notify}
-                  user={user}
-                  userData={userData}
-                  onUpgrade={(plan) => openPricingModal((plan || 'draft_basic') as 'analisis' | 'draft_basic' | 'mensualidad')}
-                  onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
+                  user={null}
+                  userData={null}
+                  onUpgrade={(plan) => openPricingModal((plan || 'draft_basic') as 'draft_basic' | 'mensualidad')}
+                  onAuthRequired={() => notify("Esta función requiere un pago por uso.", "info", "Pay-to-Go")}
                 />;
               case AppView.CALCULATOR:
-                return <LaborCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} isSimplified={isGuestMode} />;
+                return <LaborCalculator notify={notify} user={null} userData={null} onAuthRequired={() => {}} isSimplified={false} />;
               case AppView.SOCIAL_SECURITY:
-                return <SocialSecurityCalculator notify={notify} user={user} userData={userData} onAuthRequired={() => setIsAuthModalOpen(true)} />;
+                return <SocialSecurityCalculator notify={notify} user={null} userData={null} onAuthRequired={() => {}} />;
               case AppView.TERMS:
-                return <LegalView type={AppView.TERMS} onBack={() => setCurrentView(AppView.CHAT)} />;
+                return <LegalView type={AppView.TERMS} onBack={() => setCurrentView(AppView.HOME)} />;
               case AppView.PRIVACY:
-                return <LegalView type={AppView.PRIVACY} onBack={() => setCurrentView(AppView.CHAT)} />;
+                return <LegalView type={AppView.PRIVACY} onBack={() => setCurrentView(AppView.HOME)} />;
               default:
-                return <ChatInterface messages={chatHistory} setMessages={setChatHistory} notify={notify} user={user} onAuthRequired={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} />;
+                return <Home onNavigate={setCurrentView} />;
             }
           })()}
         </Suspense>
       </div>
     );
   };
-
-  useEffect(() => {
-    if (window.location.hash === '#payment-success') {
-      notify("¡Pago procesado con éxito! Tu cuenta se está actualizando.", "success", "Suscripción Activa");
-      window.location.hash = '';
-      if (user) {
-        supabase.from('users').select('*, user_credits(*)').eq('id', user.id).single()
-          .then(({ data }) => { if (data) setUserData(data); });
-      }
-    } else if (window.location.hash === '#payment-cancelled') {
-      notify("El proceso de pago fue cancelado.", "info", "Pago Cancelado");
-      window.location.hash = '';
-    }
-  }, [user, notify]);
-
-  if (loading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-legal-gold/20 border-t-legal-gold rounded-full animate-spin mb-4" />
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Iniciando Ecosistema Lex Laboral</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user && !isGuestMode) {
-    return (
-      <>
-        <LandingPage 
-          onLogin={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
-          onTryCalculator={() => {
-            setIsGuestMode(true);
-            setCurrentView(AppView.CALCULATOR);
-          }}
-          onViewTerms={() => {
-            setIsGuestMode(true);
-            setCurrentView(AppView.TERMS);
-          }}
-          onViewPrivacy={() => {
-            setIsGuestMode(true);
-            setCurrentView(AppView.PRIVACY);
-          }}
-        />
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)} 
-          notify={notify}
-          initialMode={authMode}
-        />
-      </>
-    );
-  }
 
   return (
     <ErrorBoundary>
@@ -300,7 +87,10 @@ function App() {
       
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
-        <div className="flex items-center space-x-2">
+        <div 
+          className="flex items-center space-x-2 cursor-pointer"
+          onClick={() => setCurrentView(AppView.HOME)}
+        >
            <img src="/assets/logo.webp" alt="Logo" className="w-8 h-8 rounded-lg" loading="lazy" />
            <span className="font-serif font-bold text-lg">Lex Laboral</span>
         </div>
@@ -327,17 +117,14 @@ function App() {
         <Sidebar 
           currentView={currentView} 
           onChangeView={(v) => { setCurrentView(v); setIsSidebarOpen(false); }} 
-          onNewCase={handleNewCase} 
-          onLogout={handleLogout}
-          user={user}
-          userData={userData}
-          isPremium={userData?.isPremium || false}
-          isGuest={isGuestMode}
+          onNewCase={() => setCurrentView(AppView.HOME)} 
+          onLogout={() => {}}
+          user={null}
+          userData={null}
+          isPremium={false}
+          isGuest={true}
           notify={notify}
           onOpenPricing={openPricingModal}
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onSelectSession={loadSession}
         />
       </div>
 
@@ -347,48 +134,13 @@ function App() {
         </div>
       </main>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-        notify={notify}
-        initialMode={authMode}
-      />
       <PricingModal 
         isOpen={isPricingModalOpen} 
         onClose={() => setIsPricingModalOpen(false)} 
-        user={user} 
+        user={null} 
         notify={notify} 
         initialPlan={selectedPlan}
       />
-
-      {/* Custom Confirm Modal for New Session */}
-      {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-legal-950/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full border border-slate-100 scale-100 transition-all">
-            <div className="flex items-center justify-center w-16 h-16 bg-red-50 text-red-500 rounded-2xl mx-auto mb-6">
-               <Shield size={32} />
-            </div>
-            <h3 className="text-2xl font-serif font-bold text-center text-slate-900 mb-3">¿Iniciar nueva sesión?</h3>
-            <p className="text-center text-slate-600 mb-8 text-sm leading-relaxed">
-              Al iniciar un nuevo expediente se purgarán los datos de la sesión actual de la memoria volátil para garantizar la confidencialidad. Los datos no guardados se perderán.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={() => setIsConfirmModalOpen(false)}
-                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={executeNewCase}
-                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all active:scale-95"
-              >
-                Purgar e Iniciar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       </div>
     </ErrorBoundary>
   );

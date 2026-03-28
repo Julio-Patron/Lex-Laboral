@@ -1,46 +1,33 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Zap, Crown, Shield, FileText, PenTool, Sparkles } from 'lucide-react';
+import { X, Check, Crown, Shield, PenTool, Sparkles, Calculator } from 'lucide-react';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
 
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User | null;
   notify: (m: string, t?: any, tit?: string) => void;
-  initialPlan?: 'analisis' | 'draft_basic' | 'mensualidad';
+  initialPlan?: 'draft_basic' | 'mensualidad';
 }
 
 export const PricingModal: React.FC<PricingModalProps> = ({ 
   isOpen, 
   onClose, 
-  user, 
   notify, 
-  initialPlan = 'mensualidad' 
+  initialPlan = 'draft_basic' 
 }) => {
   const [loading, setLoading] = React.useState<string | null>(null);
 
-  const handlePurchase = async (plan: 'analisis' | 'draft_basic' | 'mensualidad') => {
-    if (!user) {
-      notify("Por favor, inicie sesión para continuar con la compra.", "warning");
-      return;
-    }
-
+  const handlePurchase = async (plan: 'draft_basic' | 'mensualidad') => {
     setLoading(plan);
     try {
       notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token || '';
-      
-      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, plan, accessToken);
+      const { id: sessionId } = await createCheckoutSession('', '', plan, '');
       await redirectToCheckout(sessionId);
     } catch (error) {
       console.error('Stripe error:', error);
-      notify("No se pudo iniciar el proceso de pago. Intente de nuevo.", "error", "Error de Stripe");
+      notify("No se pudo iniciar el proceso de pago.", "error", "Error de Stripe");
     } finally {
       setLoading(null);
     }
@@ -48,50 +35,53 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 
   const plans = [
     {
-      id: 'analisis',
-      name: 'Análisis + Consultas',
-      description: '1 análisis de documento + 2 consultas en chat.',
-      price: '$49',
-      unit: 'único',
-      icon: <FileText className="text-blue-500" size={24} />, 
+      id: 'free',
+      name: 'Uso Gratuito',
+      description: 'Herramientas básicas de consulta rápida.',
+      price: '$0',
+      unit: 'siempre',
+      icon: <Calculator className="text-slate-400" size={24} />, 
       features: [
-        'Análisis de documento PDF o imagen',
-        '2 consultas sobre el análisis',
-        'Dictamen exportable',
-        'Válido por 30 días'
+        'Calculadora Laboral básica',
+        'Calculadora Seguridad Social',
+        'Visualización de fórmulas',
+        'Exportación básica'
       ],
-      color: 'blue'
+      color: 'slate',
+      action: () => onClose()
     },
     {
       id: 'draft_basic',
-      name: 'Documento Legal',
-      description: 'Generación de instrumento jurídico profesional.',
+      name: 'Documento Individual',
+      description: 'Generación de 1 instrumento jurídico profesional.',
       price: '$79',
-      unit: 'por documento',
-      icon: <PenTool className="text-purple-500" size={24} />, 
+      unit: 'pago único',
+      icon: <PenTool className="text-amber-500" size={24} />, 
+      popular: true,
       features: [
         'Técnica legislativa mexicana',
         'Estructura de cláusulas formal',
         'Formatos LFT validados',
-        'Exportación PDF'
+        'Exportación PDF Profesional'
       ],
-      color: 'purple'
+      color: 'amber',
+      action: () => handlePurchase('draft_basic')
     },
     {
       id: 'mensualidad',
-      name: 'Suscripción Premium',
-      description: 'Acceso completo a todos los módulos con límites mensuales.',
-      price: '$299',
-      unit: 'al mes',
+      name: 'Pase Mensual',
+      description: 'Uso intensivo para despachos o departamentos de RH.',
+      price: '$499',
+      unit: 'por mes',
       icon: <Crown className="text-legal-gold" size={24} />, 
-      popular: true,
       features: [
-        '15 análisis de documentos',
-        '30 consultas en chat',
-        '15 generaciones de documentos',
-        'Calculadora ilimitada'
+        'Generaciones ilimitadas',
+        'Soporte técnico prioritario',
+        'Actualizaciones de ley',
+        'Sin marcas de agua'
       ],
-      color: 'gold'
+      color: 'gold',
+      action: () => handlePurchase('mensualidad')
     }
   ];
 
@@ -100,116 +90,70 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-legal-950/40 backdrop-blur-sm overflow-y-auto">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-slate-50 w-full max-w-6xl rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-white/20 my-auto"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-slate-50 w-full max-w-5xl rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-white/20 my-auto"
           >
             {/* Header */}
             <div className="p-8 sm:px-12 flex items-center justify-between bg-white border-b border-slate-200">
               <div className="flex items-center gap-5">
-                <div className="p-3.5 bg-legal-950 rounded-2xl shadow-premium">
+                <div className="p-3.5 bg-legal-950 rounded-2xl shadow-lg">
                   <Shield className="text-legal-gold" size={28} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-serif font-bold text-legal-950 tracking-tight">Licencias y Créditos Estratégicos</h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Potencie su práctica jurídica con Lex Laboral</p>
+                  <h2 className="text-2xl font-serif font-bold text-legal-950 tracking-tight">Seleccione su Plan</h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sin registros, pago por uso inmediato</p>
                 </div>
               </div>
-              <button 
-                onClick={onClose}
-                className="p-3 hover:bg-slate-100 rounded-2xl transition-all text-slate-400 hover:text-legal-950 active:scale-95"
-              >
-                <X size={24} />
-              </button>
+              <button onClick={onClose} className="p-3 hover:bg-slate-100 rounded-2xl transition-all text-slate-400 hover:text-legal-950"><X size={24} /></button>
             </div>
 
             {/* Content */}
-            <div className="p-8 sm:p-12 lg:p-14 overflow-y-auto no-scrollbar">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="p-8 sm:p-12 overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {plans.map((plan) => (
-                  <motion.div 
-                    key={plan.id}
-                    whileHover={{ y: -5 }}
-                    className={`relative flex flex-col bg-white rounded-[2rem] p-8 border ${plan.popular ? 'border-legal-gold ring-4 ring-legal-gold/5 shadow-xl' : 'border-slate-200 shadow-sm'} transition-all`}
-                  >
+                  <div key={plan.id} className={`relative flex flex-col bg-white rounded-[2rem] p-8 border ${plan.popular ? 'border-legal-gold ring-4 ring-legal-gold/5 shadow-xl' : 'border-slate-200 shadow-sm'}`}>
                     {plan.popular && (
                       <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-legal-gold text-legal-950 px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
-                        <Sparkles size={10} /> Más Popular
+                        <Sparkles size={10} /> Recomendado
                       </div>
                     )}
 
                     <div className="mb-6 flex items-center justify-between">
-                      <div className={`p-3 rounded-2xl bg-slate-50`}>
-                        {plan.icon}
-                      </div>
+                      <div className="p-3 rounded-2xl bg-slate-50">{plan.icon}</div>
                       <div className="text-right">
                         <div className="text-2xl font-serif font-bold text-legal-950">{plan.price}</div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{plan.unit}</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">{plan.unit}</div>
                       </div>
                     </div>
 
                     <h3 className="text-lg font-bold text-legal-950 mb-2">{plan.name}</h3>
-                    <p className="text-[12px] text-slate-500 leading-relaxed mb-8 h-12 line-clamp-3">
-                      {plan.description}
-                    </p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed mb-8 h-10 line-clamp-2">{plan.description}</p>
 
                     <div className="flex-1 space-y-4 mb-8">
-                      {plan.features.map((feature, i) => (
+                      {plan.features.map((f, i) => (
                         <div key={i} className="flex items-start gap-3">
-                          <div className={`mt-0.5 p-0.5 rounded-full ${plan.popular ? 'bg-legal-gold/20' : 'bg-slate-100'}`}>
-                            <Check size={12} className={plan.popular ? 'text-legal-gold' : 'text-slate-400'} />
-                          </div>
-                          <span className="text-[12px] text-slate-600 font-medium leading-tight">{feature}</span>
+                          <Check size={14} className={plan.popular ? 'text-legal-gold mt-0.5' : 'text-slate-300 mt-0.5'} />
+                          <span className="text-[11px] text-slate-600 font-medium">{f}</span>
                         </div>
                       ))}
                     </div>
 
                     <button 
-                      onClick={() => handlePurchase(plan.id as any)}
+                      onClick={() => plan.action()}
                       disabled={loading !== null}
-                      className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+                      className={`w-full py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
                         plan.popular 
-                          ? 'bg-legal-950 text-legal-gold shadow-lg shadow-legal-950/20 hover:bg-legal-900' 
-                          : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
-                      } disabled:opacity-50`}
+                          ? 'bg-legal-950 text-legal-gold shadow-lg hover:bg-legal-900' 
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
                     >
-                      {loading === plan.id ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          <span>Procesando...</span>
-                        </>
-                      ) : (
-                        <span>Adquirir Ahora</span>
-                      )}
+                      {loading === plan.id ? 'Procesando...' : plan.id === 'free' ? 'Usar Gratis' : 'Adquirir Plan'}
                     </button>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-
-              {/* Security Banner */}
-              <div className="mt-12 p-6 bg-slate-100/50 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6 opacity-75">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white rounded-xl shadow-sm">
-                    <Shield className="text-emerald-500" size={24} />
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold text-legal-950 uppercase tracking-widest">Pago 100% Seguro</h4>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Transacciones procesadas por Stripe con encriptación de grado bancario.</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-6 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
-                  <span className="text-[10px] font-black text-slate-400 italic">VISA</span>
-                  <span className="text-[10px] font-black text-slate-400 italic">MASTERCARD</span>
-                  <span className="text-[10px] font-black text-slate-400 italic">AMEX</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-6 bg-white border-t border-slate-100 text-center">
-              <p className="text-[10px] text-slate-400 font-medium">
-                Al realizar la compra, usted acepta nuestros <a href="#" className="text-legal-gold hover:underline">Términos de Servicio</a> y <a href="#" className="text-legal-gold hover:underline">Política de Reembolsos</a>.
-              </p>
             </div>
           </motion.div>
         </div>
