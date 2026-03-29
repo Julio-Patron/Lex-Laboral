@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Crown, Shield, PenTool, Sparkles, Calculator } from 'lucide-react';
+import { X, Check, Crown, Shield, PenTool, Sparkles, Zap } from 'lucide-react';
 import { createCheckoutSession, redirectToCheckout } from '../services/stripe';
 import { useAuth } from './AuthProvider';
 
@@ -9,7 +8,7 @@ interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
   notify: (m: string, t?: any, tit?: string) => void;
-  initialPlan?: 'draft_basic' | 'mensualidad';
+  initialPlan?: 'draft_basic' | 'mensualidad' | 'trimestralidad';
   onRequireLogin?: () => void;
 }
 
@@ -22,7 +21,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 }) => {
   const [loading, setLoading] = React.useState<string | null>(null);
   const { user } = useAuth();
-  const handlePurchase = async (plan: 'draft_basic' | 'mensualidad') => {
+  
+  const handlePurchase = async (plan: 'draft_basic' | 'mensualidad' | 'trimestralidad') => {
     if (!user) {
       onClose();
       if (onRequireLogin) onRequireLogin();
@@ -45,53 +45,52 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 
   const plans = [
     {
-      id: 'free',
-      name: 'Uso Gratuito',
-      description: 'Herramientas básicas de consulta rápida.',
-      price: '$0',
-      unit: 'siempre',
-      icon: <Calculator className="text-slate-400" size={24} />, 
-      features: [
-        'Calculadora Laboral básica',
-        'Calculadora Seguridad Social',
-        'Visualización de fórmulas',
-        'Exportación básica'
-      ],
-      color: 'slate',
-      action: () => onClose()
-    },
-    {
-      id: 'draft_basic',
-      name: 'Documento Individual',
-      description: 'Generación de 1 instrumento jurídico profesional.',
+      id: 'draft_basic' as const,
+      name: 'Documento Suelto',
+      description: 'Generación de 1 instrumento jurídico profesional sin ataduras.',
       price: '$79',
       unit: 'pago único',
-      icon: <PenTool className="text-amber-500" size={24} />, 
-      popular: true,
+      icon: <PenTool className="text-slate-500" size={24} />, 
       features: [
+        'Calculadora Seguridad Social (IMSS)',
         'Técnica legislativa mexicana',
-        'Estructura de cláusulas formal',
-        'Formatos LFT validados',
-        'Exportación PDF Profesional'
+        'Exportación PDF sin marca de agua',
+        'Formato LFT validado'
       ],
-      color: 'amber',
+      color: 'slate',
       action: () => handlePurchase('draft_basic')
     },
     {
-      id: 'mensualidad',
+      id: 'mensualidad' as const,
       name: 'Pase Mensual',
-      description: 'Uso intensivo para despachos o departamentos de RH.',
-      price: '$499',
+      description: 'Generación acelerada y herramientas exclusivas para despachos pequeños.',
+      price: '$299',
       unit: 'por mes',
+      icon: <Sparkles className="text-amber-500" size={24} />, 
+      popular: true,
+      features: [
+        'Todo lo del documento suelto',
+        'Hasta 100 dictámenes al mes',
+        'Calculadora IMSS ilimitada',
+        'Atención prioritaria'
+      ],
+      color: 'amber',
+      action: () => handlePurchase('mensualidad')
+    },
+    {
+      id: 'trimestralidad' as const,
+      name: 'Pase Trimestral',
+      description: 'Paga 3 meses de golpe y asegura rentabilidad para todo tu despacho.',
+      price: '$559',
+      unit: 'cada 3 meses',
       icon: <Crown className="text-legal-gold" size={24} />, 
       features: [
-        'Generaciones ilimitadas',
-        'Soporte técnico prioritario',
-        'Actualizaciones de ley',
-        'Sin marcas de agua'
+        '100 dictámenes mensuales garantizados',
+        'Acceso ininterrumpido a calculadoras',
+        'Preferencia en nuevas funciones'
       ],
       color: 'gold',
-      action: () => handlePurchase('mensualidad')
+      action: () => handlePurchase('trimestralidad')
     }
   ];
 
@@ -112,8 +111,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                   <Shield className="text-legal-gold" size={28} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-serif font-bold text-legal-950 tracking-tight">Seleccione su Plan</h2>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Sin registros, pago por uso inmediato</p>
+                  <h2 className="text-2xl font-serif font-bold text-legal-950 tracking-tight">Desbloquear Funciones Pro</h2>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">El aliado nº 1 de los abogados de México</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-3 hover:bg-slate-100 rounded-2xl transition-all text-slate-400 hover:text-legal-950"><X size={24} /></button>
@@ -126,7 +125,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                   <div key={plan.id} className={`relative flex flex-col bg-white rounded-[2rem] p-8 border ${plan.popular ? 'border-legal-gold ring-4 ring-legal-gold/5 shadow-xl' : 'border-slate-200 shadow-sm'}`}>
                     {plan.popular && (
                       <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-legal-gold text-legal-950 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
-                        <Sparkles size={10} /> Recomendado
+                        <Zap size={10} /> Más Popular
                       </div>
                     )}
 
@@ -159,7 +158,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
-                      {loading === plan.id ? 'Procesando...' : plan.id === 'free' ? 'Usar Gratis' : 'Adquirir Plan'}
+                      {loading === plan.id ? 'Abonando...' : 'Elegir Plan'}
                     </button>
                   </div>
                 ))}

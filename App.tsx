@@ -67,9 +67,13 @@ function App() {
                   onAuthRequired={() => setIsLoginModalOpen(true)}
                 />;
               case AppView.CALCULATOR:
-                return <LaborCalculator notify={notify} />;
+                return <LaborCalculator notify={notify} onRequireLogin={() => setIsLoginModalOpen(true)} />;
               case AppView.SOCIAL_SECURITY:
-                return <SocialSecurityCalculator notify={notify} />;
+                return <SocialSecurityCalculator 
+                  notify={notify} 
+                  onRequireLogin={() => setIsLoginModalOpen(true)}
+                  onRequirePremium={() => openPricingModal('mensualidad')}
+                />;
               case AppView.TERMS:
                 return <LegalView type={AppView.TERMS} onBack={() => setCurrentView(AppView.HOME)} />;
               case AppView.PRIVACY:

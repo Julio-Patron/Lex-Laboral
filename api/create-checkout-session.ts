@@ -2,7 +2,8 @@ import { getStripe } from '../lib/stripe';
 
 const PLAN_PRICES: Record<string, string> = {
   'draft_basic': process.env.STRIPE_PRICE_DRAFT || 'price_1TEn5q36rYdwQu28uuqFOdEP',
-  'mensualidad': process.env.STRIPE_PRICE_MENSUALIDAD || 'price_1TEn3v36rYdwQu28YW1qKo0a'
+  'mensualidad': process.env.STRIPE_PRICE_MENSUALIDAD || 'price_1TEn3v36rYdwQu28YW1qKo0a',
+  'trimestralidad': process.env.STRIPE_PRICE_TRIMESTRAL || 'price_trimestral_dummy_dev'
 };
 
 export default async function handler(req: any, res: any) {
@@ -27,7 +28,7 @@ export default async function handler(req: any, res: any) {
       client_reference_id: userId,
       metadata: { plan: plan },
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: plan === 'mensualidad' ? 'subscription' : 'payment',
+      mode: (plan === 'mensualidad' || plan === 'trimestralidad') ? 'subscription' : 'payment',
       success_url: `${process.env.CLIENT_URL || 'https://lexmexl.vercel.app'}/#payment-success`,
       cancel_url: `${process.env.CLIENT_URL || 'https://lexmexl.vercel.app'}/#payment-cancelled`,
     });

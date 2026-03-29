@@ -16,10 +16,14 @@ import {
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from './AuthProvider';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
-}> = ({ notify }) => {
+  onRequireLogin?: () => void;
+  onRequirePremium?: () => void;
+}> = ({ notify, onRequireLogin, onRequirePremium }) => {
+  const { user, isPremium } = useAuth();
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); 
   const [days, setDays] = useState<number>(30);
@@ -63,6 +67,18 @@ export const SocialSecurityCalculator: React.FC<{
   } | null>(null);
 
   const calculate = async () => {
+    if (!user) {
+      if (onRequireLogin) onRequireLogin();
+      notify("Regístrate para continuar", "info");
+      return;
+    }
+    
+    if (!isPremium) {
+      if (onRequirePremium) onRequirePremium();
+      notify("Función Exclusiva LexPremium", "warning");
+      return;
+    }
+
     if (sbc <= 0) {
       notify("El Salario Base de Cotización debe ser un número positivo", "error");
       return;

@@ -12,9 +12,7 @@ AS $$
 DECLARE
   v_is_premium BOOLEAN;
   v_access_until TIMESTAMPTZ;
-  v_audits_free_used BOOLEAN;
   v_audits_balance INTEGER;
-  v_result BOOLEAN := FALSE;
 BEGIN
   -- Obtener datos del usuario
   SELECT is_premium, access_until
@@ -26,21 +24,8 @@ BEGIN
     RAISE EXCEPTION 'Usuario no encontrado';
   END IF;
 
-  -- Premium tiene acceso ilimitado
+  -- Premium tiene acceso ilimitado a análisis
   IF v_is_premium AND (v_access_until IS NULL OR v_access_until >= NOW()) THEN
-    RETURN TRUE;
-  END IF;
-
-  -- Verificar si ya usó el gratuito
-  SELECT audits_free_used INTO v_audits_free_used
-  FROM user_usage
-  WHERE user_id = p_user_id;
-
-  IF v_audits_free_used IS NOT TRUE THEN
-    -- Marcar como usado el gratuito
-    INSERT INTO user_usage (user_id, audits_free_used, date)
-    VALUES (p_user_id, TRUE, CURRENT_DATE)
-    ON CONFLICT (user_id) DO UPDATE SET audits_free_used = TRUE;
     RETURN TRUE;
   END IF;
 

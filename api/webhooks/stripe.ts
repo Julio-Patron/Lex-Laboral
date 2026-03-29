@@ -68,13 +68,17 @@ export default async function handler(req: any, res: any) {
             .from('user_credits')
             .insert({ user_id: userId, draft_basic_balance: 1 });
         }
-      } else if (plan === 'mensualidad') {
+      } else if (plan === 'mensualidad' || plan === 'trimestralidad') {
         const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
+        if (plan === 'mensualidad') {
+          expiresAt.setMonth(expiresAt.getMonth() + 1);
+        } else {
+          expiresAt.setMonth(expiresAt.getMonth() + 3);
+        }
 
         await supabaseAdmin.from('users').update({ 
           is_premium: true, 
-          license_type: 'mensualidad',
+          license_type: plan,
           access_until: expiresAt.toISOString(),
           updated_at: new Date().toISOString()
         }).eq('id', userId);

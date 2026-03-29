@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { 
   Calculator, 
@@ -26,12 +25,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BreakdownChart } from './BreakdownChart';
+import { useAuth } from './AuthProvider';
 
 type DismissalType = 'injustificado' | 'renuncia' | 'rescision_patron' | 'rescision_trabajador';
 
 export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
-}> = ({ notify }) => {
+  onRequireLogin?: () => void;
+}> = ({ notify, onRequireLogin }) => {
+  const { user } = useAuth();
   const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
@@ -112,6 +114,12 @@ export const LaborCalculator: React.FC<{
   } | null>(null);
 
   const calculate = async () => {
+    if (!user) {
+      if (onRequireLogin) onRequireLogin();
+      notify("Regístrate gratis para usar la calculadora", "info");
+      return;
+    }
+
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
       setShowErrors(true);
       notify("Complete los campos obligatorios para generar el cálculo", "warning");
