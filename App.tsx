@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, Suspense, lazy, useEffect } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './components/Home';
 import { LegalView } from './components/LegalView';
@@ -9,6 +9,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './components/AuthProvider';
 import { LoginModal } from './components/LoginModal';
 import { trackEvent } from './lib/analytics';
+import { supabase } from './lib/supabase';
 
 // Lazy loading components
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
@@ -58,6 +59,12 @@ function App() {
     trackEvent('view_changed', { view });
   }, []);
 
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setCurrentView(AppView.HOME);
+    notify('Sesión cerrada correctamente', 'info');
+  }, [notify]);
+
   const renderView = () => {
     return (
       <div className="h-full w-full animate-fade-in relative overflow-y-auto">
@@ -72,7 +79,7 @@ function App() {
           {(() => {
             switch (currentView) {
               case AppView.HOME:
-                return <Home onNavigate={handleViewChange} />;
+                return <Home onNavigate={handleViewChange} user={user} onLogin={() => setIsLoginModalOpen(true)} onLogout={handleLogout} />;
               case AppView.DRAFTING:
                 return <Drafter
                   state={draftingState}
@@ -90,13 +97,13 @@ function App() {
                   onRequirePremium={() => openPricingModal('mensualidad')}
                 />;
               case AppView.CEO_DASHBOARD:
-                return isCEO ? <CEODashboard /> : <Home onNavigate={handleViewChange} />;
+                return isCEO ? <CEODashboard /> : <Home onNavigate={handleViewChange} user={user} onLogin={() => setIsLoginModalOpen(true)} onLogout={handleLogout} />;
               case AppView.TERMS:
                 return <LegalView type={AppView.TERMS} onBack={() => handleViewChange(AppView.HOME)} />;
               case AppView.PRIVACY:
                 return <LegalView type={AppView.PRIVACY} onBack={() => handleViewChange(AppView.HOME)} />;
               default:
-                return <Home onNavigate={handleViewChange} />;
+                return <Home onNavigate={handleViewChange} user={user} onLogin={() => setIsLoginModalOpen(true)} onLogout={handleLogout} />;
             }
           })()}
         </Suspense>
