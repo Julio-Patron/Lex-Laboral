@@ -14,169 +14,114 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
   const content = isTerms ? (
     <>
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-legal-gold/10 rounded-2xl text-legal-gold">
+        <div className="p-3 bg-slate-900 text-legal-gold rounded-2xl shadow-lg border border-white/10">
           <Scale size={32} />
         </div>
         <div>
-          <h1 className="text-3xl font-serif font-bold text-slate-900 line-height-tight">Términos y Condiciones</h1>
-          <p className="text-slate-500 text-sm">Última actualización: Marzo 2026</p>
+          <h1 className="text-3xl font-serif font-bold text-slate-900 leading-tight">Términos y Condiciones</h1>
+          <p className="text-slate-500 text-sm font-medium">Última actualización: 29 de marzo de 2026</p>
         </div>
       </div>
 
-      <div className="prose prose-slate max-w-none space-y-6 text-slate-700 leading-relaxed">
+      <div className="prose prose-slate max-w-none space-y-8 text-slate-700 leading-relaxed text-[15px]">
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">1</span>
-            Aceptación de los Términos
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">01</span>
+            Aceptación y Titularidad
           </h2>
-          <p>Al acceder o utilizar la plataforma Lex Laboral (en adelante "la Plataforma"), disponible en lexlaboral.com.mx y app.lexlaboral.com.mx, usted ("el Usuario") acepta cumplir con estos Términos y Condiciones. Si no está de acuerdo, deberá abstenerse de utilizar la Plataforma.</p>
+          <p>Bienvenido a <strong>Lex Laboral</strong>. Al acceder y utilizar este sitio web y sus servicios asociados, usted acepta estar sujeto a estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>filex dev</strong> (en lo sucesivo, "el Titular"), con domicilio en Mérida, Yucatán, México.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">2</span>
-            Naturaleza del Servicio y Limitaciones
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">02</span>
+            Naturaleza de los Servicios (LegalTech & IA)
           </h2>
-          <div className="space-y-3">
-            <p><strong>2.1.</strong> Lex Laboral es una herramienta tecnológica de asistencia basada en inteligencia artificial (Google Gemini API) que proporciona información, cálculos estimatorios (ej. finiquitos, cuotas IMSS) y redacción automatizada de borradores de documentos, utilizando parámetros legales vigentes en México.</p>
-            <p className="bg-amber-50 border-l-4 border-amber-400 p-4 italic">
-              <strong>2.2. LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> El contenido generado es meramente informativo y orientativo. No sustituye la consulta con un abogado colegiado. Las relaciones laborales, juicios y estrategias legales requieren de supervisión humana profesional.
-            </p>
-            <p><strong>2.3.</strong> El Usuario es el único responsable del uso que dé a la información y documentos generados por la Plataforma. Lex Laboral no se hace responsable por decisiones legales, administrativas o judiciales basadas en el uso de la herramienta.</p>
+          <div className="space-y-4">
+            <p><strong>2.1. Alcance:</strong> Lex Laboral es una herramienta de asistencia jurídica basada en inteligencia artificial (Google Gemini API). Provee cálculos de prestaciones laborales en México (LFT, IMSS) y redacción automatizada de borradores legales.</p>
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-2xl shadow-sm my-6">
+              <p className="text-amber-900 font-bold mb-2 flex items-center gap-2 italic uppercase tracking-wider text-xs">
+                ⚠️ DESLINDE DE RESPONSABILIDAD CRÍTICO
+              </p>
+              <p className="text-sm leading-6"><strong>LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> El contenido es generado mediante algoritmos de IA y debe ser revisado por un abogado titulado antes de su uso oficial. filex dev no se hace responsable por errores en los cálculos o documentos que resulten en perjuicios legales o económicos para el Usuario.</p>
+            </div>
           </div>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">3</span>
-            Precisión de la Información
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">03</span>
+            Pagos y Suscripciones (Stripe)
           </h2>
-          <p>Realizamos esfuerzos comercialmente razonables para mantener la información actualizada (ej. SMG $312.41, UMA $119.35 a Marzo 2026). Sin embargo, las leyes, criterios judiciales y tablas pueden cambiar. No garantizamos la precisión, integridad o actualización absoluta de los datos. El Usuario es responsable de verificar la información con fuentes oficiales.</p>
+          <p>Los pagos se procesan exclusivamente a través de la pasarela segura <strong>Stripe</strong>. Al realizar una compra, usted acepta los términos de uso de Stripe. Las suscripciones ("Pase Mensual" o "Trimestral") se cobran por adelantado y no son reembolsables, salvo disposición legal obligatoria en México.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">4</span>
-            Registro y Cuentas de Usuario
-          </h2>
-          <p>Para acceder a ciertas funcionalidades, el Usuario deberá registrarse proporcionando información veraz. Es responsable de mantener la confidencialidad de sus credenciales de acceso.</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">5</span>
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">04</span>
             Propiedad Intelectual
           </h2>
-          <p>El código fuente (bajo licencia MIT), diseños, logotipos y contenido original de la Plataforma son propiedad de Lex Laboral o sus licenciantes. El Usuario no adquiere ningún derecho sobre ellos. El software de código abierto utilizado se rige por sus propias licencias.</p>
+          <p>Todos los derechos sobre el software, código, diseño, logotipos y marcas pertenecen a <strong>filex dev</strong>. El Usuario tiene una licencia de uso limitada para generar y descargar documentos para fines personales o profesionales propios, sin derecho a revender la tecnología de la plataforma.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">6</span>
-            Conducta del Usuario
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">05</span>
+            Jurisdicción y Ley Aplicable
           </h2>
-          <p>El Usuario se compromete a no utilizar la Plataforma para actividades ilícitas, introducir virus o intentar vulnerar la seguridad del sistema.</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">7</span>
-            Limitación de Responsabilidad
-          </h2>
-          <p>Hasta el máximo permitido por la ley, Lex Laboral no será responsable por daños indirectos, incidentales o consecuentes derivados del uso o la imposibilidad de uso de la Plataforma.</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">8</span>
-            Modificaciones
-          </h2>
-          <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán efectivos al ser publicados en la Plataforma.</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-500">9</span>
-            Ley y Jurisdicción
-          </h2>
-          <p>Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos. Para cualquier controversia, las partes se someten a la jurisdicción de los tribunales de la Ciudad de México, renunciando a cualquier otro fuero.</p>
+          <p>Para la interpretación y cumplimiento de estos términos, las partes se someten expresamente a las leyes vigentes de los Estados Unidos Mexicanos y a la jurisdicción de los tribunales competentes en la ciudad de <strong>Mérida, Yucatán</strong>, renunciando a cualquier otro fuero que pudiere corresponderles por razón de sus domicilios presentes o futuros.</p>
         </section>
       </div>
     </>
   ) : (
     <>
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
-          <Lock size={32} />
+        <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg border border-white/10">
+          <Shield size={32} />
         </div>
         <div>
-          <h1 className="text-3xl font-serif font-bold text-slate-900 line-height-tight">Aviso de Privacidad</h1>
-          <p className="text-slate-500 text-sm">Integral • Marzo 2026</p>
+          <h1 className="text-3xl font-serif font-bold text-slate-900 leading-tight">Aviso de Privacidad</h1>
+          <p className="text-slate-500 text-sm font-medium">Integral • Ley Federal de Protección de Datos Personales</p>
         </div>
       </div>
 
-      <div className="prose prose-slate max-w-none space-y-6 text-slate-700 leading-relaxed">
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 text-emerald-900 text-sm mb-8">
-          <p className="font-bold mb-2 flex items-center gap-2">
-            <Shield size={16} /> Tu privacidad es prioridad
-          </p>
-          <p>Este aviso detalla cómo tratamos tus datos bajo los principios de licitud y transparencia.</p>
-        </div>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Responsable</h2>
-          <p><strong>Lex Laboral</strong>, con correo de contacto para temas de privacidad: soporte@lexlaboral.com.mx.</p>
+      <div className="prose prose-slate max-w-none space-y-8 text-slate-700 leading-relaxed text-[15px]">
+        <section className="bg-emerald-50 border border-emerald-100 rounded-3xl p-8 text-emerald-900 mb-8 shadow-sm">
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+             Identidad del Responsable
+          </h2>
+          <p className="text-sm"><strong>filex dev</strong>, con domicilio en Mérida, Yucatán, es el responsable del tratamiento de sus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP). Correo de contacto: <strong>admin@lexlaboral.com.mx</strong>.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Finalidades del Tratamiento</h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-bold text-slate-900 text-sm mb-2 uppercase tracking-wide opacity-60">Finalidades Primarias (Necesarias)</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Crear y administrar su cuenta de usuario.</li>
-                <li>Proveer los servicios de la Plataforma (análisis jurídico, calculadoras).</li>
-                <li>Procesar pagos de suscripción.</li>
-                <li>Atender dudas y quejas relacionadas con el servicio.</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-sm mb-2 uppercase tracking-wide opacity-60">Finalidades Secundarias (Opcionales)</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Enviar comunicados sobre novedades y actualizaciones legales.</li>
-                <li>Realizar encuestas de satisfacción para mejorar la herramienta.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Datos Personales Recabados</h2>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Identificación y contacto:</strong> Nombre, correo electrónico.</li>
-            <li><strong>Contenido de usuario:</strong> Información contenida en documentos subidos para análisis. NO recopilamos datos financieros sensibles más allá de los necesarios para la pasarela de pago (Stripe).</li>
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Datos Personales Tratados</h2>
+          <ul className="list-disc pl-6 space-y-3">
+            <li><strong>Identificación:</strong> Nombre o alias para la personalización de documentos.</li>
+            <li><strong>Contacto:</strong> Correo electrónico para el envío de comprobantes de pago y acceso a la plataforma.</li>
+            <li><strong>Información Técnica:</strong> Los documentos que usted sube para análisis son procesados de forma efímera para generar el resultado mediante IA.</li>
           </ul>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Transferencias de Datos</h2>
-          <p>Para el funcionamiento de la IA, los datos se transfieren de forma segura a:</p>
-          <ul className="list-disc pl-5 space-y-2 mt-2">
-            <li><strong>Google LLC (Gemini API):</strong> Para procesar consultas y análisis.</li>
-            <li><strong>Stripe:</strong> Para la gestión segura de pagos.</li>
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Finalidades del Tratamiento</h2>
+          <ul className="list-disc pl-6 space-y-3">
+            <li><strong>Primarias:</strong> Prestación del servicio de cálculo laboral, generación de borradores jurídicos y procesamiento de pagos vía Stripe.</li>
+            <li><strong>Secundarias:</strong> Mejora de la experiencia de usuario y envío ocasional de actualizaciones del sistema (previo consentimiento).</li>
           </ul>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Derechos ARCO</h2>
-          <p>Usted puede ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición enviando una solicitud a nuestro correo de contacto. Le responderemos en un plazo máximo de 20 días hábiles.</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Transferencias de Datos</h2>
+          <p>Le informamos que sus datos personales pueden ser compartidos con terceros únicamente para los fines del servicio:</p>
+          <ul className="list-disc pl-6 space-y-3 mt-4">
+            <li><strong>Google LLC (Gemini API):</strong> Procesa el contenido para generar el análisis inteligente.</li>
+            <li><strong>Stripe Inc:</strong> Procesa la información financiera de forma cifrada (filex dev no almacena números de tarjeta).</li>
+          </ul>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Uso de la IA</h2>
-          <p className="p-4 bg-slate-50 border border-slate-200 rounded-xl italic">
-            Al subir documentos, el Usuario manifiesta contar con el consentimiento de los terceros involucrados (ej. empleados) para el tratamiento de sus datos a través de nuestra herramienta.
-          </p>
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Derechos ARCO</h2>
+          <p>Usted tiene derecho a conocer qué datos tenemos (Acceso), corregirlos (Rectificación), eliminarlos de nuestras bases (Cancelación) u oponerse al uso de los mismos para fines específicos (Oposición). Para ejercer estos derechos, envíe un correo a <strong>admin@lexlaboral.com.mx</strong>.</p>
         </section>
       </div>
     </>

@@ -90,11 +90,41 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         </button>
       </div>
 
-      <div className="mt-16 text-center">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Soporte Técnico: contacto@lexlaboral.com
-        </p>
-      </div>
+      <footer className="mt-20 w-full max-w-6xl pt-8 border-t border-slate-100 pb-12">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4">
+          <div className="flex items-center space-x-2 opacity-50">
+            <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center overflow-hidden">
+              <img src="/assets/logo.webp" alt="Logo" className="w-full h-full object-cover" />
+            </div>
+            <span className="text-[10px] font-bold text-slate-900 uppercase tracking-tighter">Lex Laboral © 2026</span>
+          </div>
+
+          <div className="flex items-center space-x-8">
+            <button 
+              onClick={() => onNavigate(AppView.TERMS)}
+              className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
+            >
+              Términos
+            </button>
+            <button 
+              onClick={() => onNavigate(AppView.PRIVACY)}
+              className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
+            >
+              Privacidad
+            </button>
+            <a 
+              href="mailto:admin@lexlaboral.com.mx"
+              className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
+            >
+              Soporte
+            </a>
+          </div>
+
+          <p className="text-[10px] text-slate-400 font-medium">
+            Desarrollado con precisión por <span className="text-slate-900 font-bold">filex dev</span> • Mérida, Yucatán
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
