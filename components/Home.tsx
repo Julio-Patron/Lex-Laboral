@@ -34,7 +34,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </div>
           
           <div className="text-left relative z-10">
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Calculadora Laboral</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Cálculo de Prestaciones</h3>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
               Calcula finiquitos, liquidaciones, ISR y prestaciones de ley con precisión profesional.
             </p>
@@ -56,7 +56,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </div>
           
           <div className="text-left relative z-10">
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Redacción Documental</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Generador de Documentos</h3>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
               Genera contratos, convenios y documentos legales personalizados mediante IA.
             </p>

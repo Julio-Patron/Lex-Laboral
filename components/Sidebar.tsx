@@ -25,8 +25,8 @@ interface SidebarProps {
 export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, notify, onOpenPricing }) => {
   const navItems = [
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={18} /> },
-    { id: AppView.DRAFTING, label: 'Redacción Documental', icon: <PenTool size={18} /> },
-    { id: AppView.CALCULATOR, label: 'Calculadora Laboral', icon: <Calculator size={18} /> },
+    { id: AppView.DRAFTING, label: 'Generador de Documentos', icon: <PenTool size={18} /> },
+    { id: AppView.CALCULATOR, label: 'Cálculo de Prestaciones', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'Seguridad Social', icon: <ShieldCheck size={18} /> },
   ];
 

@@ -261,7 +261,7 @@ export const LaborCalculator: React.FC<{
                <Calculator size={32} />
             </div>
             <div>
-              <h2 className="text-4xl font-serif font-extrabold text-slate-900 tracking-tight">Ingeniería de Liquidación</h2>
+              <h2 className="text-4xl font-serif font-extrabold text-slate-900 tracking-tight">Cálculo de Prestaciones</h2>
               <p className="text-slate-500 text-sm font-medium mt-1 max-w-xl">Simulación profesional bajo estándares de la Ley Federal del Trabajo.</p>
             </div>
           </div>

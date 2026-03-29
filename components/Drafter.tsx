@@ -154,7 +154,7 @@ export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, onUp
               <div className="p-3 bg-gradient-to-br from-legal-950 to-slate-900 rounded-2xl shadow-xl shadow-legal-950/20">
                 <Scale size={24} className="text-legal-gold" />
               </div>
-              <h2 className="text-4xl font-serif font-extrabold text-slate-900 tracking-tight">LexDrafter Pro</h2>
+              <h2 className="text-4xl font-serif font-extrabold text-slate-900 tracking-tight">Generador de Documentos</h2>
             </div>
             <p className="text-slate-500 text-sm max-w-xl font-medium">
               Redacción automatizada de instrumentos jurídicos laborales con IA de alta precisión. Estructuras apegadas a la Ley Federal del Trabajo.
