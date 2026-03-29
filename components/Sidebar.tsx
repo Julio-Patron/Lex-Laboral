@@ -6,7 +6,8 @@ import {
   ChevronRight, 
   Calculator, 
   ShieldCheck, 
-  Home
+  Home,
+  BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,9 +21,10 @@ interface SidebarProps {
   isGuest: boolean;
   notify?: (m: string, t?: any, tit?: string) => void;
   onOpenPricing?: (plan: 'draft_basic' | 'mensualidad') => void;
+  isCEO?: boolean;
 }
 
-export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, notify, onOpenPricing }) => {
+export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, notify, onOpenPricing, isCEO }) => {
   const navItems = [
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={18} /> },
     { id: AppView.DRAFTING, label: 'Generador de Documentos', icon: <PenTool size={18} /> },
@@ -76,6 +78,31 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
             );
           })}
         </ul>
+
+        {/* CEO Dashboard — Only visible for admin */}
+        {isCEO && (
+          <>
+            <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 mt-6">Administración</p>
+            <ul className="space-y-1">
+              <li>
+                <button
+                  onClick={() => handleNavClick(AppView.CEO_DASHBOARD)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-medium transition-all group ${
+                    currentView === AppView.CEO_DASHBOARD
+                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/20'
+                      : 'text-indigo-400/70 hover:text-indigo-300 hover:bg-indigo-500/10'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <BarChart3 size={18} className={currentView === AppView.CEO_DASHBOARD ? 'text-indigo-300' : ''} />
+                    <span>Panel CEO</span>
+                  </div>
+                  {currentView === AppView.CEO_DASHBOARD && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
+                </button>
+              </li>
+            </ul>
+          </>
+        )}
       </nav>
 
       {/* Footer Links */}

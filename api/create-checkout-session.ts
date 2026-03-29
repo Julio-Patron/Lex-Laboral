@@ -1,4 +1,6 @@
 import { getStripe } from '../lib/stripe';
+import { applyRateLimit } from './_utils/rateLimit';
+import { handlePreflight, validateOrigin, setSecurityHeaders } from './_utils/security';
 
 const PLAN_PRICES: Record<string, string> = {
   'draft_basic': process.env.STRIPE_PRICE_DOCUMENTO || 'price_1TEn5q36rYdwQu28uuqFOdEP',
@@ -7,7 +9,17 @@ const PLAN_PRICES: Record<string, string> = {
 };
 
 export default async function handler(req: any, res: any) {
+  // Security: CORS preflight
+  if (handlePreflight(req, res)) return;
+  setSecurityHeaders(res);
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Security: Rate limit — max 10 requests per minute per IP
+  if (applyRateLimit(req, res, 10, 60_000)) return;
+
+  // Security: Origin validation
+  if (validateOrigin(req, res)) return;
 
   try {
     const { plan, userEmail, userId } = req.body;

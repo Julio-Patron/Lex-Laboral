@@ -1,12 +1,31 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { executeWithGeminiFallback, SYSTEM_INSTRUCTION } from './_utils/ai';
 import { supabaseAdmin } from '../lib/supabase-admin';
+import { applyRateLimit } from './_utils/rateLimit';
+import { handlePreflight, validateOrigin, sanitizeInput, setSecurityHeaders } from './_utils/security';
 
 export default async function handler(req: any, res: any) {
+  // Security: CORS preflight
+  if (handlePreflight(req, res)) return;
+  setSecurityHeaders(res);
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Security: Rate limit — max 5 requests per minute per IP (protects Gemini API costs)
+  if (applyRateLimit(req, res, 5, 60_000)) return;
+
+  // Security: Origin validation
+  if (validateOrigin(req, res)) return;
 
   try {
     const { requirements, customInstructions, guestId } = req.body;
+
+    // Security: Input validation
+    const cleanRequirements = sanitizeInput(requirements, 5000);
+    if (!cleanRequirements) {
+      return res.status(400).json({ error: 'Los requerimientos son obligatorios y no deben estar vacíos.' });
+    }
+    const cleanInstructions = sanitizeInput(customInstructions, 2000);
 
     // SECURITY: Pay-to-Go Validation
     if (!guestId) {
@@ -78,10 +97,10 @@ export default async function handler(req: any, res: any) {
     const promptText = `TAREA: Proyecta el siguiente instrumento jurídico con base en los requerimientos. ES ESTRICTAMENTE OBLIGATORIO que utilices la estructura de [Proemio, Prestaciones o Declaraciones, Hechos o Cláusulas, Derecho, Puntos Resolutivos y Firmas] aplicable al tipo de documento.
 
 Requerimientos del usuario:
-${requirements}
+${cleanRequirements}
 
 Instrucciones extra:
-${customInstructions || 'Ninguna'}
+${cleanInstructions || 'Ninguna'}
 `;
 
     let resultText = await executeWithGeminiFallback(genAI, SYSTEM_INSTRUCTION, true, async (model) => {

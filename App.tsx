@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useCallback, Suspense, lazy, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './components/Home';
 import { LegalView } from './components/LegalView';
@@ -8,14 +8,19 @@ import { PricingModal } from './components/PricingModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useAuth } from './components/AuthProvider';
 import { LoginModal } from './components/LoginModal';
+import { trackEvent } from './lib/analytics';
 
 // Lazy loading components
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
 const LaborCalculator = lazy(() => import('./components/LaborCalculator').then(module => ({ default: module.LaborCalculator })));
 const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityCalculator').then(module => ({ default: module.SocialSecurityCalculator })));
+const CEODashboard = lazy(() => import('./components/CEODashboard').then(module => ({ default: module.CEODashboard })));
 
 import { AppView, AppNotification, NotificationType, DraftingState } from './types';
 import { Menu, X } from 'lucide-react';
+
+// CEO email check — only this email can see the Dashboard
+const CEO_EMAIL = import.meta.env.VITE_CEO_EMAIL || '';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
@@ -27,6 +32,9 @@ function App() {
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
 
   const { user, credits } = useAuth();
+
+  // Check if the current user is the CEO
+  const isCEO = user?.email === CEO_EMAIL && CEO_EMAIL !== '';
 
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -41,7 +49,14 @@ function App() {
   const openPricingModal = (plan: 'draft_basic' | 'mensualidad' = 'draft_basic') => {
     setSelectedPlan(plan);
     setIsPricingModalOpen(true);
+    trackEvent('pricing_opened', { plan });
   };
+
+  // Track view changes for analytics
+  const handleViewChange = useCallback((view: AppView) => {
+    setCurrentView(view);
+    trackEvent('view_changed', { view });
+  }, []);
 
   const renderView = () => {
     return (
@@ -57,7 +72,7 @@ function App() {
           {(() => {
             switch (currentView) {
               case AppView.HOME:
-                return <Home onNavigate={setCurrentView} />;
+                return <Home onNavigate={handleViewChange} />;
               case AppView.DRAFTING:
                 return <Drafter
                   state={draftingState}
@@ -74,12 +89,14 @@ function App() {
                   onRequireLogin={() => setIsLoginModalOpen(true)}
                   onRequirePremium={() => openPricingModal('mensualidad')}
                 />;
+              case AppView.CEO_DASHBOARD:
+                return isCEO ? <CEODashboard /> : <Home onNavigate={handleViewChange} />;
               case AppView.TERMS:
-                return <LegalView type={AppView.TERMS} onBack={() => setCurrentView(AppView.HOME)} />;
+                return <LegalView type={AppView.TERMS} onBack={() => handleViewChange(AppView.HOME)} />;
               case AppView.PRIVACY:
-                return <LegalView type={AppView.PRIVACY} onBack={() => setCurrentView(AppView.HOME)} />;
+                return <LegalView type={AppView.PRIVACY} onBack={() => handleViewChange(AppView.HOME)} />;
               default:
-                return <Home onNavigate={setCurrentView} />;
+                return <Home onNavigate={handleViewChange} />;
             }
           })()}
         </Suspense>
@@ -98,7 +115,7 @@ function App() {
           <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
             <div 
               className="flex items-center space-x-2 cursor-pointer"
-              onClick={() => setCurrentView(AppView.HOME)}
+              onClick={() => handleViewChange(AppView.HOME)}
             >
                <img src="/assets/logo.webp" alt="Logo" className="w-8 h-8 rounded-lg" loading="lazy" />
                <span className="font-serif font-bold text-lg">Lex Laboral</span>
@@ -125,8 +142,8 @@ function App() {
           }`}>
             <Sidebar 
               currentView={currentView} 
-              onChangeView={(v) => { setCurrentView(v); setIsSidebarOpen(false); }} 
-              onNewCase={() => setCurrentView(AppView.HOME)} 
+              onChangeView={(v) => { handleViewChange(v); setIsSidebarOpen(false); }} 
+              onNewCase={() => handleViewChange(AppView.HOME)} 
               onLogout={() => {}}
               user={null}
               userData={null}
@@ -134,6 +151,7 @@ function App() {
               isGuest={true}
               notify={notify}
               onOpenPricing={openPricingModal}
+              isCEO={isCEO}
             />
           </div>
         </>
