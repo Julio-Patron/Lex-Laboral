@@ -22,8 +22,15 @@ export const createCheckoutSession = async (userEmail: string, userId: string, p
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to create checkout session');
+    let errorMessage = 'Failed to create checkout session';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      // Server returned non-JSON (e.g. Vercel generic error page)
+      errorMessage = `Server error (${response.status}). Verifica que las variables de entorno de Stripe estén configuradas en Vercel.`;
+    }
+    throw new Error(errorMessage);
   }
 
   const session = await response.json();
