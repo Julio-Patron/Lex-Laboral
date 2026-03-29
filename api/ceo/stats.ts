@@ -37,13 +37,24 @@ export default async function handler(req: any, res: any) {
     }
 
     // Look up the user's email to verify it matches CEO_EMAIL
-    const { data: userData, error: userErr } = await supabaseAdmin
+    // First try public.users table, then fallback to auth.users
+    let userEmail: string | null = null;
+
+    const { data: userData } = await supabaseAdmin
       .from('users')
       .select('email')
       .eq('id', userId)
       .single();
 
-    if (userErr || !userData || userData.email !== CEO_EMAIL) {
+    if (userData?.email) {
+      userEmail = userData.email;
+    } else {
+      // Fallback: check auth.users directly (email might not be in public.users)
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId as string);
+      userEmail = authUser?.user?.email || null;
+    }
+
+    if (!userEmail || userEmail.toLowerCase() !== CEO_EMAIL.toLowerCase()) {
       return res.status(403).json({ error: 'Acceso restringido. Solo el administrador puede ver estas métricas.' });
     }
 

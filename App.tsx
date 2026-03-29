@@ -34,7 +34,7 @@ function App() {
   const { user, credits } = useAuth();
 
   // Check if the current user is the CEO
-  const isCEO = user?.email === CEO_EMAIL && CEO_EMAIL !== '';
+  const isCEO = CEO_EMAIL !== '' && user?.email?.toLowerCase() === CEO_EMAIL.toLowerCase();
 
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
