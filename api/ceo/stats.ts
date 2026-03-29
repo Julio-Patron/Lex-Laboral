@@ -1,22 +1,13 @@
 /**
  * CEO Dashboard API — Estadísticas de negocio
  * 
- * Este endpoint retorna métricas agregadas de tu negocio:
- * - Total de usuarios registrados
- * - Usuarios premium activos
- * - Documentos generados este mes
- * - Usuarios recientes
- * - Resumen de uso
- * 
  * PROTECCIÓN: Solo accesible si el userId corresponde al email del CEO
- * configurado en la variable de entorno VITE_CEO_EMAIL.
+ * configurado en la variable de entorno CEO_EMAIL / VITE_CEO_EMAIL.
  */
 
 import { supabaseAdmin } from '../../lib/supabase-admin';
 import { applyRateLimit } from '../_utils/rateLimit';
 import { handlePreflight, setSecurityHeaders } from '../_utils/security';
-
-const CEO_EMAIL = process.env.VITE_CEO_EMAIL || process.env.CEO_EMAIL;
 
 export default async function handler(req: any, res: any) {
   if (handlePreflight(req, res)) return;
@@ -27,41 +18,34 @@ export default async function handler(req: any, res: any) {
   // Rate limit — max 30 requests per minute
   if (applyRateLimit(req, res, 30, 60_000)) return;
 
+  const CEO_EMAIL = process.env.CEO_EMAIL || process.env.VITE_CEO_EMAIL || '';
+
   try {
-    // AUTH: Verify the requester is the CEO
-    const authHeader = req.headers.authorization;
-    const userId = req.headers['x-user-id'];
+    const userId = req.headers['x-user-id'] as string;
 
     if (!userId || !CEO_EMAIL) {
-      return res.status(401).json({ error: 'No autorizado.' });
+      console.error('CEO Stats: Missing userId or CEO_EMAIL env var', { userId: !!userId, CEO_EMAIL: !!CEO_EMAIL });
+      return res.status(401).json({ error: 'No autorizado. Configuración incompleta.' });
     }
 
-    // Look up the user's email to verify it matches CEO_EMAIL
-    // First try public.users table, then fallback to auth.users
-    let userEmail: string | null = null;
-
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('email')
-      .eq('id', userId)
-      .single();
-
-    if (userData?.email) {
-      userEmail = userData.email;
-    } else {
-      // Fallback: check auth.users directly (email might not be in public.users)
-      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId as string);
-      userEmail = authUser?.user?.email || null;
+    // === AUTH: Get the user's email from Supabase Auth (most reliable source) ===
+    const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.getUserById(userId);
+    
+    if (authErr || !authUser?.user?.email) {
+      console.error('CEO Stats: Failed to get auth user', authErr);
+      return res.status(401).json({ error: 'No se pudo verificar tu identidad.' });
     }
 
-    if (!userEmail || userEmail.toLowerCase() !== CEO_EMAIL.toLowerCase()) {
+    const userEmail = authUser.user.email;
+    
+    if (userEmail.toLowerCase() !== CEO_EMAIL.toLowerCase()) {
+      console.error('CEO Stats: Email mismatch', { userEmail, expected: CEO_EMAIL });
       return res.status(403).json({ error: 'Acceso restringido. Solo el administrador puede ver estas métricas.' });
     }
 
     // === Fetch all metrics in parallel ===
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
     const [
       totalUsersResult,
@@ -70,15 +54,10 @@ export default async function handler(req: any, res: any) {
       recentUsersResult,
       creditsResult,
     ] = await Promise.all([
-      // Total users
       supabaseAdmin.from('users').select('id', { count: 'exact', head: true }),
-      // Premium users
       supabaseAdmin.from('users').select('id', { count: 'exact', head: true }).eq('is_premium', true),
-      // This month's usage
       supabaseAdmin.from('user_usage').select('*').eq('month', currentMonth),
-      // Recent users (last 20)
       supabaseAdmin.from('users').select('id, email, is_premium, license_type, access_until, created_at').order('created_at', { ascending: false }).limit(20),
-      // Credits snapshot
       supabaseAdmin.from('user_credits').select('*'),
     ]);
 
@@ -92,10 +71,9 @@ export default async function handler(req: any, res: any) {
     const totalCreditsIssued = allCredits.reduce((sum: number, c: any) => sum + (c.draft_basic_balance || 0) + (c.audits_balance || 0), 0);
 
     // Users with active premium
-    const now2 = new Date();
     const recentUsers = (recentUsersResult.data || []).map((u: any) => ({
       ...u,
-      isPremiumActive: u.is_premium && u.access_until && new Date(u.access_until) > now2,
+      isPremiumActive: u.is_premium && u.access_until && new Date(u.access_until) > now,
     }));
 
     const stats = {

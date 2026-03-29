@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { AppView } from '../types';
-import { Calculator, FileText, ChevronRight, ShieldCheck, LogIn, LogOut, User } from 'lucide-react';
+import { Calculator, FileText, ChevronRight, ShieldCheck, LogIn, LogOut } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface HomeProps {
@@ -13,37 +13,7 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 animate-fade-in relative">
-      {/* Auth Bar */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
-        {user ? (
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl px-4 py-2.5 shadow-lg">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-legal-gold to-amber-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
-              {user.email?.charAt(0).toUpperCase() || <User size={14} />}
-            </div>
-            <span className="hidden sm:block text-sm font-medium text-slate-700 max-w-[160px] truncate">
-              {user.email}
-            </span>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-              title="Cerrar sesión"
-            >
-              <LogOut size={14} />
-              <span className="hidden sm:inline">Salir</span>
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={onLogin}
-            className="group flex items-center gap-2 bg-gradient-to-r from-legal-dark to-legal-950 text-white px-5 py-2.5 rounded-2xl shadow-lg shadow-legal-gold/20 hover:shadow-xl hover:shadow-legal-gold/30 hover:-translate-y-0.5 transition-all duration-300 font-semibold text-sm border border-white/10"
-          >
-            <LogIn size={16} className="group-hover:translate-x-0.5 transition-transform" />
-            <span>Iniciar Sesión</span>
-          </button>
-        )}
-      </div>
-
+    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 animate-fade-in">
       <div className="text-center mb-12">
         <div className="w-24 h-24 bg-legal-950 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-white/10 overflow-hidden">
           <img src="/assets/logo.webp" alt="Lex Laboral Logo" className="w-full h-full object-cover" />
@@ -54,6 +24,37 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
         <p className="text-slate-500 max-w-lg mx-auto text-base leading-relaxed">
           Herramientas jurídicas especializadas para el cálculo laboral y redacción documental automatizada.
         </p>
+
+        {/* Auth Section — integrated below the description */}
+        <div className="mt-6">
+          {user ? (
+            <div className="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-5 py-3 shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-legal-gold to-amber-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
+                {user.email?.charAt(0).toUpperCase() || '?'}
+              </div>
+              <span className="text-sm font-medium text-slate-600 max-w-[200px] truncate">
+                {user.email}
+              </span>
+              <div className="w-px h-5 bg-slate-200" />
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-red-500 transition-colors"
+                title="Cerrar sesión"
+              >
+                <LogOut size={14} />
+                Salir
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onLogin}
+              className="group inline-flex items-center gap-2.5 bg-gradient-to-r from-legal-dark to-legal-950 text-white px-7 py-3.5 rounded-2xl shadow-lg shadow-legal-gold/20 hover:shadow-xl hover:shadow-legal-gold/30 hover:-translate-y-0.5 transition-all duration-300 font-bold text-sm border border-white/10"
+            >
+              <LogIn size={18} className="group-hover:translate-x-0.5 transition-transform" />
+              Iniciar Sesión
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
