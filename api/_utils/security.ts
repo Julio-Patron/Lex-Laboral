@@ -13,6 +13,8 @@
 
 /** Dominios permitidos para hacer requests a tu API */
 const ALLOWED_ORIGINS = [
+  'https://lexlaboral.com.mx',
+  'https://www.lexlaboral.com.mx',
   'https://lexmexl.vercel.app',
   'https://lex-laboral.vercel.app',
 ];

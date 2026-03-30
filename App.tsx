@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './components/Home';
 import { LegalView } from './components/LegalView';
@@ -10,6 +10,7 @@ import { useAuth } from './components/AuthProvider';
 import { LoginModal } from './components/LoginModal';
 import { trackEvent } from './lib/analytics';
 import { supabase } from './lib/supabase';
+import { updateSEO } from './lib/seo';
 
 // Lazy loading components
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
@@ -53,9 +54,15 @@ function App() {
     trackEvent('pricing_opened', { plan });
   };
 
-  // Track view changes for analytics
+  // SEO: actualizar tags al montar con la vista inicial
+  useEffect(() => {
+    updateSEO(currentView);
+  }, []);
+
+  // Cambio de vista con analytics y SEO
   const handleViewChange = useCallback((view: AppView) => {
     setCurrentView(view);
+    updateSEO(view);
     trackEvent('view_changed', { view });
   }, []);
 

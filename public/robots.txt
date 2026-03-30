@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /#dashboard
 
-Sitemap: https://studio-6462708856-c0f94.web.app/sitemap.xml
+Sitemap: https://lexlaboral.com.mx/sitemap.xml
