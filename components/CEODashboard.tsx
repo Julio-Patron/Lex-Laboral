@@ -44,12 +44,21 @@ export const CEODashboard: React.FC = () => {
         },
       });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Error al obtener datos');
+      // Leer el cuerpo como texto primero para evitar crashes con respuestas no-JSON
+      const text = await res.text();
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        // Vercel a veces devuelve errores como texto plano (ej: "A server error has occurred")
+        throw new Error(text.slice(0, 200) || `Error del servidor (${res.status})`);
       }
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `Error del servidor (${res.status})`);
+      }
+
       setStats(data);
     } catch (err: any) {
       setError(err.message);
