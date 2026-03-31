@@ -23,12 +23,19 @@ export const createCheckoutSession = async (userEmail: string, userId: string, p
 
   if (!response.ok) {
     let errorMessage = 'Failed to create checkout session';
+    const vercelRequestId = response.headers.get('x-vercel-id');
+    const responseText = await response.text();
+
     try {
-      const errorData = await response.json();
+      const errorData = JSON.parse(responseText);
       errorMessage = errorData.error || errorMessage;
     } catch {
-      // Server returned non-JSON (e.g. Vercel generic error page)
-      errorMessage = `Server error (${response.status}). Verifica que las variables de entorno de Stripe estén configuradas en Vercel.`;
+      console.error('Stripe checkout non-JSON error response', {
+        status: response.status,
+        vercelRequestId,
+        bodyPreview: responseText.slice(0, 500)
+      });
+      errorMessage = `Server error (${response.status}). Revisa los logs de Vercel con request id ${vercelRequestId || 'N/A'}.`;
     }
     throw new Error(errorMessage);
   }

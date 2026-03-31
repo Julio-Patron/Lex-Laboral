@@ -4,19 +4,19 @@ import { applyRateLimit } from './_utils/rateLimit';
 import { handlePreflight, validateOrigin, setSecurityHeaders } from './_utils/security';
 
 export default async function handler(req: any, res: any) {
-  // Security: CORS preflight
-  if (handlePreflight(req, res)) return;
-  setSecurityHeaders(res);
-
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  // Security: Rate limit — max 10 requests per minute per IP
-  if (applyRateLimit(req, res, 10, 60_000)) return;
-
-  // Security: Origin validation
-  if (validateOrigin(req, res)) return;
-
   try {
+    // Security: CORS preflight
+    if (handlePreflight(req, res)) return;
+    setSecurityHeaders(res);
+
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+    // Security: Rate limit — max 10 requests per minute per IP
+    if (applyRateLimit(req, res, 10, 60_000)) return;
+
+    // Security: Origin validation
+    if (validateOrigin(req, res)) return;
+
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const { plan, userEmail, userId } = body;
     const validPlans = new Set(['draft_basic', 'mensualidad', 'trimestralidad']);
@@ -73,6 +73,8 @@ export default async function handler(req: any, res: any) {
   } catch (error: any) {
     console.error('[Stripe] Session Creation Failure:', error);
     const errorMessage = error?.message || 'Error interno al contactar con Stripe.';
-    res.status(500).json({ error: errorMessage });
+    if (!res.headersSent) {
+      res.status(500).json({ error: errorMessage });
+    }
   }
 }
