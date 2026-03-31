@@ -11,6 +11,7 @@ import { LoginModal } from './components/LoginModal';
 import { trackEvent } from './lib/analytics';
 import { supabase } from './lib/supabase';
 import { updateSEO } from './lib/seo';
+import { getPathForView, getViewForPath } from './lib/routes';
 
 // Lazy loading components
 const Drafter = lazy(() => import('./components/Drafter').then(module => ({ default: module.Drafter })));
@@ -25,7 +26,7 @@ import { Menu, X } from 'lucide-react';
 const CEO_EMAIL = import.meta.env.VITE_CEO_EMAIL || '';
 
 function App() {
-  const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
+  const [currentView, setCurrentView] = useState<AppView>(() => getViewForPath(window.location.pathname));
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
@@ -57,13 +58,26 @@ function App() {
   // SEO: actualizar tags al montar con la vista inicial
   useEffect(() => {
     updateSEO(currentView);
-  }, []);
+  }, [currentView]);
 
   // Cambio de vista con analytics y SEO
   const handleViewChange = useCallback((view: AppView) => {
     setCurrentView(view);
-    updateSEO(view);
+    const nextPath = getPathForView(view);
+    const currentPath = window.location.pathname;
+    if (nextPath !== currentPath) {
+      window.history.pushState({}, '', nextPath);
+    }
     trackEvent('view_changed', { view });
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      setCurrentView(getViewForPath(window.location.pathname));
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   const handleLogout = useCallback(async () => {

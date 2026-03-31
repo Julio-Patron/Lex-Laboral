@@ -8,6 +8,7 @@
  */
 
 import { AppView } from '../types';
+import { getPathForView } from './routes';
 
 const SITE_NAME = 'Lex Laboral';
 const BASE_URL = 'https://lexlaboral.com.mx';
@@ -17,6 +18,7 @@ interface SEOConfig {
   title: string;
   description: string;
   path: string;
+  robots?: string;
   ogTitle?: string;
   ogDescription?: string;
 }
@@ -29,43 +31,44 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
   [AppView.HOME]: {
     title: `Lex Laboral — Herramientas Jurídicas Laborales en México 2026`,
     description: 'Calcula tu liquidación, finiquito, aguinaldo y horas extra en México. Genera documentos legales con IA. Resultados claros y actualizados con UMA 2026.',
-    path: '/',
+    path: getPathForView(AppView.HOME),
   },
   [AppView.CALCULATOR]: {
     title: `Calculadora de Liquidación y Finiquito México 2026 | ${SITE_NAME}`,
     description: 'Calcula tu liquidación, finiquito, aguinaldo, vacaciones, prima de antigüedad e ISR al instante. Actualizado con la UMA y tablas fiscales 2026.',
-    path: '/#calculadora',
+    path: getPathForView(AppView.CALCULATOR),
     ogTitle: 'Calculadora de Liquidación y Finiquito México 2026',
     ogDescription: 'Herramienta gratuita para calcular tu liquidación laboral en México con desglose paso a paso.',
   },
   [AppView.DRAFTING]: {
     title: `Generador de Documentos Legales con IA | ${SITE_NAME}`,
     description: 'Genera contratos laborales, convenios, cartas de renuncia y escritos legales personalizados con inteligencia artificial. Basado en la Ley Federal del Trabajo.',
-    path: '/#generador-documentos',
+    path: getPathForView(AppView.DRAFTING),
     ogTitle: 'Generador de Documentos Legales con IA',
     ogDescription: 'Crea contratos y documentos legales laborales en México al instante con inteligencia artificial.',
   },
   [AppView.SOCIAL_SECURITY]: {
     title: `Calculadora de Cuotas IMSS e INFONAVIT 2026 | ${SITE_NAME}`,
     description: 'Calcula las cuotas obrero-patronales IMSS e INFONAVIT con desglose completo por ramo de seguro. Incluye prima de riesgo de trabajo y cesantía.',
-    path: '/#cuotas-imss',
+    path: getPathForView(AppView.SOCIAL_SECURITY),
     ogTitle: 'Calculadora de Cuotas IMSS e INFONAVIT 2026',
     ogDescription: 'Desglose completo de cuotas de seguridad social para patrones y trabajadores en México.',
   },
   [AppView.CEO_DASHBOARD]: {
     title: `Panel de Administración | ${SITE_NAME}`,
     description: 'Panel de control y métricas de Lex Laboral.',
-    path: '/#dashboard',
+    path: getPathForView(AppView.CEO_DASHBOARD),
+    robots: 'noindex, nofollow, noarchive',
   },
   [AppView.TERMS]: {
     title: `Términos y Condiciones | ${SITE_NAME}`,
     description: 'Términos y condiciones de uso de la plataforma Lex Laboral. Conoce tus derechos y obligaciones como usuario.',
-    path: '/#terminos',
+    path: getPathForView(AppView.TERMS),
   },
   [AppView.PRIVACY]: {
     title: `Aviso de Privacidad | ${SITE_NAME}`,
     description: 'Aviso de privacidad y protección de datos personales de Lex Laboral conforme a la LFPDPPP.',
-    path: '/#privacidad',
+    path: getPathForView(AppView.PRIVACY),
   },
 };
 
@@ -116,7 +119,7 @@ export function updateSEO(view: AppView): void {
 
   // Standard meta
   setMeta('name', 'description', config.description);
-  setMeta('name', 'robots', 'index, follow');
+  setMeta('name', 'robots', config.robots || 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
 
   // Canonical
   setCanonical(fullUrl);
@@ -131,11 +134,11 @@ export function updateSEO(view: AppView): void {
   setMeta('property', 'og:locale', 'es_MX');
 
   // Twitter
-  setMeta('property', 'twitter:card', 'summary_large_image');
-  setMeta('property', 'twitter:title', ogTitle);
-  setMeta('property', 'twitter:description', ogDescription);
-  setMeta('property', 'twitter:url', fullUrl);
-  setMeta('property', 'twitter:image', DEFAULT_OG_IMAGE);
+  setMeta('name', 'twitter:card', 'summary_large_image');
+  setMeta('name', 'twitter:title', ogTitle);
+  setMeta('name', 'twitter:description', ogDescription);
+  setMeta('name', 'twitter:url', fullUrl);
+  setMeta('name', 'twitter:image', DEFAULT_OG_IMAGE);
 }
 
 /**

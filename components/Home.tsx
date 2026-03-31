@@ -3,6 +3,7 @@ import React from 'react';
 import { AppView } from '../types';
 import { Calculator, FileText, ChevronRight, ShieldCheck, LogIn, LogOut } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { getPathForView } from '../lib/routes';
 
 interface HomeProps {
   onNavigate: (view: AppView) => void;
@@ -12,6 +13,11 @@ interface HomeProps {
 }
 
 export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout }) => {
+  const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, view: AppView) => {
+    event.preventDefault();
+    onNavigate(view);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 animate-fade-in">
       <div className="text-center mb-12">
@@ -58,8 +64,9 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
-        <button
-          onClick={() => onNavigate(AppView.CALCULATOR)}
+        <a
+          href={getPathForView(AppView.CALCULATOR)}
+          onClick={(event) => handleNavClick(event, AppView.CALCULATOR)}
           className="group relative flex flex-col p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-legal-gold/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-legal-gold/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
@@ -78,10 +85,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
               <ChevronRight size={16} className="ml-1 group-hover:translate-x-2 transition-transform" />
             </div>
           </div>
-        </button>
+        </a>
 
-        <button
-          onClick={() => onNavigate(AppView.DRAFTING)}
+        <a
+          href={getPathForView(AppView.DRAFTING)}
+          onClick={(event) => handleNavClick(event, AppView.DRAFTING)}
           className="group relative flex flex-col p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-legal-gold/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-legal-gold/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
@@ -100,10 +108,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
               <ChevronRight size={16} className="ml-1 group-hover:translate-x-2 transition-transform" />
             </div>
           </div>
-        </button>
+        </a>
 
-        <button
-          onClick={() => onNavigate(AppView.SOCIAL_SECURITY)}
+        <a
+          href={getPathForView(AppView.SOCIAL_SECURITY)}
+          onClick={(event) => handleNavClick(event, AppView.SOCIAL_SECURITY)}
           className="group relative flex flex-col p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-legal-gold/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
@@ -122,8 +131,52 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
               <ChevronRight size={16} className="ml-1 group-hover:translate-x-2 transition-transform" />
             </div>
           </div>
-        </button>
+        </a>
       </div>
+
+      <section className="mt-16 w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 px-1">
+        <article className="bg-white border border-slate-100 rounded-[2rem] p-7 shadow-sm">
+          <h2 className="text-lg font-bold text-slate-900 mb-3">Calculadora de liquidación laboral</h2>
+          <p className="text-sm text-slate-500 leading-relaxed mb-4">
+            Calcula finiquito, indemnización constitucional, prima de antigüedad, vacaciones, prima vacacional y aguinaldo proporcional con criterios aplicables en México.
+          </p>
+          <a
+            href={getPathForView(AppView.CALCULATOR)}
+            onClick={(event) => handleNavClick(event, AppView.CALCULATOR)}
+            className="text-sm font-bold text-blue-600 hover:text-blue-700"
+          >
+            Ir a la calculadora
+          </a>
+        </article>
+
+        <article className="bg-white border border-slate-100 rounded-[2rem] p-7 shadow-sm">
+          <h2 className="text-lg font-bold text-slate-900 mb-3">Generador de documentos legales</h2>
+          <p className="text-sm text-slate-500 leading-relaxed mb-4">
+            Genera contratos individuales, convenios de terminación, cartas de renuncia, actas administrativas y otros borradores laborales con IA.
+          </p>
+          <a
+            href={getPathForView(AppView.DRAFTING)}
+            onClick={(event) => handleNavClick(event, AppView.DRAFTING)}
+            className="text-sm font-bold text-amber-600 hover:text-amber-700"
+          >
+            Ir al generador
+          </a>
+        </article>
+
+        <article className="bg-white border border-slate-100 rounded-[2rem] p-7 shadow-sm">
+          <h2 className="text-lg font-bold text-slate-900 mb-3">Calculadora IMSS e INFONAVIT</h2>
+          <p className="text-sm text-slate-500 leading-relaxed mb-4">
+            Obtén el desglose de cuotas obrero-patronales y calcula la prima de riesgo de trabajo con parámetros ajustables para 2026.
+          </p>
+          <a
+            href={getPathForView(AppView.SOCIAL_SECURITY)}
+            onClick={(event) => handleNavClick(event, AppView.SOCIAL_SECURITY)}
+            className="text-sm font-bold text-emerald-600 hover:text-emerald-700"
+          >
+            Ir a IMSS
+          </a>
+        </article>
+      </section>
 
       <footer className="mt-20 w-full max-w-6xl pt-8 border-t border-slate-100 pb-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4">
@@ -135,18 +188,20 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
           </div>
 
           <div className="flex items-center space-x-8">
-            <button 
-              onClick={() => onNavigate(AppView.TERMS)}
+            <a
+              href={getPathForView(AppView.TERMS)}
+              onClick={(event) => handleNavClick(event, AppView.TERMS)}
               className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
             >
               Términos
-            </button>
-            <button 
-              onClick={() => onNavigate(AppView.PRIVACY)}
+            </a>
+            <a
+              href={getPathForView(AppView.PRIVACY)}
+              onClick={(event) => handleNavClick(event, AppView.PRIVACY)}
               className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
             >
               Privacidad
-            </button>
+            </a>
             <a 
               href="mailto:admin@lexlaboral.com.mx"
               className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
