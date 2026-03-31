@@ -1,8 +1,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { executeWithGeminiFallback, SYSTEM_INSTRUCTION } from './_utils/ai.js';
-import { supabaseAdmin } from '../lib/supabase-admin.js';
+import { getAuthenticatedUser } from './_utils/auth.js';
 import { applyRateLimit } from './_utils/rateLimit.js';
 import { handlePreflight, validateOrigin, sanitizeInput, setSecurityHeaders } from './_utils/security.js';
+import { consumeDocumentAccess } from '../lib/server-access.js';
 
 export default async function handler(req: any, res: any) {
   // Security: CORS preflight
@@ -18,7 +19,7 @@ export default async function handler(req: any, res: any) {
   if (validateOrigin(req, res)) return;
 
   try {
-    const { requirements, customInstructions, guestId } = req.body;
+    const { requirements, customInstructions } = req.body;
 
     // Security: Input validation
     const cleanRequirements = sanitizeInput(requirements, 5000);
@@ -27,70 +28,18 @@ export default async function handler(req: any, res: any) {
     }
     const cleanInstructions = sanitizeInput(customInstructions, 2000);
 
-    // SECURITY: Pay-to-Go Validation
-    if (!guestId) {
-      return res.status(401).json({ error: 'No autorizado. Se requiere un plan activo para generar dictámenes.' });
+    const { user, error: authError } = await getAuthenticatedUser(req);
+    if (authError || !user) {
+      return res.status(401).json({ error: 'No autorizado. Inicia sesión para generar documentos.' });
     }
 
-    // Determine access level
-    const { data: userRecord } = await supabaseAdmin
-      .from('users')
-      .select('is_premium, access_until, license_type')
-      .eq('id', guestId)
-      .single();
-      
-    const hasActiveSub = userRecord?.is_premium && new Date(userRecord.access_until) > new Date();
-
-    const { data: credits, error: creditsError } = await supabaseAdmin
-      .from('user_credits')
-      .select('draft_basic_balance')
-      .eq('user_id', guestId)
-      .single();
-
-    let isUsingFreeCredit = false;
-
-    if (hasActiveSub) {
-      // Check Fair Use Policy: Max 100 documents per month
-      const now = new Date();
-      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      
-      let usageData;
-      const usageFetch = await supabaseAdmin
-        .from('user_usage')
-        .select('draft_basic_month_count')
-        .eq('user_id', guestId)
-        .eq('month', currentMonth)
-        .maybeSingle();
-        
-      if (usageFetch.error && usageFetch.error.code !== 'PGRST116') {
-         // ignore missing row
-      } else {
-         usageData = usageFetch.data;
+    const accessResult = await consumeDocumentAccess(user.id);
+    if (!accessResult?.allowed) {
+      if (accessResult?.reason === 'fair_use_limit') {
+        return res.status(429).json({ error: 'Has alcanzado el límite de Uso Justo para documentos de este mes. Si necesitas ampliarlo, contáctanos.' });
       }
 
-      const count = usageData?.draft_basic_month_count || 0;
-      if (count >= 100) {
-        return res.status(429).json({ error: 'Has alcanzado el límite de Uso Justo (100 dictámenes al mes). Por favor renueva tu plan o contacta a soporte.' });
-      }
-
-      // Increment Usage
-      await supabaseAdmin.from('user_usage').upsert({
-        user_id: guestId,
-        month: currentMonth,
-        draft_basic_month_count: count + 1
-      }, { onConflict: 'user_id,month' });
-      
-    } else {
-      // No active sub, rely on credits
-      if (creditsError || !credits || credits.draft_basic_balance < 1) {
-        return res.status(402).json({ error: 'Créditos agotados. Por favor, adquiere un Pase Mensual o Documento Individual.' });
-      }
-      isUsingFreeCredit = true;
-      // Deduct 1 credit
-      await supabaseAdmin
-        .from('user_credits')
-        .update({ draft_basic_balance: credits.draft_basic_balance - 1 })
-        .eq('user_id', guestId);
+      return res.status(402).json({ error: 'Necesitas un plan activo o comprar un Documento Suelto para generar este instrumento.' });
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -108,8 +57,8 @@ ${cleanInstructions || 'Ninguna'}
       return (await result.response).text();
     });
 
-    if (isUsingFreeCredit) {
-      resultText += '\n\n---\n*Generado con Inteligencia Artificial por Lex Laboral. Obtén documentos ilimitados sin marca de agua en lexmexl.vercel.app*';
+    if (accessResult.reason === 'single_document') {
+      resultText += '\n\n---\n*Generado con Inteligencia Artificial por Lex Laboral. Activa un plan para acceso ampliado al generador y a la calculadora IMSS en https://lexlaboral.com.mx*';
     }
 
     res.json({ text: resultText });

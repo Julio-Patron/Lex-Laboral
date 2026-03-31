@@ -17,13 +17,14 @@ import {
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './AuthProvider';
+import { checkCalculatorUsage } from '../services/gemini';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
   onRequireLogin?: () => void;
   onRequirePremium?: () => void;
 }> = ({ notify, onRequireLogin, onRequirePremium }) => {
-  const { user, isPremium } = useAuth();
+  const { user, session, access } = useAuth();
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); 
   const [days, setDays] = useState<number>(30);
@@ -73,7 +74,7 @@ export const SocialSecurityCalculator: React.FC<{
       return;
     }
     
-    if (!isPremium) {
+    if (!access.hasActiveSubscription) {
       if (onRequirePremium) onRequirePremium();
       notify("Función Exclusiva LexPremium", "warning");
       return;
@@ -89,6 +90,13 @@ export const SocialSecurityCalculator: React.FC<{
     }
     if (riskClass === 0) {
       notify("Por favor, seleccione una Clase de Riesgo", "error");
+      return;
+    }
+
+    try {
+      await checkCalculatorUsage(session?.access_token || '');
+    } catch (error: any) {
+      notify(error?.message || "No se pudo validar el acceso a IMSS.", "error");
       return;
     }
 

@@ -43,12 +43,25 @@ export const draftLegalDocument = async (
   return data.text;
 };
 
-export const checkCalculatorUsage = async () => {
+export const checkCalculatorUsage = async (accessToken: string) => {
   const response = await fetch(`${API_URL}/calculator`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
     }
   });
-  return response.ok;
+
+  if (!response.ok) {
+    let errorMessage = 'No se pudo validar el acceso a IMSS.';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      errorMessage = `Server error: ${response.status}`;
+    }
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
 };

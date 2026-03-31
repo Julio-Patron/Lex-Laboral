@@ -7,6 +7,7 @@
 
 import { supabaseAdmin } from '../../lib/supabase-admin.js';
 import { applyRateLimit } from '../_utils/rateLimit.js';
+import { getAuthenticatedUser } from '../_utils/auth.js';
 import { handlePreflight, setSecurityHeaders } from '../_utils/security.js';
 
 export default async function handler(req: any, res: any) {
@@ -21,10 +22,11 @@ export default async function handler(req: any, res: any) {
   const CEO_EMAIL = process.env.CEO_EMAIL || process.env.VITE_CEO_EMAIL || '';
 
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const { user, error: authError } = await getAuthenticatedUser(req);
+    const userId = user?.id || null;
 
-    if (!userId || !CEO_EMAIL) {
-      console.error('CEO Stats: Missing userId or CEO_EMAIL env var', { userId: !!userId, CEO_EMAIL: !!CEO_EMAIL });
+    if (authError || !userId || !CEO_EMAIL) {
+      console.error('CEO Stats: Missing auth context or CEO_EMAIL env var', { userId: !!userId, CEO_EMAIL: !!CEO_EMAIL });
       return res.status(401).json({ error: 'No autorizado. Configuración incompleta.' });
     }
 
@@ -50,25 +52,42 @@ export default async function handler(req: any, res: any) {
     const [
       totalUsersResult,
       premiumUsersResult,
-      monthlyUsageResult,
       recentUsersResult,
-      creditsResult,
     ] = await Promise.all([
       supabaseAdmin.from('users').select('id', { count: 'exact', head: true }),
-      supabaseAdmin.from('users').select('id', { count: 'exact', head: true }).eq('is_premium', true),
-      supabaseAdmin.from('user_usage').select('*').eq('month', currentMonth),
+      supabaseAdmin.from('users').select('id', { count: 'exact', head: true }).eq('is_premium', true).gt('access_until', now.toISOString()),
       supabaseAdmin.from('users').select('id, email, is_premium, license_type, access_until, created_at').order('created_at', { ascending: false }).limit(20),
-      supabaseAdmin.from('user_credits').select('*'),
     ]);
 
-    // Aggregate monthly usage
-    const monthlyUsage = monthlyUsageResult.data || [];
-    const totalDocumentsThisMonth = monthlyUsage.reduce((sum: number, u: any) => sum + (u.draft_basic_month_count || 0), 0);
-    const totalCalculatorsThisMonth = monthlyUsage.reduce((sum: number, u: any) => sum + (u.calculators_count || 0), 0);
+    let monthlyUsage: any[] = [];
+    const monthlyUsageResult = await supabaseAdmin
+      .from('user_usage_monthly')
+      .select('*')
+      .eq('month', currentMonth);
 
-    // Credits summary
-    const allCredits = creditsResult.data || [];
-    const totalCreditsIssued = allCredits.reduce((sum: number, c: any) => sum + (c.draft_basic_balance || 0) + (c.audits_balance || 0), 0);
+    if (!monthlyUsageResult.error && monthlyUsageResult.data) {
+      monthlyUsage = monthlyUsageResult.data;
+    } else {
+      const legacyMonthlyUsage = await supabaseAdmin.from('user_usage').select('*').eq('month', currentMonth);
+      monthlyUsage = legacyMonthlyUsage.data || [];
+    }
+
+    const totalDocumentsThisMonth = monthlyUsage.reduce((sum: number, u: any) =>
+      sum + (u.documents_generated_count || u.draft_basic_month_count || 0), 0
+    );
+    const totalCalculatorsThisMonth = monthlyUsage.reduce((sum: number, u: any) =>
+      sum + (u.imss_calculations_count || u.calculators_count || 0), 0
+    );
+
+    let oneTimeDocumentsAvailable = 0;
+    const entitlementsResult = await supabaseAdmin.from('user_entitlements').select('single_document_uses_remaining');
+    if (!entitlementsResult.error && entitlementsResult.data) {
+      oneTimeDocumentsAvailable = entitlementsResult.data.reduce((sum: number, row: any) => sum + (row.single_document_uses_remaining || 0), 0);
+    } else {
+      const legacyResult = await supabaseAdmin.from('user_credits').select('draft_basic_balance');
+      const legacyRows = legacyResult.data || [];
+      oneTimeDocumentsAvailable = legacyRows.reduce((sum: number, row: any) => sum + (row.draft_basic_balance || 0), 0);
+    }
 
     // Users with active premium
     const recentUsers = (recentUsersResult.data || []).map((u: any) => ({
@@ -82,7 +101,7 @@ export default async function handler(req: any, res: any) {
         premiumUsers: premiumUsersResult.count || 0,
         documentsThisMonth: totalDocumentsThisMonth,
         calculatorsThisMonth: totalCalculatorsThisMonth,
-        totalCreditsInSystem: totalCreditsIssued,
+        oneTimeDocumentsAvailable,
       },
       recentUsers,
       monthlyUsage: monthlyUsage.slice(0, 30),

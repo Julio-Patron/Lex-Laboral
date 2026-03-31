@@ -58,7 +58,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       unit: 'pago único',
       icon: <PenTool className="text-slate-500" size={24} />, 
       features: [
-        'Calculadora Seguridad Social (IMSS)',
+        'Generación de un solo documento',
         'Técnica legislativa mexicana',
         'Exportación PDF sin marca de agua',
         'Formato LFT validado'
@@ -76,8 +76,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       popular: true,
       features: [
         'Todo lo del documento suelto',
-        'Hasta 100 dictámenes al mes',
-        'Calculadora IMSS ilimitada',
+        'Generador con uso intensivo mensual',
+        'Calculadora IMSS incluida',
         'Atención prioritaria'
       ],
       color: 'amber',
@@ -91,8 +91,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({
       unit: 'cada 3 meses',
       icon: <Crown className="text-legal-gold" size={24} />, 
       features: [
-        '100 dictámenes mensuales garantizados',
-        'Acceso ininterrumpido a calculadoras',
+        'Generador con uso intensivo mensual',
+        'Calculadora IMSS incluida',
         'Preferencia en nuevas funciones'
       ],
       color: 'gold',

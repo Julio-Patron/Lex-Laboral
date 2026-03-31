@@ -30,10 +30,10 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'draft_basic' | 'mensualidad'>('draft_basic');
+  const [selectedPlan, setSelectedPlan] = useState<'draft_basic' | 'mensualidad' | 'trimestralidad'>('draft_basic');
   const [draftingState, setDraftingState] = useState<DraftingState>({ prompt: '', generatedDoc: '' });
 
-  const { user, credits } = useAuth();
+  const { user } = useAuth();
 
   // Check if the current user is the CEO
   const isCEO = CEO_EMAIL !== '' && user?.email?.toLowerCase() === CEO_EMAIL.toLowerCase();
@@ -48,7 +48,7 @@ function App() {
 
   const dismissNotification = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
 
-  const openPricingModal = (plan: 'draft_basic' | 'mensualidad' = 'draft_basic') => {
+  const openPricingModal = (plan: 'draft_basic' | 'mensualidad' | 'trimestralidad' = 'draft_basic') => {
     setSelectedPlan(plan);
     setIsPricingModalOpen(true);
     trackEvent('pricing_opened', { plan });
@@ -92,7 +92,7 @@ function App() {
                   state={draftingState}
                   setState={setDraftingState}
                   notify={notify}
-                  onUpgrade={(plan) => openPricingModal((plan || 'draft_basic') as 'draft_basic' | 'mensualidad')}
+                  onUpgrade={(plan) => openPricingModal(plan || 'draft_basic')}
                   onAuthRequired={() => setIsLoginModalOpen(true)}
                 />;
               case AppView.CALCULATOR:

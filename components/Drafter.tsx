@@ -10,7 +10,7 @@ interface DrafterProps {
   state: DraftingState;
   setState: React.Dispatch<React.SetStateAction<DraftingState>>;
   notify: (m: string, t?: NotificationType, tit?: string) => void;
-  onUpgrade?: (plan?: 'draft_basic' | 'draft_custom') => void;
+  onUpgrade?: (plan?: 'draft_basic' | 'mensualidad' | 'trimestralidad') => void;
   onAuthRequired?: () => void;
 }
 
@@ -18,7 +18,7 @@ export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, onUp
   const { prompt, generatedDoc } = state;
   const [isDrafting, setIsDrafting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const { user, credits, refreshCredits } = useAuth();
+  const { user, access, refreshAccess } = useAuth();
   
   // Structured Form State
   const [selectedTemplate, setSelectedTemplate] = useState('contrato');
@@ -119,8 +119,7 @@ export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, onUp
       return;
     }
 
-    // Check credits
-    if (credits.draft_basic_balance <= 0 && credits.audits_balance <= 0) {
+    if (!access.hasActiveSubscription && access.singleDocumentUsesRemaining <= 0) {
       if (onUpgrade) onUpgrade('draft_basic');
       return;
     }
@@ -129,16 +128,16 @@ export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, onUp
     try {
       notify("Procesando inteligencia jurídica...", "info", "Generador Activo");
       const doc = await draftLegalDocument(prompt, customInstructions);
-      await refreshCredits(); // Sync credits post-draft if backend updated
+      await refreshAccess();
       setGeneratedDoc(doc);
       notify("Instrumento ensamblado exitosamente", "success", "Listo");
     } catch (error) {
       console.error("Drafting Error:", error);
-      notify("Error en la proyección. Asegúrese de tener créditos o saldo disponible.", "error");
+      notify("Error en la proyección. Verifica tu acceso o intenta de nuevo.", "error");
     } finally {
       setIsDrafting(false);
     }
-  }, [prompt, customInstructions, notify, setGeneratedDoc, user, credits, onAuthRequired, onUpgrade, refreshCredits]);
+  }, [prompt, customInstructions, notify, setGeneratedDoc, user, access, onAuthRequired, onUpgrade, refreshAccess]);
 
   return (
     <div className="h-full flex flex-col bg-[#F8FAFC] no-print animate-fade-in font-sans relative overflow-hidden">
@@ -167,7 +166,7 @@ export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, onUp
           >
             <div className="absolute inset-0 w-1/4 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 group-hover:animate-shine" />
             <Sparkles size={18} className="text-legal-gold group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-bold uppercase tracking-widest">Planes y Créditos</span>
+            <span className="text-xs font-bold uppercase tracking-widest">Planes y Acceso</span>
             <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>

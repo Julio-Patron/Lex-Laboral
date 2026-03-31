@@ -1,5 +1,7 @@
+import { getAuthenticatedUser } from './_utils/auth.js';
 import { applyRateLimit } from './_utils/rateLimit.js';
 import { handlePreflight, setSecurityHeaders } from './_utils/security.js';
+import { recordImssUsage } from '../lib/server-access.js';
 
 export default async function handler(req: any, res: any) {
   // Security: CORS preflight
@@ -11,6 +13,19 @@ export default async function handler(req: any, res: any) {
   // Security: Rate limit — max 20 requests per minute per IP
   if (applyRateLimit(req, res, 20, 60_000)) return;
 
-  // For Pay-to-Go, we could add per-calculation payment check here if needed.
-  res.json({ success: true });
+  const { user, error } = await getAuthenticatedUser(req);
+  if (error || !user) {
+    return res.status(401).json({ error: 'Inicia sesión para usar esta calculadora.' });
+  }
+
+  const accessResult = await recordImssUsage(user.id);
+  if (!accessResult?.allowed) {
+    if (accessResult?.reason === 'fair_use_limit') {
+      return res.status(429).json({ error: 'Has alcanzado el límite de uso justo de la calculadora IMSS para este mes.' });
+    }
+
+    return res.status(402).json({ error: 'La calculadora IMSS requiere un plan mensual o trimestral activo.' });
+  }
+
+  res.json({ success: true, currentCount: accessResult.currentCount || 0 });
 }

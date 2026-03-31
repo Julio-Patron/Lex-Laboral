@@ -1,5 +1,6 @@
 import { getStripeConfigDiagnostics, getStripePriceId, getStripeSecretKey } from '../lib/stripe-config.js';
 import { getStripe } from '../lib/stripe.js';
+import { getAuthenticatedUser } from './_utils/auth.js';
 import { applyRateLimit } from './_utils/rateLimit.js';
 import { handlePreflight, validateOrigin, setSecurityHeaders } from './_utils/security.js';
 
@@ -18,11 +19,16 @@ export default async function handler(req: any, res: any) {
     if (validateOrigin(req, res)) return;
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const { plan, userEmail, userId } = body;
+    const { plan, userId } = body;
     const validPlans = new Set(['draft_basic', 'mensualidad', 'trimestralidad']);
 
     if (!validPlans.has(plan)) {
       return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+
+    const { user, error: authError } = await getAuthenticatedUser(req);
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Debes iniciar sesión para comprar dentro de Lex Laboral.' });
     }
 
     const priceResolution = getStripePriceId(plan);
@@ -44,7 +50,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    if (!userId) {
+    if (!userId || userId !== user.id) {
       return res.status(401).json({ error: 'User must be authenticated to purchase.' });
     }
 
@@ -58,13 +64,22 @@ export default async function handler(req: any, res: any) {
     }
 
     const stripe = getStripe();
+    const isSubscription = plan === 'mensualidad' || plan === 'trimestralidad';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      customer_email: userEmail || undefined,
-      client_reference_id: userId,
+      customer_email: user.email || undefined,
+      client_reference_id: user.id,
       metadata: { plan: plan },
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: (plan === 'mensualidad' || plan === 'trimestralidad') ? 'subscription' : 'payment',
+      mode: isSubscription ? 'subscription' : 'payment',
+      ...(isSubscription ? {
+        subscription_data: {
+          metadata: {
+            plan,
+            userId: user.id
+          }
+        }
+      } : {}),
       success_url: `${clientUrl}/#payment-success`,
       cancel_url: `${clientUrl}/#payment-cancelled`,
     });

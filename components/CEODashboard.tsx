@@ -11,7 +11,7 @@ interface CEOStats {
     premiumUsers: number;
     documentsThisMonth: number;
     calculatorsThisMonth: number;
-    totalCreditsInSystem: number;
+    oneTimeDocumentsAvailable: number;
   };
   recentUsers: Array<{
     id: string;
@@ -26,7 +26,7 @@ interface CEOStats {
 }
 
 export const CEODashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [stats, setStats] = useState<CEOStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export const CEODashboard: React.FC = () => {
       const apiUrl = import.meta.env.VITE_API_URL || '/api';
       const res = await fetch(`${apiUrl}/ceo/stats`, {
         headers: {
-          'x-user-id': user.id,
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
         },
       });
 
@@ -69,7 +69,7 @@ export const CEODashboard: React.FC = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [user]);
+  }, [user, session]);
 
   if (loading) {
     return (
@@ -165,9 +165,9 @@ export const CEODashboard: React.FC = () => {
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <Shield size={16} className="text-slate-400" />
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Créditos en sistema</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Documentos sueltos pendientes</span>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{overview.totalCreditsInSystem}</p>
+            <p className="text-2xl font-bold text-slate-900">{overview.oneTimeDocumentsAvailable}</p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-1">
