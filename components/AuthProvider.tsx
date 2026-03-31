@@ -13,6 +13,7 @@ interface AuthContextType {
   };
   refreshCredits: () => Promise<void>;
   signOut: () => Promise<void>;
+  session: any | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,12 +27,14 @@ const AuthContext = createContext<AuthContextType>({
   },
   refreshCredits: async () => {},
   signOut: async () => {},
+  session: null,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [credits, setCredits] = useState({
@@ -73,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check active sessions
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchCredits(session.user.id);
@@ -84,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
           fetchCredits(session.user.id).finally(() => setLoading(false));
@@ -107,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isPremium, credits, refreshCredits, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isPremium, credits, refreshCredits, signOut }}>
       {children}
     </AuthContext.Provider>
   );

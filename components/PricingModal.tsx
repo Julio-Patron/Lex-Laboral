@@ -20,7 +20,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   onRequireLogin
 }) => {
   const [loading, setLoading] = React.useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   
   const handlePurchase = async (plan: 'draft_basic' | 'mensualidad' | 'trimestralidad') => {
     if (!user) {
@@ -32,12 +32,18 @@ export const PricingModal: React.FC<PricingModalProps> = ({
     setLoading(plan);
     try {
       notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      const { id: sessionId } = await createCheckoutSession(user.email || '', user.id, plan, '');
+      const { id: sessionId } = await createCheckoutSession(
+        user.email || '', 
+        user.id, 
+        plan, 
+        session?.access_token || ''
+      );
       
       await redirectToCheckout(sessionId);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Stripe error:', error);
-      notify("No se pudo iniciar el proceso de pago.", "error", "Error de Stripe");
+      const msg = error?.message || "No se pudo iniciar el proceso de pago.";
+      notify(msg, "error", "Error de Stripe");
     } finally {
       setLoading(null);
     }

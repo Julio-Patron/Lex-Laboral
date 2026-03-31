@@ -24,6 +24,11 @@ if (process.env.NODE_ENV !== 'production') {
   ALLOWED_ORIGINS.push('http://localhost:5173', 'http://localhost:3000');
 }
 
+// Añadir CLIENT_URL de variables de entorno si existe
+if (process.env.CLIENT_URL) {
+  ALLOWED_ORIGINS.push(process.env.CLIENT_URL);
+}
+
 /**
  * Configura los headers CORS en la respuesta.
  * CORS = Cross-Origin Resource Sharing.
@@ -70,8 +75,9 @@ export function validateOrigin(req: any, res: any): boolean {
     origin.startsWith(allowed) || referer.startsWith(allowed)
   );
   
-  if (!isValidOrigin && origin) {
-    res.status(403).json({ error: 'Acceso no autorizado.' });
+  if (!isValidOrigin && origin && !origin.includes('localhost')) {
+    console.warn(`[Security] Blocked unauthorized origin: ${origin}`);
+    res.status(403).json({ error: 'Acceso no autorizado desde este dominio.' });
     return true; // blocked
   }
   

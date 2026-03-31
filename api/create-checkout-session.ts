@@ -25,6 +25,8 @@ export default async function handler(req: any, res: any) {
     const { plan, userEmail, userId } = req.body;
     const priceId = PLAN_PRICES[plan];
 
+    console.log(`[Stripe] Creating session for plan: ${plan}, priceId: ${priceId}, userId: ${userId}`);
+
     if (!priceId) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
@@ -34,8 +36,13 @@ export default async function handler(req: any, res: any) {
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('STRIPE_SECRET_KEY is not configured in environment variables.');
-      return res.status(500).json({ error: 'Stripe is not configured on the server. Please set STRIPE_SECRET_KEY.' });
+      console.error('[Stripe] STRIPE_SECRET_KEY is missing in env vars.');
+      return res.status(500).json({ error: 'Error de configuración en el servidor (Secret Key missing).' });
+    }
+
+    if (!priceId) {
+      console.error(`[Stripe] No Price ID found for plan: ${plan}. Check PLAN_PRICES mapping.`);
+      return res.status(400).json({ error: `El plan '${plan}' no tiene un ID de precio configurado.` });
     }
 
     const stripe = getStripe();
@@ -52,8 +59,8 @@ export default async function handler(req: any, res: any) {
 
     res.json({ id: session.id });
   } catch (error: any) {
-    console.error('Stripe Session Error:', error);
-    const errorMessage = error?.message || 'Internal Server Error';
+    console.error('[Stripe] Session Creation Failure:', error);
+    const errorMessage = error?.message || 'Error interno al contactar con Stripe.';
     res.status(500).json({ error: errorMessage });
   }
 }
