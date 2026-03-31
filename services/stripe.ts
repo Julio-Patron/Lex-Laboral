@@ -7,16 +7,16 @@ if (!stripePublishableKey) {
 export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
 export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'analisis' | 'draft_basic' | 'mensualidad' | 'trimestralidad', accessToken: string) => {
   const API_URL = import.meta.env.VITE_API_URL || '/api';
-  
+
   const response = await fetch(`${API_URL}/create-checkout-session`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`
     },
-    body: JSON.stringify({ 
-      userEmail, 
-      userId, 
+    body: JSON.stringify({
+      userEmail,
+      userId,
       plan: plan
     }),
   });

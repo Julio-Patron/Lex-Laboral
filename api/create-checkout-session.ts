@@ -24,7 +24,7 @@ export default async function handler(req: any, res: any) {
   try {
     const { plan, userEmail, userId } = req.body;
     const priceId = PLAN_PRICES[plan];
-    
+
     if (!priceId) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
@@ -49,7 +49,7 @@ export default async function handler(req: any, res: any) {
       success_url: `${process.env.CLIENT_URL || 'https://lexmexl.vercel.app'}/#payment-success`,
       cancel_url: `${process.env.CLIENT_URL || 'https://lexmexl.vercel.app'}/#payment-cancelled`,
     });
-    
+
     res.json({ id: session.id });
   } catch (error: any) {
     console.error('Stripe Session Error:', error);

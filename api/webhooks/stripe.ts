@@ -40,7 +40,7 @@ export default async function handler(req: any, res: any) {
           .select('audits_balance')
           .eq('user_id', userId)
           .single();
-        
+
         if (existingData) {
           await supabaseAdmin
             .from('user_credits')
@@ -57,7 +57,7 @@ export default async function handler(req: any, res: any) {
           .select('draft_basic_balance')
           .eq('user_id', userId)
           .single();
-        
+
         if (existingData) {
           await supabaseAdmin
             .from('user_credits')
@@ -76,8 +76,8 @@ export default async function handler(req: any, res: any) {
           expiresAt.setMonth(expiresAt.getMonth() + 3);
         }
 
-        await supabaseAdmin.from('users').update({ 
-          is_premium: true, 
+        await supabaseAdmin.from('users').update({
+          is_premium: true,
           license_type: plan,
           access_until: expiresAt.toISOString(),
           updated_at: new Date().toISOString()
