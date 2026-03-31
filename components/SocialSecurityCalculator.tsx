@@ -18,6 +18,7 @@ import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './AuthProvider';
 import { checkCalculatorUsage } from '../services/gemini';
+import { SEOContentSection } from './SEOContentSection';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
@@ -333,6 +334,39 @@ export const SocialSecurityCalculator: React.FC<{
           </div>
         </div>
       </div>
+
+      <SEOContentSection
+        title="Calculadora de cuotas IMSS e INFONAVIT"
+        intro="La calculadora IMSS permite estimar cuotas obrero-patronales con desglose por ramo de aseguramiento y aporta una base útil para revisión patronal, auditoría interna y validación preliminar de costos de nómina. También incluye apoyo para proyectar la prima de riesgo de trabajo."
+        highlights={[
+          {
+            title: 'Cuotas obrero-patronales',
+            body: 'Desglosa enfermedad y maternidad, invalidez y vida, retiro, cesantía, guarderías, prestaciones sociales e INFONAVIT.',
+          },
+          {
+            title: 'Prima de riesgo',
+            body: 'Permite trabajar con clase de riesgo fija o variable para estimar escenarios de cotización y revisar impactos mensuales.',
+          },
+          {
+            title: 'Acceso del producto',
+            body: 'Esta herramienta forma parte del acceso para usuarios registrados con plan mensual o trimestral activo dentro de Lex Laboral.',
+          },
+        ]}
+        faqs={[
+          {
+            question: 'Que calcula esta calculadora IMSS?',
+            answer: 'Calcula las cuotas del patrón y del trabajador a partir del salario base de cotización, la UMA, la clase de riesgo, los días cotizados y otros parámetros de seguridad social.',
+          },
+          {
+            question: 'La calculadora IMSS es gratis?',
+            answer: 'No. Está disponible para usuarios registrados con plan mensual o trimestral activo.',
+          },
+          {
+            question: 'Sirve como determinacion definitiva ante el IMSS?',
+            answer: 'No. Es una herramienta de apoyo técnico para estimación y revisión. La determinación final depende de la integración salarial, movimientos afiliatorios y circunstancias concretas del patrón.',
+          },
+        ]}
+      />
     </div>
   );
 };

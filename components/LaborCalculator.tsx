@@ -26,6 +26,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BreakdownChart } from './BreakdownChart';
 import { useAuth } from './AuthProvider';
+import { SEOContentSection } from './SEOContentSection';
 
 type DismissalType = 'injustificado' | 'renuncia' | 'rescision_patron' | 'rescision_trabajador';
 
@@ -467,6 +468,39 @@ export const LaborCalculator: React.FC<{
           </div>
         </div>
       </div>
+
+      <SEOContentSection
+        title="Calculadora de liquidación y finiquito en México"
+        intro="Esta calculadora laboral está pensada para estimar finiquito, liquidación e indemnizaciones con criterios alineados a la Ley Federal del Trabajo. Te permite proyectar escenarios de despido injustificado, renuncia o rescisión, y revisar conceptos como aguinaldo proporcional, vacaciones, prima vacacional, prima de antigüedad e ISR sobre indemnización."
+        highlights={[
+          {
+            title: 'Liquidación laboral',
+            body: 'Incluye indemnización constitucional de 3 meses, 20 días por año cuando aplica y prima de antigüedad topada conforme al marco legal mexicano.',
+          },
+          {
+            title: 'Finiquito proporcional',
+            body: 'Desglosa aguinaldo, vacaciones, prima vacacional y horas extra a partir de fechas de ingreso y baja, salario y tipo de separación.',
+          },
+          {
+            title: 'Uso práctico',
+            body: 'Sirve como simulador para trabajadores, áreas de RH, despachos laborales y patrones que necesitan una referencia rápida antes de revisar el caso a detalle.',
+          },
+        ]}
+        faqs={[
+          {
+            question: 'Que incluye una liquidacion por despido injustificado en Mexico?',
+            answer: 'Normalmente incluye 3 meses de salario, 20 días por año cuando corresponde, prima de antigüedad y las partes proporcionales del finiquito como aguinaldo, vacaciones y prima vacacional.',
+          },
+          {
+            question: 'La calculadora laboral de Lex Laboral es gratis?',
+            answer: 'Sí. La calculadora de prestaciones está disponible para usuarios registrados sin necesidad de contratar un plan de pago.',
+          },
+          {
+            question: 'Este resultado sustituye asesoria legal profesional?',
+            answer: 'No. Funciona como una estimación técnica útil para análisis preliminar, pero cada caso debe revisarse con sus hechos, documentos y estrategia jurídica específica.',
+          },
+        ]}
+      />
     </div>
   );
 };

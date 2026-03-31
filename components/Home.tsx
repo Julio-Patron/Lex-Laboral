@@ -4,6 +4,7 @@ import { AppView } from '../types';
 import { Calculator, FileText, ChevronRight, ShieldCheck, LogIn, LogOut } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { getPathForView } from '../lib/routes';
+import { SEOContentSection } from './SEOContentSection';
 
 interface HomeProps {
   onNavigate: (view: AppView) => void;
@@ -177,6 +178,41 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
           </a>
         </article>
       </section>
+
+      <div className="w-full max-w-6xl">
+        <SEOContentSection
+          title="Herramientas jurídicas laborales para México"
+          intro="Lex Laboral está orientado a búsquedas prácticas de usuarios que necesitan calcular liquidación, finiquito o cuotas IMSS, así como preparar un borrador documental laboral. La plataforma reúne una calculadora laboral gratuita para usuarios registrados, una calculadora IMSS para planes activos y un generador documental con acceso por plan o por documento suelto."
+          highlights={[
+            {
+              title: 'Calculadora laboral',
+              body: 'Pensada para consultas frecuentes como liquidación por despido injustificado, finiquito, prima de antigüedad, vacaciones y aguinaldo proporcional.',
+            },
+            {
+              title: 'Calculadora IMSS',
+              body: 'Enfocada en cuotas obrero-patronales, desglose por ramo de seguro y apoyo para revisar prima de riesgo e INFONAVIT.',
+            },
+            {
+              title: 'Generador documental',
+              body: 'Útil para construir borradores de documentos laborales frecuentes y partir de una base ordenada antes de la revisión jurídica final.',
+            },
+          ]}
+          faqs={[
+            {
+              question: 'Lex Laboral sirve para calcular liquidacion y finiquito en Mexico?',
+              answer: 'Sí. La plataforma incluye una calculadora de prestaciones laborales enfocada en escenarios frecuentes conforme a la normativa mexicana.',
+            },
+            {
+              question: 'Que parte de la app es gratis?',
+              answer: 'La calculadora laboral es gratuita para usuarios registrados. La calculadora IMSS y el generador de documentos dependen del plan activo o del documento suelto.',
+            },
+            {
+              question: 'La plataforma esta dirigida a trabajadores o a abogados?',
+              answer: 'A ambos. Puede ser útil para trabajadores que quieren una estimación inicial y para despachos o áreas de recursos humanos que necesitan una referencia operativa rápida.',
+            },
+          ]}
+        />
+      </div>
 
       <footer className="mt-20 w-full max-w-6xl pt-8 border-t border-slate-100 pb-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4">

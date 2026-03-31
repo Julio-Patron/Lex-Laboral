@@ -5,6 +5,7 @@ import { NotificationType, DraftingState } from '../types';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './AuthProvider';
+import { SEOContentSection } from './SEOContentSection';
 
 interface DrafterProps {
   state: DraftingState;
@@ -399,6 +400,39 @@ export const Drafter = React.memo<DrafterProps>(({ state, setState, notify, onUp
           @page { margin: 2.5cm; }
         }
       `}</style>
+
+      <SEOContentSection
+        title="Generador de documentos legales laborales con IA"
+        intro="El generador de documentos de Lex Laboral está orientado a borradores laborales frecuentes en México. Ayuda a estructurar contratos, convenios, cartas y escritos iniciales con un formato más consistente, para que el usuario jurídico parta de una base editable antes de su revisión final."
+        highlights={[
+          {
+            title: 'Documentos frecuentes',
+            body: 'Permite proyectar contratos individuales, convenios de terminación, cartas de renuncia, avisos de rescisión, reglamentos y demandas laborales.',
+          },
+          {
+            title: 'Enfoque laboral mexicano',
+            body: 'El copy y la estructura están orientados a documentos de trabajo con referencias comunes a la Ley Federal del Trabajo y práctica documental mexicana.',
+          },
+          {
+            title: 'Modelo de acceso',
+            body: 'Se puede usar mediante documento suelto o con plan mensual o trimestral activo, según el producto adquirido por el usuario.',
+          },
+        ]}
+        faqs={[
+          {
+            question: 'Que documentos puede generar Lex Laboral?',
+            answer: 'Puede ayudarte a elaborar borradores de contratos, convenios, cartas de renuncia, actas administrativas, reglamentos y otros documentos laborales frecuentes.',
+          },
+          {
+            question: 'El generador reemplaza la revision de un abogado?',
+            answer: 'No. El texto generado debe revisarse y ajustarse al caso concreto, a la estrategia jurídica y a la documentación disponible antes de usarse formalmente.',
+          },
+          {
+            question: 'Puedo usar el generador sin suscripcion?',
+            answer: 'Sí, mediante la compra de un documento suelto. También queda disponible de forma amplia con plan mensual o trimestral activo.',
+          },
+        ]}
+      />
     </div>
   );
 });
