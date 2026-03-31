@@ -1,5 +1,6 @@
 import { buffer } from 'micro';
 import { supabaseAdmin } from '../../lib/supabase-admin';
+import { getStripeConfigDiagnostics, getStripeWebhookSecret } from '../../lib/stripe-config';
 import { getStripe } from '../../lib/stripe';
 
 export const config = {
@@ -13,12 +14,20 @@ export default async function handler(req: any, res: any) {
 
   const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
+  const webhookSecret = getStripeWebhookSecret();
+
+  if (!webhookSecret.value) {
+    const diagnostics = getStripeConfigDiagnostics();
+    console.error('[Stripe webhook] Missing webhook signing secret.', diagnostics);
+    return res.status(500).json({ error: 'Missing STRIPE_WEBHOOK_SECRET' });
+  }
+
   const stripe = getStripe();
 
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(buf.toString(), sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = stripe.webhooks.constructEvent(buf.toString(), sig, webhookSecret.value);
   } catch (err: any) {
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }

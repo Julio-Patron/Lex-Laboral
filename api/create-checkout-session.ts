@@ -1,12 +1,7 @@
+import { getStripeConfigDiagnostics, getStripePriceId, getStripeSecretKey } from '../lib/stripe-config';
 import { getStripe } from '../lib/stripe';
 import { applyRateLimit } from './_utils/rateLimit';
 import { handlePreflight, validateOrigin, setSecurityHeaders } from './_utils/security';
-
-const PLAN_PRICES: Record<string, string> = {
-  'draft_basic': process.env.STRIPE_PRICE_DOCUMENTO || 'price_1TEn5q36rYdwQu28uuqFOdEP',
-  'mensualidad': process.env.STRIPE_PRICE_MENSUALIDAD || 'price_1TEn3v36rYdwQu28YW1qKo0a',
-  'trimestralidad': process.env.STRIPE_PRICE_TRIMESTRAL || 'price_trimestral_dummy_dev'
-};
 
 export default async function handler(req: any, res: any) {
   // Security: CORS preflight
@@ -22,27 +17,44 @@ export default async function handler(req: any, res: any) {
   if (validateOrigin(req, res)) return;
 
   try {
-    const { plan, userEmail, userId } = req.body;
-    const priceId = PLAN_PRICES[plan];
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const { plan, userEmail, userId } = body;
+    const validPlans = new Set(['draft_basic', 'mensualidad', 'trimestralidad']);
 
-    console.log(`[Stripe] Creating session for plan: ${plan}, priceId: ${priceId}, userId: ${userId}`);
+    if (!validPlans.has(plan)) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+
+    const priceResolution = getStripePriceId(plan);
+    const priceId = priceResolution.value;
+    const secretKeyResolution = getStripeSecretKey();
+    const clientUrl = process.env.CLIENT_URL?.trim() || process.env.VITE_CLIENT_URL?.trim() || 'https://lexmexl.vercel.app';
+
+    console.log(
+      `[Stripe] Creating session for plan: ${plan}, priceSource: ${priceResolution.source || 'missing'}, userId: ${userId}`
+    );
 
     if (!priceId) {
-      return res.status(400).json({ error: 'Invalid plan selected' });
+      const diagnostics = getStripeConfigDiagnostics();
+      console.error('[Stripe] Missing price ID for selected plan.', { plan, diagnostics });
+      return res.status(500).json({
+        error: `Falta configurar el price ID para el plan '${plan}' en Vercel.`,
+        code: 'stripe_price_missing',
+        plan
+      });
     }
 
     if (!userId) {
       return res.status(401).json({ error: 'User must be authenticated to purchase.' });
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('[Stripe] STRIPE_SECRET_KEY is missing in env vars.');
-      return res.status(500).json({ error: 'Error de configuración en el servidor (Secret Key missing).' });
-    }
-
-    if (!priceId) {
-      console.error(`[Stripe] No Price ID found for plan: ${plan}. Check PLAN_PRICES mapping.`);
-      return res.status(400).json({ error: `El plan '${plan}' no tiene un ID de precio configurado.` });
+    if (!secretKeyResolution.value) {
+      const diagnostics = getStripeConfigDiagnostics();
+      console.error('[Stripe] Secret key missing in environment.', diagnostics);
+      return res.status(500).json({
+        error: 'Falta STRIPE_SECRET_KEY en las variables del proyecto de Vercel.',
+        code: 'stripe_secret_missing'
+      });
     }
 
     const stripe = getStripe();
@@ -53,8 +65,8 @@ export default async function handler(req: any, res: any) {
       metadata: { plan: plan },
       line_items: [{ price: priceId, quantity: 1 }],
       mode: (plan === 'mensualidad' || plan === 'trimestralidad') ? 'subscription' : 'payment',
-      success_url: `${process.env.CLIENT_URL || 'https://lexmexl.vercel.app'}/#payment-success`,
-      cancel_url: `${process.env.CLIENT_URL || 'https://lexmexl.vercel.app'}/#payment-cancelled`,
+      success_url: `${clientUrl}/#payment-success`,
+      cancel_url: `${clientUrl}/#payment-cancelled`,
     });
 
     res.json({ id: session.id });
