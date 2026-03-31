@@ -69,7 +69,12 @@ export default async function handler(req: any, res: any) {
       cancel_url: `${clientUrl}/#payment-cancelled`,
     });
 
-    res.json({ id: session.id });
+    if (!session.url) {
+      console.error('[Stripe] Checkout Session was created without a redirect URL.', { sessionId: session.id });
+      return res.status(500).json({ error: 'Stripe no devolvió una URL de checkout.' });
+    }
+
+    res.json({ id: session.id, url: session.url });
   } catch (error: any) {
     console.error('[Stripe] Session Creation Failure:', error);
     const errorMessage = error?.message || 'Error interno al contactar con Stripe.';

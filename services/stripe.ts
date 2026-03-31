@@ -1,11 +1,9 @@
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-if (!stripePublishableKey) {
-  console.warn('VITE_STRIPE_PUBLISHABLE_KEY is not defined. Stripe features will be disabled.');
-}
-export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
-export const createCheckoutSession = async (userEmail: string, userId: string, plan: 'analisis' | 'draft_basic' | 'mensualidad' | 'trimestralidad', accessToken: string) => {
+export const createCheckoutSession = async (
+  userEmail: string,
+  userId: string,
+  plan: 'analisis' | 'draft_basic' | 'mensualidad' | 'trimestralidad',
+  accessToken: string
+) => {
   const API_URL = import.meta.env.VITE_API_URL || '/api';
 
   const response = await fetch(`${API_URL}/create-checkout-session`, {
@@ -17,7 +15,7 @@ export const createCheckoutSession = async (userEmail: string, userId: string, p
     body: JSON.stringify({
       userEmail,
       userId,
-      plan: plan
+      plan
     }),
   });
 
@@ -41,16 +39,13 @@ export const createCheckoutSession = async (userEmail: string, userId: string, p
   }
 
   const session = await response.json();
-  return session as { id: string };
+  return session as { id: string; url: string };
 };
 
-export const redirectToCheckout = async (sessionId: string) => {
-  const stripe = await stripePromise;
-  if (stripe) {
-    const { error } = await stripe.redirectToCheckout({ sessionId });
-    if (error) {
-      console.error('Stripe redirect error:', error);
-      throw error;
-    }
+export const redirectToCheckout = async (checkoutUrl: string) => {
+  if (!checkoutUrl) {
+    throw new Error('Stripe no devolvió una URL de checkout.');
   }
+
+  window.location.assign(checkoutUrl);
 };

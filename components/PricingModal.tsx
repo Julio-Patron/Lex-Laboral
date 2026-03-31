@@ -32,14 +32,14 @@ export const PricingModal: React.FC<PricingModalProps> = ({
     setLoading(plan);
     try {
       notify("Iniciando proceso de pago seguro...", "info", "Stripe Checkout");
-      const { id: sessionId } = await createCheckoutSession(
+      const { url } = await createCheckoutSession(
         user.email || '', 
         user.id, 
         plan, 
         session?.access_token || ''
       );
       
-      await redirectToCheckout(sessionId);
+      await redirectToCheckout(url);
     } catch (error: any) {
       console.error('Stripe error:', error);
       const msg = error?.message || "No se pudo iniciar el proceso de pago.";
