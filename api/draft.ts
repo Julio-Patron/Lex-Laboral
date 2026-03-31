@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { executeWithGeminiFallback, SYSTEM_INSTRUCTION } from './_utils/ai';
-import { supabaseAdmin } from '../lib/supabase-admin';
-import { applyRateLimit } from './_utils/rateLimit';
-import { handlePreflight, validateOrigin, sanitizeInput, setSecurityHeaders } from './_utils/security';
+import { executeWithGeminiFallback, SYSTEM_INSTRUCTION } from './_utils/ai.js';
+import { supabaseAdmin } from '../lib/supabase-admin.js';
+import { applyRateLimit } from './_utils/rateLimit.js';
+import { handlePreflight, validateOrigin, sanitizeInput, setSecurityHeaders } from './_utils/security.js';
 
 export default async function handler(req: any, res: any) {
   // Security: CORS preflight

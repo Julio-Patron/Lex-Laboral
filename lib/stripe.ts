@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { getStripeSecretKey } from './stripe-config';
+import { getStripeSecretKey } from './stripe-config.js';
 
 let stripeInstance: Stripe | null = null;
 

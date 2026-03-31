@@ -5,9 +5,9 @@
  * configurado en la variable de entorno CEO_EMAIL / VITE_CEO_EMAIL.
  */
 
-import { supabaseAdmin } from '../../lib/supabase-admin';
-import { applyRateLimit } from '../_utils/rateLimit';
-import { handlePreflight, setSecurityHeaders } from '../_utils/security';
+import { supabaseAdmin } from '../../lib/supabase-admin.js';
+import { applyRateLimit } from '../_utils/rateLimit.js';
+import { handlePreflight, setSecurityHeaders } from '../_utils/security.js';
 
 export default async function handler(req: any, res: any) {
   if (handlePreflight(req, res)) return;

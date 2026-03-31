@@ -1,7 +1,7 @@
 import { buffer } from 'micro';
-import { supabaseAdmin } from '../../lib/supabase-admin';
-import { getStripeConfigDiagnostics, getStripeWebhookSecret } from '../../lib/stripe-config';
-import { getStripe } from '../../lib/stripe';
+import { supabaseAdmin } from '../../lib/supabase-admin.js';
+import { getStripeConfigDiagnostics, getStripeWebhookSecret } from '../../lib/stripe-config.js';
+import { getStripe } from '../../lib/stripe.js';
 
 export const config = {
   api: {

@@ -1,5 +1,5 @@
-import { applyRateLimit } from './_utils/rateLimit';
-import { handlePreflight, setSecurityHeaders } from './_utils/security';
+import { applyRateLimit } from './_utils/rateLimit.js';
+import { handlePreflight, setSecurityHeaders } from './_utils/security.js';
 
 export default async function handler(req: any, res: any) {
   // Security: CORS preflight

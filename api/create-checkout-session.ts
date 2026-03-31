@@ -1,7 +1,7 @@
-import { getStripeConfigDiagnostics, getStripePriceId, getStripeSecretKey } from '../lib/stripe-config';
-import { getStripe } from '../lib/stripe';
-import { applyRateLimit } from './_utils/rateLimit';
-import { handlePreflight, validateOrigin, setSecurityHeaders } from './_utils/security';
+import { getStripeConfigDiagnostics, getStripePriceId, getStripeSecretKey } from '../lib/stripe-config.js';
+import { getStripe } from '../lib/stripe.js';
+import { applyRateLimit } from './_utils/rateLimit.js';
+import { handlePreflight, validateOrigin, setSecurityHeaders } from './_utils/security.js';
 
 export default async function handler(req: any, res: any) {
   try {
