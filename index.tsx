@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 import { AuthProvider } from './components/AuthProvider';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -16,6 +17,7 @@ root.render(
     <AuthProvider>
       <App />
       <Analytics />
+      <SpeedInsights />
     </AuthProvider>
   </React.StrictMode>
 );
