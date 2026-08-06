@@ -1,15 +1,12 @@
 import React from 'react';
 import { AppView } from '../types';
-import { Calculator, FileText, ChevronRight, ShieldCheck, LogIn, LogOut, ArrowUpRight } from 'lucide-react';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { Calculator, FileText, ChevronRight, ShieldCheck, ArrowUpRight, MessageSquare, Award, Download, CheckCircle, BookOpen, Search } from 'lucide-react';
 import { getPathForView } from '../lib/routes';
 import { WorkspacePanel } from './ui/Workspace';
+import { SEOContentSection } from './SEOContentSection';
 
 interface HomeProps {
   onNavigate: (view: AppView) => void;
-  user?: SupabaseUser | null;
-  onLogin?: () => void;
-  onLogout?: () => void;
 }
 
 const tools = [
@@ -17,60 +14,78 @@ const tools = [
     view: AppView.CALCULATOR,
     title: 'Liquidación y Finiquito',
     summary: 'Calculadora completa de indemnizaciones constitucionales, primas de antigüedad y finiquitos de ley.',
-    access: 'Acceso Gratuito con Registro',
+    access: 'Acceso Gratuito',
     action: 'Calcular Prestaciones',
     accent: 'text-legal-gold',
-    badgeStyle: 'border-white/10 bg-white/5 text-slate-300',
+    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
     icon: <Calculator size={20} className="text-legal-gold" />,
   },
   {
-    view: AppView.DRAFTING,
-    title: 'Generador de Documentos',
-    summary: 'Proyecta contratos, actas, convenios y demandas asistidos por IA con búsqueda semántica en la LFT e IMSS.',
-    access: 'Por Documento o Plan',
-    action: 'Generar Borrador',
-    accent: 'text-legal-gold',
-    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
-    icon: <FileText size={20} className="text-legal-gold" />,
-  },
-  {
     view: AppView.SOCIAL_SECURITY,
-    title: 'Calculadora IMSS e INFONAVIT',
-    summary: 'Proyección detallada de cuotas obrero-patronales, ramos de seguro social y prima de riesgo de trabajo.',
-    access: 'Plan Premium Activo',
+    title: 'Calculadora IMSS',
+    summary: 'Proyección detallada de cuotas obrero-patronales, ramos de seguro social e INFONAVIT.',
+    access: 'Acceso Gratuito',
     action: 'Calcular IMSS',
     accent: 'text-legal-gold',
-    badgeStyle: 'border-white/10 bg-white/5 text-slate-300',
+    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
     icon: <ShieldCheck size={20} className="text-legal-gold" />,
   },
   {
     view: AppView.PENSION_CALCULATOR,
     title: 'Calculadora de Pensiones',
-    summary: 'Estima tu pensión mensual del IMSS según la Ley de 1973 o 1997 basado en tus semanas cotizadas y salario.',
-    access: 'Acceso Gratuito con Registro',
+    summary: 'Estima tu pensión mensual del IMSS según la Ley de 1973 o 1997 basado en tus semanas cotizadas.',
+    access: 'Acceso Gratuito',
     action: 'Estimar Pensión',
     accent: 'text-legal-gold',
-    badgeStyle: 'border-white/10 bg-white/5 text-slate-300',
+    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
     icon: <Calculator size={20} className="text-legal-gold" />,
+  },
+  {
+    view: AppView.CONSULTAS,
+    title: 'Consultas Jurídicas',
+    summary: 'Consulta artículos de la Ley Federal del Trabajo, IMSS e INFONAVIT con búsqueda semántica potenciada por IA.',
+    access: 'Acceso Gratuito',
+    action: 'Consultar',
+    accent: 'text-legal-gold',
+    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
+    icon: <BookOpen size={20} className="text-legal-gold" />,
   },
 ];
 
 const supportBlocks = [
   {
-    title: '1. Análisis y Recuperación (RAG)',
-    body: 'A diferencia de una IA genérica que puede inventar información, nuestro motor lee la LFT y LSS en milisegundos para extraer solo los artículos aplicables a tu caso.',
+    title: '1. Herramientas Laborales Completamente Gratuitas',
+    body: 'Acceso gratuito a calculadoras de liquidación, IMSS y pensiones sin necesidad de planes pagados. Diseñadas para trabajadores, abogados y empresas en México.',
   },
   {
-    title: '2. Restricción Legal Estricta',
-    body: 'Nuestra tecnología ancla a la Inteligencia Artificial a la ley. Se le prohíbe usar conocimientos externos o alucinar legislaciones inexistentes.',
+    title: '2. Motor de Búsqueda Legal (RAG)',
+    body: 'Sistema de búsqueda semántica que extrae información directamente de la Ley Federal del Trabajo y normatividad laboral vigente. Solo da respuestas basadas en legislación oficial.',
   },
   {
-    title: '3. Redacción Fundamentada',
-    body: 'La Inteligencia Artificial utiliza exclusivamente los artículos extraídos para redactar tu documento. Obtienes borradores personalizados con precisión legal absoluta.',
+    title: '3. Precisión Legal Absoluta',
+    body: 'Cada cálculo y respuesta se basa en artículos específicos de la ley. Eliminamos la ambigüedad en temas de prestaciones, cuotas y derechos laborales en México.',
   },
 ];
 
-export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout }) => {
+const galleryItems = [
+  {
+    src: '/assets/screenshots/screenshot-liquidacion.svg',
+    alt: 'Calculadora de Liquidación y Finiquito',
+    title: 'Liquidación'
+  },
+  {
+    src: '/assets/screenshots/screenshot-imss.svg',
+    alt: 'Calculadora IMSS e INFONAVIT',
+    title: 'IMSS'
+  },
+  {
+    src: '/assets/screenshots/screenshot-consultas.svg',
+    alt: 'Consultas Normatividad Laboral',
+    title: 'Consultas'
+  }
+];
+
+export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>, view: AppView) => {
     event.preventDefault();
     onNavigate(view);
@@ -115,42 +130,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
               </span>
             </div>
 
-            {/* Actions & Login Status */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 justify-center">
-              {user ? (
-                <div className="inline-flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 px-4.5 py-2.5 shadow-sm backdrop-blur-sm">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-legal-gold to-yellow-600 text-[11px] font-bold text-slate-950 border border-white/10 shadow-inner">
-                    {user.email?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                  <span className="max-w-[180px] truncate text-xs font-semibold text-slate-200">{user.email}</span>
-                  <div className="h-4 w-px bg-white/10" />
-                  <button
-                    onClick={onLogout}
-                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-red-400"
-                    title="Cerrar sesión"
-                  >
-                    <LogOut size={12} />
-                    Salir
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto justify-center">
-                  <button
-                    onClick={onLogin}
-                    className="group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-legal-gold px-6.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-950 shadow-[0_20px_45px_-12px_rgba(212,175,55,0.35)] transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_20px_45px_-12px_rgba(255,255,255,0.15)] active:translate-y-0 w-full sm:w-auto"
-                  >
-                    <LogIn size={15} className="text-slate-950 transition-transform group-hover:translate-x-0.5" />
-                    <span>Iniciar sesión</span>
-                  </button>
-                  <button
-                    onClick={onLogin}
-                    className="group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-white/5 border border-white/10 px-6.5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:-translate-y-0.5 hover:bg-white/10 active:translate-y-0 w-full sm:w-auto"
-                  >
-                    <span>Crear cuenta</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* No more login/auth UI - all tools are now free */}
           </div>
 
           {/* Tools Grid Section */}
@@ -202,18 +182,113 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, user, onLogin, onLogout 
         </div>
       </section>
 
-      {/* Support Blocks Section */}
+      {/* Features Section */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:px-10">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {supportBlocks.map((block) => (
             <WorkspacePanel key={block.title} className="p-5 sm:p-6.5 border border-white/5 bg-slate-950/60 shadow-sm rounded-2xl relative overflow-hidden group hover:border-white/10 transition-colors">
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-legal-gold to-slate-900 opacity-80" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-legal-gold">Proceso RAG Lex</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-legal-gold">Plataforma Lex Laboral</span>
               <h2 className="mt-2 text-md font-bold text-white">{block.title}</h2>
               <p className="mt-2.5 text-xs leading-relaxed text-slate-400 font-medium">{block.body}</p>
             </WorkspacePanel>
           ))}
         </div>
+      </section>
+
+      {/* Gallery / Screenshots Section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:px-10">
+        <h2 className="text-center text-2xl md:text-3xl font-bold text-white mb-3">Interfaz Moderna y Accesible</h2>
+        <p className="text-center text-slate-400 text-sm md:text-base mb-10 max-w-2xl mx-auto">
+          Diseñada para trabajadores, abogados y empresas. Disponible en web y móvil con PWA ready.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {galleryItems.map((item) => (
+            <div key={item.src} className="group overflow-hidden rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_8px_30px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 hover:border-legal-gold/40 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(163,124,31,0.15)]">
+              <div className="aspect-video overflow-hidden bg-slate-900">
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-bold text-white">{item.title}</h3>
+                <p className="text-xs text-slate-400 mt-1">{item.alt}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Available on Web and Mobile Section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:px-10">
+        <div className="rounded-2xl border border-white/5 bg-gradient-to-br from-slate-950/60 to-slate-900/40 backdrop-blur-md p-8 md:p-12">
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+            <Download size={32} className="text-legal-gold mb-4" />
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">Disponible en Web y Móvil</h2>
+            <p className="text-slate-300 text-sm md:text-base mb-8">
+              Lex Laboral es una aplicación web progresiva (PWA) totalmente funcional en tu navegador. Acceso inmediato sin necesidad de descargar desde app stores.
+            </p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <div className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 text-center">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Web</p>
+                <p className="text-white font-semibold">Acceso Inmediato</p>
+              </div>
+              <div className="hidden sm:block w-px h-12 bg-white/10" />
+              <div className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 text-center">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Móvil</p>
+                <p className="text-white font-semibold">PWA Ready</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SEO Content Section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 py-12">
+        <SEOContentSection
+          title="Preguntas Frecuentes - Calculadoras y Consultas Laborales"
+          intro="Lex Laboral es tu asistente legal laboral integral. Calcula prestaciones con precisión legal, consulta la normatividad laboral vigente y obtén respuestas basadas en la Ley Federal del Trabajo 2026."
+          highlights={[
+            {
+              title: 'Calculadora de Liquidación Gratuita',
+              body: 'Calcula indemnización constitucional, prima de antigüedad, aguinaldo y finiquito con desglose detallado. Sin costo para usuarios registrados.'
+            },
+            {
+              title: 'Consultas Normativas Precisas',
+              body: 'Realiza consultas sobre tus derechos laborales y obtén respuestas directas de la Ley Federal del Trabajo. Sistema RAG con búsqueda semántica legal.'
+            },
+            {
+              title: 'Seguridad Social IMSS',
+              body: 'Calcula cuotas obrero-patronales, INFONAVIT y prima de riesgo con desglose por ramo. Accesible y gratuita para todos.'
+            }
+          ]}
+          faqs={[
+            {
+              question: '¿Cuánto cuesta usar Lex Laboral?',
+              answer: 'Las calculadoras de liquidación, IMSS e INFONAVIT y pensiones son completamente gratuitas. No requieren suscripción ni plan pagado.'
+            },
+            {
+              question: '¿Es exacta la calculadora de liquidación?',
+              answer: 'Sí. Nuestra calculadora aplica los artículos 48, 50, 162 y 163 de la Ley Federal del Trabajo vigente en México. Produce resultados precisos basados en la normatividad oficial.'
+            },
+            {
+              question: '¿Puedo consultar la normatividad laboral?',
+              answer: 'Sí. Usa el módulo de Consultas para hacer preguntas sobre la Ley Federal del Trabajo. El sistema extrae respuestas directas de los artículos aplicables.'
+            },
+            {
+              question: '¿Funciona en móvil?',
+              answer: 'Completamente. Lex Laboral es una aplicación web progresiva (PWA) optimizada para todos los dispositivos, desde teléfonos hasta desktops.'
+            },
+            {
+              question: '¿Necesito crear una cuenta?',
+              answer: 'Para acceder a las herramientas de cálculo, sí es necesario registro rápido. Las consultas normativas están disponibles también para usuarios no registrados en futuras actualizaciones.'
+            }
+          ]}
+        />
       </section>
 
       {/* Elegant Homogeneous Footer */}

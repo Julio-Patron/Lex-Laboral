@@ -1,28 +1,14 @@
 
-export interface Attachment {
-  type: 'file' | 'text';
-  mimeType?: string;
-  data: string; // base64 for files, string content for text
-  name: string;
-}
-
 export enum AppView {
   HOME = 'HOME',
-  DRAFTING = 'DRAFTING',
   CALCULATOR = 'CALCULATOR',
   SOCIAL_SECURITY = 'SOCIAL_SECURITY',
   PENSION_CALCULATOR = 'PENSION_CALCULATOR',
-  CEO_DASHBOARD = 'CEO_DASHBOARD',
+  CONSULTAS = 'CONSULTAS',
   TERMS = 'TERMS',
-  PRIVACY = 'PRIVACY',
-  SETTINGS = 'SETTINGS',
-  HISTORY = 'HISTORY'
+  PRIVACY = 'PRIVACY'
 }
 
-export interface DraftingState {
-  prompt: string;
-  generatedDoc: string;
-}
 
 export type NotificationType = 'error' | 'success' | 'info' | 'warning';
 
@@ -33,23 +19,3 @@ export interface AppNotification {
   title?: string;
 }
 
-export type CheckoutPlan = 'draft_basic' | 'mensualidad' | 'trimestralidad';
-
-export interface AccessSnapshot {
-  hasActiveSubscription: boolean;
-  isPremium: boolean;
-  licenseType: string | null;
-  accessUntil: string | null;
-  singleDocumentUsesRemaining: number;
-}
-
-export interface ChatMessage {
-  role: 'user' | 'model';
-  content: string;
-}
-
-export interface AnalyzedDocumentHistory {
-  date: string;
-  name: string;
-  summary: string;
-}

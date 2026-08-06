@@ -2,39 +2,26 @@
 import React from 'react';
 import { AppView } from '../types';
 import { 
-  PenTool, 
-  ChevronRight, 
   Calculator, 
   ShieldCheck, 
   Home,
-  BarChart3,
-  Settings,
-  CreditCard,
-  History as HistoryIcon
+  BookOpen,
+  ChevronRight
 } from 'lucide-react';
 
 interface SidebarProps {
   currentView: AppView;
   onChangeView: (view: AppView) => void;
   onNewCase: () => void;
-  onLogout: () => void;
-  user: any;
-  userData?: any;
-  isPremium: boolean;
-  isGuest: boolean;
-  notify?: (m: string, t?: any, tit?: string) => void;
-  onOpenPricing?: (plan: 'draft_basic' | 'mensualidad' | 'trimestralidad') => void;
-  isCEO?: boolean;
 }
 
-export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, notify, onOpenPricing, isCEO, user, isGuest }) => {
+export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase }) => {
   const navItems = [
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={18} /> },
     { id: AppView.CALCULATOR, label: 'Liquidación y Finiquito', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'IMSS e INFONAVIT', icon: <ShieldCheck size={18} /> },
     { id: AppView.PENSION_CALCULATOR, label: 'Calculadora de Pensiones', icon: <Calculator size={18} /> },
-    { id: AppView.DRAFTING, label: 'Generador Documental', icon: <PenTool size={18} /> },
-    { id: AppView.HISTORY, label: 'Historial', icon: <HistoryIcon size={18} /> },
+    { id: AppView.CONSULTAS, label: 'Consultas Jurídicas', icon: <BookOpen size={18} /> },
   ];
 
   const handleNavClick = (viewId: AppView) => {
@@ -80,82 +67,10 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
             );
           })}
         </ul>
-
-        {/* CEO Dashboard — Only visible for admin */}
-        {isCEO && (
-          <>
-            <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 mt-6">Administración</p>
-            <ul className="space-y-1">
-              <li>
-                <button
-                  onClick={() => handleNavClick(AppView.CEO_DASHBOARD)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-medium transition-all group ${
-                    currentView === AppView.CEO_DASHBOARD
-                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/20'
-                      : 'text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <BarChart3 size={18} className={currentView === AppView.CEO_DASHBOARD ? 'text-indigo-300' : ''} />
-                    <span>Panel CEO</span>
-                  </div>
-                  {currentView === AppView.CEO_DASHBOARD && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
-                </button>
-              </li>
-            </ul>
-          </>
-        )}
-
-        {/* User Account Settings */}
-        {user && !isGuest && (
-          <>
-            <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 mt-6">Mi Cuenta</p>
-            <ul className="space-y-1">
-              <li>
-                <button
-                  onClick={() => {
-                    if (onOpenPricing) onOpenPricing('draft_basic');
-                  }}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-medium transition-all group text-slate-400 hover:text-white hover:bg-white/5"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-slate-400 group-hover:text-slate-300">
-                      <CreditCard size={18} />
-                    </span>
-                    <span>Suscripción</span>
-                  </div>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNavClick(AppView.SETTINGS)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-medium transition-all group ${
-                    currentView === AppView.SETTINGS
-                      ? 'bg-white/10 text-legal-gold border border-white/5'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className={currentView === AppView.SETTINGS ? 'text-legal-gold' : 'text-slate-400 group-hover:text-slate-300'}>
-                      <Settings size={18} />
-                    </span>
-                    <span>Configuración</span>
-                  </div>
-                  {currentView === AppView.SETTINGS && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
-                </button>
-              </li>
-            </ul>
-          </>
-        )}
       </nav>
 
       {/* Footer Links */}
       <div className="p-4 mt-auto border-t border-white/5 bg-black/20">
-        <div className="bg-white/5 rounded-xl p-4 border border-white/5 mb-4 text-center">
-            <p className="text-[11px] font-bold text-slate-300 mb-1">Acceso Registrado</p>
-            <p className="text-xs text-slate-400">Calculadoras gratuitas. Generador RAG según tu plan.</p>
-        </div>
-
         <div className="flex items-center justify-between px-1 opacity-60">
             <button 
               onClick={() => onChangeView(AppView.PRIVACY)}
@@ -175,3 +90,5 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
     </div>
   );
 });
+Sidebar.displayName = 'Sidebar';
+export default Sidebar;

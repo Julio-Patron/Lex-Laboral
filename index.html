@@ -34,8 +34,8 @@
         const ogImage = baseUrl + '/assets/og-image.png';
         const routeMeta = {
           '/': {
-            title: 'Calculadora de Liquidación, IMSS y Documentos Laborales en México 2026 | Lex Laboral',
-            description: 'Calculadora de liquidación y finiquito en México, calculadora IMSS e INFONAVIT y generador de documentos laborales con IA. Plataforma jurídica laboral para 2026.',
+            title: 'Calculadora de Liquidación, IMSS y Pensiones en México 2026 | Lex Laboral',
+            description: 'Calculadora de liquidación y finiquito en México, calculadora IMSS e INFONAVIT y calculadora de pensiones. Herramientas laborales gratuitas para 2026.',
             robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
           },
           '/calculadora-liquidacion': {
@@ -43,14 +43,19 @@
             description: 'Calcula liquidación, finiquito, aguinaldo, vacaciones, prima de antigüedad e ISR en México. Herramienta laboral gratuita para usuarios registrados.',
             robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
           },
-          '/generador-documentos': {
-            title: 'Generador de Documentos Laborales con IA en México | Lex Laboral',
-            description: 'Genera contratos laborales, convenios, cartas de renuncia y otros documentos laborales con IA. Pensado para borradores jurídicos en México.',
-            robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
-          },
           '/calculadora-imss': {
             title: 'Calculadora de Cuotas IMSS e INFONAVIT en México 2026 | Lex Laboral',
             description: 'Calcula cuotas obrero-patronales IMSS e INFONAVIT con desglose por ramo de seguro, cesantía y prima de riesgo. Herramienta de apoyo para México.',
+            robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+          },
+          '/calculadora-pensiones': {
+            title: 'Calculadora de Pensiones IMSS en México | Lex Laboral',
+            description: 'Calcula tu pensión del IMSS bajo el Régimen 1973 y Régimen 1997. Estima tu monto mensual de pensión de forma rápida y gratuita.',
+            robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+          },
+          '/consultas': {
+            title: 'Consultas Normatividad Laboral | Lex Laboral',
+            description: 'Consulta la Ley Federal del Trabajo y normatividad laboral vigente en México. Respuestas precisas sobre derechos laborales y prestaciones.',
             robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
           },
           '/terminos': {
@@ -62,11 +67,6 @@
             title: 'Aviso de Privacidad | Lex Laboral',
             description: 'Aviso de privacidad y protección de datos personales de Lex Laboral conforme a la LFPDPPP.',
             robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
-          },
-          '/panel-ceo': {
-            title: 'Panel de Administración | Lex Laboral',
-            description: 'Panel interno de administración de Lex Laboral.',
-            robots: 'noindex, nofollow, noarchive'
           }
         };
 
@@ -136,7 +136,7 @@
       "@type": "WebApplication",
       "name": "Lex Laboral",
       "url": "https://lexlaboral.com.mx",
-      "description": "Calculadora de liquidación y finiquito en México, calculadora IMSS e INFONAVIT y generador de documentos laborales con IA.",
+      "description": "Calculadora de liquidación y finiquito, calculadora IMSS e INFONAVIT y calculadora de pensiones IMSS. Herramientas laborales gratuitas para 2026.",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "offers": {
@@ -146,11 +146,12 @@
         "description": "Calculadoras laborales gratuitas"
       },
       "featureList": [
-        "Calculadora de liquidación laboral",
-        "Calculadora de finiquito",
+        "Calculadora de liquidación laboral gratuita",
+        "Calculadora de finiquito y prestaciones",
         "Calculadora de aguinaldo",
         "Calculadora de cuotas IMSS e INFONAVIT",
-        "Generador de documentos laborales con IA",
+        "Calculadora de pensiones IMSS",
+        "Consultas normatividad laboral con IA",
         "Cálculo de ISR sobre indemnización"
       ],
       "inLanguage": "es-MX",
@@ -165,17 +166,20 @@
     <div id="root" class="h-full w-full">
       <!-- SEO: Contenido visible para crawlers mientras carga el JS -->
       <div style="padding: 2rem; max-width: 800px; margin: 0 auto;" aria-hidden="true">
-        <h1>Lex Laboral: calculadora de liquidación, calculadora IMSS y generador de documentos laborales en México</h1>
-        <p>Lex Laboral reúne herramientas jurídicas laborales para México: cálculo de liquidación y finiquito, cálculo de cuotas IMSS e INFONAVIT y generación asistida de documentos laborales.</p>
+        <h1>Lex Laboral: calculadora de liquidación, calculadora IMSS y pensiones en México 2026</h1>
+        <p>Lex Laboral reúne herramientas jurídicas laborales gratuitas para México: cálculo de liquidación y finiquito, cálculo de cuotas IMSS e INFONAVIT, cálculo de pensiones IMSS y consultas normativas laborales.</p>
 
         <h2>Calculadora de Liquidación y Finiquito</h2>
         <p>Calcula tu indemnización constitucional (3 meses de salario), 20 días por año trabajado, prima de antigüedad (12 días por año, topada a 2 UMA), aguinaldo proporcional, vacaciones y prima vacacional. Incluye cálculo de ISR sobre indemnización conforme al artículo 93 de la LISR.</p>
 
-        <h2>Generador de Documentos Legales con IA</h2>
-        <p>Genera contratos individuales de trabajo, convenios de terminación laboral, cartas de renuncia voluntaria, actas administrativas, demandas laborales y escritos jurídicos personalizados mediante inteligencia artificial. Basado en la Ley Federal del Trabajo vigente en México.</p>
-
         <h2>Calculadora de Cuotas IMSS e INFONAVIT</h2>
         <p>Desglose completo de cuotas obrero-patronales del IMSS por ramo de seguro: enfermedades y maternidad, invalidez y vida, retiro, cesantía en edad avanzada y vejez, guarderías e INFONAVIT. Calcula la prima de riesgo de trabajo según tu clase y fracción.</p>
+
+        <h2>Calculadora de Pensiones IMSS</h2>
+        <p>Estima tu pensión mensual del IMSS bajo el Régimen de 1973 o el Régimen de 1997. Basado en semanas cotizadas, salario promedio y saldo de AFORE. Estimaciones rápidas y gratuitas.</p>
+
+        <h2>Consultas Normatividad Laboral</h2>
+        <p>Realiza consultas sobre tus derechos laborales en México. Obtén respuestas precisas basadas directamente en la Ley Federal del Trabajo vigente en 2026. Motor RAG con búsqueda semántica legal.</p>
 
         <h2>¿Cómo calcular mi liquidación en México?</h2>
         <p>Si te despidieron injustificadamente, tienes derecho a: 3 meses de salario como indemnización constitucional, 20 días de salario por cada año trabajado, prima de antigüedad de 12 días por año (topada a 2 UMA), más las partes proporcionales de aguinaldo, vacaciones y prima vacacional.</p>
@@ -183,7 +187,8 @@
         <h2>Páginas principales</h2>
         <p><a href="/calculadora-liquidacion">Calculadora de liquidación y finiquito</a></p>
         <p><a href="/calculadora-imss">Calculadora IMSS e INFONAVIT</a></p>
-        <p><a href="/generador-documentos">Generador de documentos legales</a></p>
+        <p><a href="/calculadora-pensiones">Calculadora de pensiones IMSS</a></p>
+        <p><a href="/consultas">Consultas normatividad laboral</a></p>
       </div>
     </div>
   <script type="module" src="/index.tsx"></script>

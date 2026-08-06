@@ -45,20 +45,7 @@ export default defineConfig(({ mode }) => {
                 }
                 if (id.includes('recharts')) return 'vendor-charts';
                 if (id.includes('jspdf')) return 'vendor-pdf';
-                if (id.includes('@supabase')) return 'vendor-supabase';
                 if (id.includes('framer-motion')) return 'vendor-motion';
-                if (
-                  id.includes('react-markdown') ||
-                  id.includes('remark-') ||
-                  id.includes('micromark') ||
-                  id.includes('unified') ||
-                  id.includes('hast-') ||
-                  id.includes('mdast-') ||
-                  id.includes('unist-') ||
-                  id.includes('vfile')
-                ) {
-                  return 'vendor-markdown';
-                }
                 if (id.includes('lucide-react')) return 'vendor-icons';
               }
             }

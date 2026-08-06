@@ -2,15 +2,12 @@ import { AppView } from '../types';
 
 export const VIEW_PATHS: Record<AppView, string> = {
   [AppView.HOME]: '/',
-  [AppView.DRAFTING]: '/generador-documentos',
   [AppView.CALCULATOR]: '/calculadora-liquidacion',
   [AppView.SOCIAL_SECURITY]: '/calculadora-imss',
   [AppView.PENSION_CALCULATOR]: '/calculadora-pensiones',
-  [AppView.CEO_DASHBOARD]: '/panel-ceo',
+  [AppView.CONSULTAS]: '/consultas',
   [AppView.TERMS]: '/terminos',
   [AppView.PRIVACY]: '/privacidad',
-  [AppView.SETTINGS]: '/configuracion',
-  [AppView.HISTORY]: '/historial',
 };
 
 const PATH_VIEW_MAP = new Map<string, AppView>(
@@ -30,4 +27,4 @@ const normalizePath = (pathname: string): string => {
 export const getViewForPath = (pathname: string): AppView =>
   PATH_VIEW_MAP.get(normalizePath(pathname)) || AppView.HOME;
 
-export const isIndexableView = (view: AppView): boolean => view !== AppView.CEO_DASHBOARD;
+export const isIndexableView = (view: AppView): boolean => true;
