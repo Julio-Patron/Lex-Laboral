@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { AuthProvider } from './components/AuthProvider';
 import { Analytics } from '@vercel/analytics/react';
 
 const rootElement = document.getElementById('root');
@@ -13,9 +12,7 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-      <Analytics />
-    </AuthProvider>
+    <App />
+    <Analytics />
   </React.StrictMode>
 );

@@ -22,12 +22,10 @@ import {
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from './AuthProvider';
 import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
-
-type DismissalType = 'injustificado' | 'renuncia' | 'rescision_patron' | 'rescision_trabajador';
+import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
 
 const LazyBreakdownChart = React.lazy(() =>
   import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
@@ -35,18 +33,14 @@ const LazyBreakdownChart = React.lazy(() =>
 
 export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
-  onRequireLogin?: () => void;
-  onOpenDrafting?: () => void;
   onOpenImss?: () => void;
-  onOpenPricing?: (plan: 'draft_basic' | 'mensualidad' | 'trimestralidad') => void;
-}> = ({ notify, onRequireLogin, onOpenDrafting, onOpenImss, onOpenPricing }) => {
+}> = ({ notify, onOpenImss }) => {
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const dismissalOptions: Array<{ value: DismissalType; label: string }> = [
     { value: 'injustificado', label: 'Injustificado' },
     { value: 'renuncia', label: 'Renuncia' },
     { value: 'rescision_patron', label: 'Rescisión' },
   ];
-  const { user, access } = useAuth();
   const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
@@ -115,6 +109,7 @@ export const LaborCalculator: React.FC<{
     total: number;
     finiquito: number;
     liquidacion: number;
+    isr: number;
     formulas: {
       aguinaldo: string;
       vacations: string;
@@ -127,31 +122,7 @@ export const LaborCalculator: React.FC<{
     };
   } | null>(null);
 
-  const calculateMonthlyISR = (amount: number): number => {
-    const limits = [
-      { lower: 0.01, upper: 746.04, fixed: 0, percent: 0.0192 },
-      { lower: 746.05, upper: 6332.05, fixed: 14.32, percent: 0.064 },
-      { lower: 6332.06, upper: 11128.01, fixed: 371.83, percent: 0.1088 },
-      { lower: 11128.02, upper: 12935.82, fixed: 893.63, percent: 0.16 },
-      { lower: 12935.83, upper: 15487.71, fixed: 1182.88, percent: 0.1792 },
-      { lower: 15487.72, upper: 31236.49, fixed: 1640.18, percent: 0.2136 },
-      { lower: 31236.50, upper: 49233.00, fixed: 5004.12, percent: 0.2352 },
-      { lower: 49233.01, upper: 93993.90, fixed: 9236.89, percent: 0.30 },
-      { lower: 93993.91, upper: 125325.20, fixed: 22665.17, percent: 0.32 },
-      { lower: 125325.21, upper: 375975.61, fixed: 32691.18, percent: 0.34 },
-      { lower: 375975.62, upper: 9999999, fixed: 117912.32, percent: 0.35 }
-    ];
-    const bracket = limits.find(l => amount >= l.lower && amount <= l.upper) || limits[0];
-    return bracket.fixed + ((amount - bracket.lower) * bracket.percent);
-  };
-
   const calculate = async () => {
-    if (!user) {
-      if (onRequireLogin) onRequireLogin();
-      notify("Regístrate gratis para usar la calculadora", "info");
-      return;
-    }
-
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
       setShowErrors(true);
       notify("Complete los campos obligatorios para generar el cálculo", "warning");
@@ -159,78 +130,23 @@ export const LaborCalculator: React.FC<{
     }
     setShowErrors(false);
 
-    const totalYears = yearsOfService + (daysOfService / 365.25);
-    const hourlyRate = dailySalary / hoursPerDay;
-    
-    const proportionOfYear = daysOfService / 365.25;
-    const aguinaldo = (dailySalary * aguinaldoDays) * proportionOfYear;
-    const vacations = (dailySalary * vacationDays) * proportionOfYear;
-    const vPremium = vacations * (vacationPremium / 100);
-    const overtimeDouble = doubleOvertimeHours * (hourlyRate * 2);
-    const overtimeTriple = tripleOvertimeHours * (hourlyRate * 3);
-    const totalOvertime = overtimeDouble + overtimeTriple;
+    const input: LaborSettlementInput = {
+      dailySalary,
+      yearsOfService,
+      daysOfService,
+      vacationDays,
+      vacationPremium,
+      aguinaldoDays,
+      doubleOvertimeHours,
+      tripleOvertimeHours,
+      hoursPerDay,
+      dismissalType,
+      minWage,
+      umaValue
+    };
 
-    const finiquito = aguinaldo + vacations + vPremium + totalOvertime;
-
-    let indemnity90 = 0;
-    let indemnity20 = 0;
-    let seniorityPremium = 0;
-
-    const cappedSalary = Math.min(dailySalary, minWage * 2);
-    const shouldPaySeniority = dismissalType !== 'renuncia' || (dismissalType === 'renuncia' && yearsOfService >= 15);
-
-    if (shouldPaySeniority) {
-      seniorityPremium = (cappedSalary * 12) * totalYears;
-    }
-
-    if (dismissalType === 'injustificado' || dismissalType === 'rescision_trabajador') {
-      indemnity90 = dailySalary * 90;
-      indemnity20 = (dailySalary * 20) * totalYears;
-    }
-
-    const liquidacion = indemnity90 + indemnity20 + seniorityPremium;
-    
-    // Cálculo de ISR (Estimación basada en Art. 95/96 LISR)
-    const aguinaldoExento = Math.min(aguinaldo, 30 * umaValue);
-    const primaVacacionalExenta = Math.min(vPremium, 15 * umaValue);
-    const baseGravableFiniquito = Math.max(0, (aguinaldo - aguinaldoExento) + vacations + (vPremium - primaVacacionalExenta) + totalOvertime);
-    const isrFiniquito = calculateMonthlyISR(baseGravableFiniquito);
-
-    const exentoLiquidacion = 90 * umaValue * Math.floor(totalYears); // 90 UMAS por cada año de servicio completo
-    const baseGravableLiquidacion = Math.max(0, liquidacion - exentoLiquidacion);
-
-    const sueldoMensual = dailySalary * 30.4;
-    const isrSueldoMensual = calculateMonthlyISR(sueldoMensual);
-    const tasaEfectiva = sueldoMensual > 0 ? (isrSueldoMensual / sueldoMensual) : 0;
-    
-    const isrLiquidacion = baseGravableLiquidacion * tasaEfectiva;
-    const totalISR = isrFiniquito + isrLiquidacion;
-
-    const round = (num: number) => Math.round((num + Number.EPSILON) * 100) / 100;
-
-    setResults({
-      aguinaldo: round(aguinaldo),
-      vacations: round(vacations),
-      vacationPremium: round(vPremium),
-      indemnity90: round(indemnity90),
-      indemnity20: round(indemnity20),
-      seniorityPremium: round(seniorityPremium),
-      overtime: round(totalOvertime),
-      finiquito: round(finiquito),
-      liquidacion: round(liquidacion),
-      isr: round(totalISR),
-      total: round(finiquito + liquidacion - totalISR),
-      formulas: {
-        aguinaldo: `Salario Diario: $${dailySalary.toFixed(2)}\nDías: ${aguinaldoDays}\n$${dailySalary.toFixed(2)} × ${aguinaldoDays} × ${(proportionOfYear).toFixed(2)} = $${round(aguinaldo).toFixed(2)}`,
-        vacations: `Salario Diario: $${dailySalary.toFixed(2)}\nDías: ${vacationDays}\n$${dailySalary.toFixed(2)} × ${vacationDays} × ${(proportionOfYear).toFixed(2)} = $${round(vacations).toFixed(2)}`,
-        vacationPremium: `Monto: $${round(vacations).toFixed(2)} × ${(vacationPremium / 100).toFixed(2)} = $${round(vPremium).toFixed(2)}`,
-        indemnity90: `Salario Diario: $${dailySalary.toFixed(2)} × 90 = $${round(indemnity90).toFixed(2)}`,
-        indemnity20: `Salario Diario: $${dailySalary.toFixed(2)} × 20 × ${totalYears.toFixed(2)} años = $${round(indemnity20).toFixed(2)}`,
-        seniorityPremium: `Topado (Max 2 SMG): $${cappedSalary.toFixed(2)} × 12 × ${totalYears.toFixed(2)} años = $${round(seniorityPremium).toFixed(2)}`,
-        overtime: `Salario por hora: $${hourlyRate.toFixed(2)} ($${(hourlyRate * 2).toFixed(2)}/hr x ${doubleOvertimeHours}) = $${round(totalOvertime).toFixed(2)}`,
-        isr: `Base Gravable Finiquito: $${baseGravableFiniquito.toFixed(2)}\nISR Finiquito: $${isrFiniquito.toFixed(2)}\nBase Liq: $${baseGravableLiquidacion.toFixed(2)} (Tasa: ${(tasaEfectiva * 100).toFixed(2)}%)\nISR Liquidación: $${isrLiquidacion.toFixed(2)}\nRetención Total: $${totalISR.toFixed(2)}`,
-      }
-    });
+    const result = calculateLaborSettlement(input);
+    setResults(result);
     
     notify("Cálculo generado exitosamente", "success");
     setTimeout(() => {
@@ -314,22 +230,8 @@ export const LaborCalculator: React.FC<{
     }
   };
 
-  const handleDraftingNextStep = () => {
-    if (access.hasActiveSubscription || access.singleDocumentUsesRemaining > 0) {
-      onOpenDrafting?.();
-      return;
-    }
-
-    onOpenPricing?.('draft_basic');
-  };
-
   const handleImssNextStep = () => {
-    if (access.hasActiveSubscription) {
-      onOpenImss?.();
-      return;
-    }
-
-    onOpenPricing?.('mensualidad');
+    onOpenImss?.();
   };
 
   return (
@@ -539,30 +441,7 @@ export const LaborCalculator: React.FC<{
                     </div>
                   </WorkspacePanel>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <button
-                      onClick={handleDraftingNextStep}
-                      className="group relative overflow-hidden rounded-[2rem] bg-blue-900 p-8 text-left text-white shadow-2xl shadow-blue-900/20 transition-all hover:-translate-y-0.5"
-                    >
-                      <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-white/5 blur-2xl" />
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-3">
-                          <Sparkles className="text-legal-gold" size={20} />
-                          <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-blue-200">Documento</span>
-                        </div>
-                        <h4 className="mt-4 text-lg font-bold">
-                          {access.hasActiveSubscription || access.singleDocumentUsesRemaining > 0 ? 'Abrir generador' : 'Comprar documento'}
-                        </h4>
-                        <p className="mt-2 text-sm leading-6 text-blue-100">
-                          Convierte este cálculo en convenio, renuncia o aviso con la misma base del caso.
-                        </p>
-                        <div className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-legal-gold">
-                          Continuar
-                          <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                        </div>
-                      </div>
-                    </button>
-
+                  <div className="grid gap-4 md:grid-cols-1">
                     <button
                       onClick={handleImssNextStep}
                       className="group rounded-[2rem] border border-slate-200/80 bg-white p-8 text-left shadow-[0_24px_70px_-40px_rgba(15,23,42,0.45)] transition-all hover:-translate-y-0.5"
@@ -573,7 +452,7 @@ export const LaborCalculator: React.FC<{
                           <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">IMSS</span>
                         </div>
                         <h4 className="mt-4 text-lg font-bold text-slate-950">
-                          {access.hasActiveSubscription ? 'Abrir IMSS' : 'Desbloquear IMSS'}
+                          Abrir IMSS
                         </h4>
                         <p className="mt-2 text-sm leading-6 text-slate-600">
                           Revisa cuotas e impacto patronal para completar el análisis del caso.
@@ -616,7 +495,7 @@ export const LaborCalculator: React.FC<{
           },
           {
             question: 'La calculadora laboral de Lex Laboral es gratis?',
-            answer: 'Sí. La calculadora de prestaciones está disponible para usuarios registrados sin necesidad de contratar un plan de pago.',
+            answer: 'Sí. La calculadora de prestaciones es gratuita y no requiere registro ni plan de pago.',
           },
           {
             question: 'Este resultado sustituye asesoria legal profesional?',

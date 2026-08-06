@@ -34,23 +34,16 @@ interface FaqSchemaItem {
  */
 const SEO_MAP: Record<AppView, SEOConfig> = {
   [AppView.HOME]: {
-    title: `Calculadora de Liquidación, IMSS y Documentos Laborales en México 2026 | ${SITE_NAME}`,
-    description: 'Calculadora de liquidación y finiquito en México, calculadora IMSS e INFONAVIT y generador de documentos laborales con IA. Plataforma jurídica laboral para 2026.',
+    title: `Calculadora de Liquidación, IMSS y Pensiones en México 2026 | ${SITE_NAME}`,
+    description: 'Calculadora de liquidación y finiquito en México, calculadora IMSS e INFONAVIT y calculadora de pensiones. Herramientas laborales gratuitas para 2026.',
     path: getPathForView(AppView.HOME),
   },
   [AppView.CALCULATOR]: {
     title: `Calculadora de Liquidación y Finiquito en México 2026 | ${SITE_NAME}`,
-    description: 'Calcula liquidación, finiquito, aguinaldo, vacaciones, prima de antigüedad e ISR en México. Herramienta laboral gratuita para usuarios registrados.',
+    description: 'Calcula liquidación, finiquito, aguinaldo, vacaciones, prima de antigüedad e ISR en México. Herramienta laboral gratuita y sin registro.',
     path: getPathForView(AppView.CALCULATOR),
     ogTitle: 'Calculadora de Liquidación y Finiquito en México 2026',
     ogDescription: 'Herramienta laboral para calcular liquidación y finiquito en México con desglose paso a paso.',
-  },
-  [AppView.DRAFTING]: {
-    title: `Generador de Documentos Laborales con IA en México | ${SITE_NAME}`,
-    description: 'Genera contratos laborales, convenios, cartas de renuncia y otros documentos laborales con IA. Pensado para borradores jurídicos en México.',
-    path: getPathForView(AppView.DRAFTING),
-    ogTitle: 'Generador de Documentos Laborales con IA en México',
-    ogDescription: 'Crea contratos, convenios y otros borradores laborales en México con inteligencia artificial.',
   },
   [AppView.SOCIAL_SECURITY]: {
     title: `Calculadora de Cuotas IMSS e INFONAVIT en México 2026 | ${SITE_NAME}`,
@@ -66,11 +59,12 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
     ogTitle: 'Calculadora de Pensiones IMSS en México (Ley 73 y 97)',
     ogDescription: 'Calcula la estimación de tu pensión del IMSS basada en tus semanas cotizadas y salario o saldo de AFORE.',
   },
-  [AppView.CEO_DASHBOARD]: {
-    title: `Panel de Administración | ${SITE_NAME}`,
-    description: 'Panel de control y métricas de Lex Laboral.',
-    path: getPathForView(AppView.CEO_DASHBOARD),
-    robots: 'noindex, nofollow, noarchive',
+  [AppView.CONSULTAS]: {
+    title: `Consultas Normatividad Laboral | ${SITE_NAME}`,
+    description: 'Consulta la Ley Federal del Trabajo y normatividad laboral vigente en México. Respuestas precisas sobre derechos laborales y prestaciones.',
+    path: getPathForView(AppView.CONSULTAS),
+    ogTitle: 'Consultas Normatividad Laboral México',
+    ogDescription: 'Consulta artículos de la Ley Federal del Trabajo con respuestas precisas basadas en legislación vigente.',
   },
   [AppView.TERMS]: {
     title: `Términos y Condiciones | ${SITE_NAME}`,
@@ -167,10 +161,9 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
   const breadcrumbMap: Record<AppView, string[]> = {
     [AppView.HOME]: ['Inicio'],
     [AppView.CALCULATOR]: ['Inicio', 'Calculadora de Liquidación'],
-    [AppView.DRAFTING]: ['Inicio', 'Generador de Documentos'],
     [AppView.SOCIAL_SECURITY]: ['Inicio', 'Calculadora IMSS'],
     [AppView.PENSION_CALCULATOR]: ['Inicio', 'Calculadora de Pensiones'],
-    [AppView.CEO_DASHBOARD]: ['Inicio', 'Panel CEO'],
+    [AppView.CONSULTAS]: ['Inicio', 'Consultas Normatividad'],
     [AppView.TERMS]: ['Inicio', 'Términos'],
     [AppView.PRIVACY]: ['Inicio', 'Privacidad'],
   };
@@ -230,11 +223,11 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
     [AppView.HOME]: [
       {
         question: 'Que herramientas ofrece Lex Laboral?',
-        answer: 'Lex Laboral ofrece una calculadora de prestaciones laborales, una calculadora IMSS e INFONAVIT y un generador de documentos laborales con IA.',
+        answer: 'Lex Laboral ofrece calculadoras gratuitas de liquidación, IMSS e INFONAVIT y pensiones IMSS, más un módulo de consultas sobre normatividad laboral vigente.',
       },
       {
         question: 'Que parte de la plataforma es gratis?',
-        answer: 'La calculadora laboral está disponible para usuarios registrados sin costo. La calculadora IMSS y el generador documental dependen del plan activo o del documento suelto.',
+        answer: 'Todas las herramientas principales son gratuitas: calculadora de liquidación, IMSS, pensiones y consultas normativas. No requieren registro ni pago.'
       },
     ],
     [AppView.CALCULATOR]: [
@@ -244,27 +237,17 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       },
       {
         question: 'La calculadora de liquidacion es gratis?',
-        answer: 'Sí, la calculadora de prestaciones está disponible para usuarios registrados.',
-      },
-    ],
-    [AppView.DRAFTING]: [
-      {
-        question: 'Que documentos laborales puede generar la herramienta?',
-        answer: 'Puede ayudarte a elaborar borradores de contratos, convenios, cartas de renuncia, actas administrativas, reglamentos y otros escritos laborales frecuentes.',
-      },
-      {
-        question: 'Se puede usar sin suscripcion?',
-        answer: 'Sí, mediante la compra de un documento suelto. También puede usarse con plan mensual o trimestral activo.',
+        answer: 'Sí, la calculadora de prestaciones es gratuita y no requiere registro.',
       },
     ],
     [AppView.SOCIAL_SECURITY]: [
       {
         question: 'Que calcula la calculadora IMSS?',
-        answer: 'Calcula cuotas obrero-patronales IMSS e INFONAVIT con desglose por ramo y apoyo para revisar la prima de riesgo.',
+        answer: 'Calcula cuotas obrero-patronales IMSS e INFONAVIT con desglose por ramo de seguro y apoyo para revisar la prima de riesgo de trabajo.',
       },
       {
         question: 'La calculadora IMSS es gratuita?',
-        answer: 'No, está disponible para usuarios con plan mensual o trimestral activo.',
+        answer: 'Sí, está disponible completamente gratuita y sin registro.',
       },
     ],
     [AppView.PENSION_CALCULATOR]: [
@@ -275,6 +258,16 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       {
         question: '¿Es exacta la calculadora de pensiones?',
         answer: 'Los resultados son estimaciones basadas en las fórmulas generales de la Ley del Seguro Social. Para obtener tu resolución definitiva debes acudir al IMSS.',
+      },
+    ],
+    [AppView.CONSULTAS]: [
+      {
+        question: '¿Qué puedo consultar en Lex Laboral?',
+        answer: 'Puedes consultar artículos específicos de la Ley Federal del Trabajo sobre derechos laborales, prestaciones, terminación de relaciones, salarios y normatividad vigente en México.',
+      },
+      {
+        question: '¿Las consultas son precisas?',
+        answer: 'Sí, las respuestas se basan directamente en los artículos de la Ley Federal del Trabajo vigente. Utilizamos búsqueda semántica para extraer información de fuentes oficiales.',
       },
     ],
   };

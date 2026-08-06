@@ -9,11 +9,10 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "test": "vitest",
-    "seed:kb": "node supabase/seed-kb.js"
+    "ingest:kb": "tsx scripts/ingest/index.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@supabase/supabase-js": "^2.100.0",
     "@tailwindcss/vite": "^4.2.1",
     "@vercel/analytics": "^2.0.1",
     "dotenv": "^17.3.1",
@@ -21,12 +20,9 @@
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.556.0",
-    "micro": "^10.0.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "react-markdown": "^10.1.0",
     "recharts": "^3.8.0",
-    "stripe": "^20.4.1",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {

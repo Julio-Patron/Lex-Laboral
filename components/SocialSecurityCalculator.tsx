@@ -18,18 +18,15 @@ import {
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from './AuthProvider';
 
 import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
+import { calculateSocialSecurity, calculateAnnualRisk, type SocialSecurityInput, type RiskCalculationInput } from '../lib/calculators/social-security';
 
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
-  onRequireLogin?: () => void;
-  onRequirePremium?: () => void;
-}> = ({ notify, onRequireLogin, onRequirePremium }) => {
-  const { user, session, access } = useAuth();
+}> = ({ notify }) => {
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); 
   const [days, setDays] = useState<number>(30);
@@ -73,18 +70,6 @@ export const SocialSecurityCalculator: React.FC<{
   } | null>(null);
 
   const calculate = async () => {
-    if (!user) {
-      if (onRequireLogin) onRequireLogin();
-      notify("Regístrate para continuar", "info");
-      return;
-    }
-
-    if (!access.hasActiveSubscription) {
-      onRequirePremium?.();
-      notify("Esta calculadora requiere un plan mensual o trimestral activo", "info");
-      return;
-    }
-
     if (sbc <= 0) {
       notify("El Salario Base de Cotización debe ser un número positivo", "error");
       return;
@@ -98,79 +83,23 @@ export const SocialSecurityCalculator: React.FC<{
       return;
     }
 
-    const fixed = (umaValue * 0.204) * days;
-    const excedenteBase = Math.max(0, sbc - (3 * umaValue));
-    const empExcedente = (excedenteBase * 0.011) * days;
-    const empDinero = (sbc * 0.007) * days;
-    const empPensionados = (sbc * 0.0105) * days;
-    const empInvalidez = (sbc * 0.0175) * days;
-    const empGuarderia = (sbc * 0.01) * days;
-    const empRiesgo = (sbc * (riskClass / 100)) * days;
-    const empRetiro = (sbc * 0.02) * days;
-    
-    const ratio = sbc / umaValue;
-    let cesantiaRate = 0.0315; 
-    
-    if (sbc > minWage) {
-      if (ratio <= 1.50) cesantiaRate = 0.03676;
-      else if (ratio <= 2.00) cesantiaRate = 0.04851;
-      else if (ratio <= 2.50) cesantiaRate = 0.05556;
-      else if (ratio <= 3.00) cesantiaRate = 0.06026;
-      else if (ratio <= 3.50) cesantiaRate = 0.06361;
-      else if (ratio <= 4.00) cesantiaRate = 0.06613;
-      else cesantiaRate = 0.07513; 
-    }
-    
-    const empCesantia = (sbc * cesantiaRate) * days;
-    const empInfonavit = (sbc * 0.05) * days;
-
-    const empTotal = fixed + empExcedente + empDinero + empPensionados + empInvalidez + empGuarderia + empRiesgo + empRetiro + empCesantia + empInfonavit;
-
-    const workerExcedente = (excedenteBase * 0.004) * days;
-    const workerDinero = (sbc * 0.0025) * days;
-    const workerPensionados = (sbc * 0.00375) * days;
-    const workerInvalidez = (sbc * 0.00625) * days;
-    const workerCesantia = (sbc * 0.01125) * days;
-
-    const workerTotal = workerExcedente + workerDinero + workerPensionados + workerInvalidez + workerCesantia;
-
-    setResults({
-      employer: {
-        fixed,
-        excedente: empExcedente,
-        dinero: empDinero,
-        pensionados: empPensionados,
-        invalidez: empInvalidez,
-        guarderia: empGuarderia,
-        riesgo: empRiesgo,
-        retiro: empRetiro,
-        cesantia: empCesantia,
-        infonavit: empInfonavit,
-        total: empTotal
-      },
-      employee: {
-        excedente: workerExcedente,
-        dinero: workerDinero,
-        pensionados: workerPensionados,
-        invalidez: workerInvalidez,
-        cesantia: workerCesantia,
-        total: workerTotal
-      },
-      total: empTotal + workerTotal
-    });
+    const input: SocialSecurityInput = { sbc, riskClass, days, umaValue, minWage };
+    const results = calculateSocialSecurity(input);
+    setResults(results);
 
     notify("Cálculo finalizado", "success");
   };
 
-  const calculateAnnualRisk = () => {
+  const calculateAnnualRiskValue = () => {
     if (n_workers <= 0) {
       notify("El número de trabajadores debe ser mayor a 0", "error");
       return;
     }
-    const calculatedRisk = (((s_days / 365) + v_factor * (i_disability + d_deaths)) * (f_factor / n_workers)) + m_min;
-    setRiskClass(Number((calculatedRisk * 100).toFixed(5)));
+    const input: RiskCalculationInput = { s_days, v_factor, i_disability, d_deaths, f_factor, n_workers, m_min };
+    const calculatedRisk = calculateAnnualRisk(input);
+    setRiskClass(calculatedRisk);
     setShowRiskCalc(false);
-    notify(`Nueva Prima de Riesgo: ${(calculatedRisk * 100).toFixed(5)}%`, "success");
+    notify(`Nueva Prima de Riesgo: ${(calculatedRisk).toFixed(5)}%`, "success");
   };
 
   const handleExport = () => {
@@ -233,20 +162,6 @@ export const SocialSecurityCalculator: React.FC<{
                 <h3 className="text-sm font-bold text-slate-950">Datos de cotización</h3>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-400">Proyección rápida</p>
               </div>
-              {!access.hasActiveSubscription ? (
-                <div className="ui-subtle-block p-5">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">Acceso</p>
-                  <p className="mt-3 text-sm leading-7 text-slate-700">
-                    Esta calculadora forma parte del plan mensual o trimestral.
-                  </p>
-                  <button
-                    onClick={() => onRequirePremium?.()}
-                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-legal-gold transition-all hover:bg-slate-900"
-                  >
-                    Ver planes
-                  </button>
-                </div>
-              ) : null}
               <div className="space-y-6">
                 <div className="space-y-3">
                   <label className="ui-label">Salario Base de Cotización (SBC)</label>
@@ -383,7 +298,7 @@ export const SocialSecurityCalculator: React.FC<{
           },
           {
             title: 'Acceso del producto',
-            body: 'Esta herramienta forma parte del acceso para usuarios registrados con plan mensual o trimestral activo dentro de Lex Laboral.',
+            body: 'Esta herramienta es gratuita y está disponible para cualquier usuario sin registro ni plan de pago.',
           },
         ]}
         faqs={[
@@ -393,7 +308,7 @@ export const SocialSecurityCalculator: React.FC<{
           },
           {
             question: 'La calculadora IMSS es gratis?',
-            answer: 'No. Está disponible para usuarios registrados con plan mensual o trimestral activo.',
+            answer: 'Sí. Todas las calculadoras de Lex Laboral son gratuitas y no requieren registro.',
           },
           {
             question: 'Sirve como determinacion definitiva ante el IMSS?',
