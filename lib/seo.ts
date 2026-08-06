@@ -40,7 +40,7 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
   },
   [AppView.CALCULATOR]: {
     title: `Calculadora de Liquidación y Finiquito en México 2026 | ${SITE_NAME}`,
-    description: 'Calcula liquidación, finiquito, aguinaldo, vacaciones, prima de antigüedad e ISR en México. Herramienta laboral gratuita para usuarios registrados.',
+    description: 'Calcula liquidación, finiquito, aguinaldo, vacaciones, prima de antigüedad e ISR en México. Herramienta laboral gratuita y sin registro.',
     path: getPathForView(AppView.CALCULATOR),
     ogTitle: 'Calculadora de Liquidación y Finiquito en México 2026',
     ogDescription: 'Herramienta laboral para calcular liquidación y finiquito en México con desglose paso a paso.',
@@ -227,7 +227,7 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       },
       {
         question: 'Que parte de la plataforma es gratis?',
-        answer: 'Todas las herramientas principales son gratuitas: calculadora de liquidación, IMSS, pensiones y consultas normativas. Solo requieren registro de usuario.',
+        answer: 'Todas las herramientas principales son gratuitas: calculadora de liquidación, IMSS, pensiones y consultas normativas. No requieren registro ni pago.'
       },
     ],
     [AppView.CALCULATOR]: [
@@ -237,7 +237,7 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       },
       {
         question: 'La calculadora de liquidacion es gratis?',
-        answer: 'Sí, la calculadora de prestaciones está disponible para usuarios registrados sin costo.',
+        answer: 'Sí, la calculadora de prestaciones es gratuita y no requiere registro.',
       },
     ],
     [AppView.SOCIAL_SECURITY]: [
@@ -247,7 +247,7 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       },
       {
         question: 'La calculadora IMSS es gratuita?',
-        answer: 'Sí, está disponible completamente gratuita para usuarios registrados.',
+        answer: 'Sí, está disponible completamente gratuita y sin registro.',
       },
     ],
     [AppView.PENSION_CALCULATOR]: [

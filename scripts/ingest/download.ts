@@ -91,7 +91,7 @@ export const getLegalArticles = (): LegalArticle[] => {
     },
     {
       norm: 'LFT',
-      title: 'Indemización por Despido',
+      title: 'Indemnización por Despido',
       article: '50',
       num: 50,
       text: 'El patrón está obligado a indemnizar al trabajador con el importe de tres meses de salario, cuando tenga lugar alguna de las causas mencionadas en el artículo anterior, siempre que no se pruebe que concurrió alguna de las causas de rescisión que se establecen en este artículo.',
@@ -388,13 +388,6 @@ export const getLegalArticles = (): LegalArticle[] => {
  * In production, would fetch from diputados.gob.mx or parse PDF documents
  */
 export const downloadLegalArticles = async (): Promise<LegalArticle[]> => {
-  try {
-    console.log('Loading synthetic legal articles dataset...');
-    const articles = getLegalArticles();
-    console.log(`Loaded ${articles.length} articles from all norms`);
-    return articles;
-  } catch (error) {
-    console.error('Error downloading legal articles:', error);
-    throw error;
-  }
+  const articles = getLegalArticles();
+  return articles;
 };

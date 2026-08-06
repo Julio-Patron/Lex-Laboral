@@ -12,12 +12,10 @@ import { track } from '@vercel/analytics';
 
 type EventName =
   | 'view_changed'        // Usuario cambió de módulo
-  | 'document_generated'  // Documento generado exitosamente
   | 'calculator_used'     // Calculadora utilizada
-  | 'checkout_started'    // Inicio de proceso de pago
-  | 'login_completed'     // Login exitoso
-  | 'pricing_opened'      // Modal de precios abierto
-  | 'social_security_used'; // Calculadora de IMSS utilizada
+  | 'social_security_used' // Calculadora de IMSS utilizada
+  | 'pension_calculator_used' // Calculadora de pensiones utilizada
+  | 'consultas_search';   // Búsqueda en consultas jurídicas
 
 /**
  * Envía un evento personalizado a Vercel Analytics.

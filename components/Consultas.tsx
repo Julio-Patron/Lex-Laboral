@@ -82,7 +82,7 @@ export const Consultas: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Search failed');
+        throw new Error(`Search failed: ${response.status}`);
       }
 
       const data: SearchResponse = await response.json();

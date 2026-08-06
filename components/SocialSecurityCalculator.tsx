@@ -298,7 +298,7 @@ export const SocialSecurityCalculator: React.FC<{
           },
           {
             title: 'Acceso del producto',
-            body: 'Esta herramienta forma parte del acceso para usuarios registrados con plan mensual o trimestral activo dentro de Lex Laboral.',
+            body: 'Esta herramienta es gratuita y está disponible para cualquier usuario sin registro ni plan de pago.',
           },
         ]}
         faqs={[
@@ -308,7 +308,7 @@ export const SocialSecurityCalculator: React.FC<{
           },
           {
             question: 'La calculadora IMSS es gratis?',
-            answer: 'No. Está disponible para usuarios registrados con plan mensual o trimestral activo.',
+            answer: 'Sí. Todas las calculadoras de Lex Laboral son gratuitas y no requieren registro.',
           },
           {
             question: 'Sirve como determinacion definitiva ante el IMSS?',

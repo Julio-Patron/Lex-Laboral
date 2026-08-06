@@ -255,7 +255,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           highlights={[
             {
               title: 'Calculadora de Liquidación Gratuita',
-              body: 'Calcula indemnización constitucional, prima de antigüedad, aguinaldo y finiquito con desglose detallado. Sin costo para usuarios registrados.'
+              body: 'Calcula indemnización constitucional, prima de antigüedad, aguinaldo y finiquito con desglose detallado. Disponible sin registro ni costo.'
             },
             {
               title: 'Consultas Normativas Precisas',
@@ -285,7 +285,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             },
             {
               question: '¿Necesito crear una cuenta?',
-              answer: 'Para acceder a las herramientas de cálculo, sí es necesario registro rápido. Las consultas normativas están disponibles también para usuarios no registrados en futuras actualizaciones.'
+              answer: 'No. Todas las herramientas de Lex Laboral son gratuitas y no requieren registro ni inicio de sesión.'
             }
           ]}
         />

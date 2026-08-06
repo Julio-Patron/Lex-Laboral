@@ -107,7 +107,7 @@ export const calculateLaborSettlement = (input: LaborSettlementInput): LaborSett
   let seniorityPremium = 0;
 
   const cappedSalary = Math.min(dailySalary, minWage * 2);
-  const shouldPaySeniority = dismissalType !== 'renuncia' || (dismissalType === 'renuncia' && yearsOfService >= 15);
+  const shouldPaySeniority = dismissalType !== 'renuncia' || yearsOfService >= 15;
 
   if (shouldPaySeniority) {
     seniorityPremium = (cappedSalary * 12) * totalYears;

@@ -495,7 +495,7 @@ export const LaborCalculator: React.FC<{
           },
           {
             question: 'La calculadora laboral de Lex Laboral es gratis?',
-            answer: 'Sí. La calculadora de prestaciones está disponible para usuarios registrados sin necesidad de contratar un plan de pago.',
+            answer: 'Sí. La calculadora de prestaciones es gratuita y no requiere registro ni plan de pago.',
           },
           {
             question: 'Este resultado sustituye asesoria legal profesional?',
