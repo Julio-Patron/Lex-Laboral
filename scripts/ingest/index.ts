@@ -1,44 +1,66 @@
 /**
  * Orchestrator for the ingestion pipeline
- * Runs: download → parse → chunk → embed
+ * Runs: download → parse → chunk → embed → save LanceDB dataset
  */
 
 import { downloadLegalArticles } from './download';
 import { parseArticles } from './parser';
 import { chunkArticles } from './chunk';
-import { embedChunks, saveEmbeddingsToFile } from './embed';
+import { embedChunks, saveEmbeddingsToLance } from './embed';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-const KB_OUTPUT_PATH = path.join(process.cwd(), 'data', 'lance', 'kb.json');
+// Load env vars from backend/.env when running locally
+dotenv.config({ path: path.join(process.cwd(), 'backend', '.env') });
+dotenv.config();
+
+const LANCE_DIR = path.join(process.cwd(), 'data', 'lance');
+const LANCE_TABLE = 'kb';
 
 async function main() {
   try {
     console.log('Starting legal KB ingest pipeline...\n');
 
-    // Step 1: Download/Get articles
-    console.log('Step 1: Downloading legal articles...');
-    const articles = await downloadLegalArticles();
-    console.log(`✓ Downloaded ${articles.length} articles\n`);
+    const apiKey =
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+      process.env.GEMINI_API_KEY;
 
-    // Step 2: Parse articles
+    if (!apiKey) {
+      throw new Error(
+        'GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY not set (backend/.env)'
+      );
+    }
+    const client = new GoogleGenerativeAI(apiKey);
+
+    // Step 1: Download official PDFs and extract text
+    console.log('Step 1: Downloading legal documents...');
+    const documents = await downloadLegalArticles();
+    console.log(`✓ Got ${documents.length} documents\n`);
+
+    // Step 2: Parse into articles
     console.log('Step 2: Parsing articles...');
-    const parsedArticles = parseArticles(articles);
-    console.log(`✓ Parsed ${parsedArticles.length} articles\n`);
+    const articles = await parseArticles(documents);
+    console.log(`✓ Parsed ${articles.length} articles\n`);
 
     // Step 3: Chunk articles
     console.log('Step 3: Chunking articles...');
-    const chunks = chunkArticles(parsedArticles, { chunkSize: 512, overlap: 64 });
+    const chunks = chunkArticles(articles, { chunkSize: 512, overlap: 64 });
     console.log(`✓ Created ${chunks.length} chunks\n`);
 
-    // Step 4: Embed chunks
+    // Step 4: Embed chunks with Gemini
     console.log('Step 4: Embedding chunks with Gemini...');
-    const embeddedChunks = await embedChunks(chunks);
+    const embeddedChunks = await embedChunks(chunks, client);
     console.log(`✓ Embedded ${embeddedChunks.length} chunks\n`);
 
-    // Step 5: Save to file
-    console.log('Step 5: Saving embeddings to file...');
-    await saveEmbeddingsToFile(embeddedChunks, KB_OUTPUT_PATH);
-    console.log(`✓ Saved to ${KB_OUTPUT_PATH}\n`);
+    // Step 5: Save LanceDB dataset (committed for read-only use in api/search.ts)
+    console.log('Step 5: Saving LanceDB dataset...');
+    await saveEmbeddingsToLance(embeddedChunks, {
+      dbDir: LANCE_DIR,
+      tableName: LANCE_TABLE,
+      distanceType: 'cosine',
+    });
+    console.log(`✓ Dataset saved to ${LANCE_DIR}\n`);
 
     console.log('✓ Ingest pipeline completed successfully!');
   } catch (error) {

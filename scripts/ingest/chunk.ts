@@ -17,7 +17,6 @@ export interface ChunkedArticle {
   totalChunks: number;
   sourceArticleId: string;
 }
-
 export interface ChunkConfig {
   chunkSize: number;
   overlap: number;

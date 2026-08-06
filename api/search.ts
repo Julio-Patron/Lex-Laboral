@@ -2,15 +2,16 @@
  * API endpoint for semantic legal search
  * POST /api/search
  *
- * Query the knowledge base using Gemini embeddings and cosine similarity
+ * Queries a committed LanceDB dataset (data/lance/kb.lance) using
+ * Gemini embeddings and cosine similarity via LanceDB vectorSearch
  */
 
+import * as lancedb from '@lancedb/lancedb';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import * as fs from 'fs';
 import * as path from 'path';
 import { handlePreflight, sanitizeInput, setCorsHeaders, setSecurityHeaders } from './_utils/security';
 
-interface EmbeddedChunk {
+interface LanceRow {
   id: string;
   norm: string;
   title: string;
@@ -18,7 +19,9 @@ interface EmbeddedChunk {
   article: string;
   num: number;
   text: string;
-  embedding: number[];
+  chunkIndex: number;
+  totalChunks: number;
+  vector: number[];
 }
 
 interface SearchResult {
@@ -40,133 +43,56 @@ interface SearchResponse {
   count: number;
 }
 
-/**
- * Compute cosine similarity between two vectors
- */
-function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) return 0;
-
-  let dotProduct = 0;
-  let magnitudeA = 0;
-  let magnitudeB = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i];
-    magnitudeA += a[i] * a[i];
-    magnitudeB += b[i] * b[i];
-  }
-
-  const magnitude = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
-  if (magnitude === 0) return 0;
-
-  return dotProduct / magnitude;
-}
+const EMBEDDING_MODEL = 'text-embedding-004';
+const LANCE_DIR = path.join(process.cwd(), 'data', 'lance');
+const LANCE_TABLE = 'kb';
 
 /**
- * Embed query text using Gemini
+ * Embed query text using Gemini (correct API)
  */
 async function embedQuery(query: string): Promise<number[]> {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GOOGLE_GENERATIVE_AI_API_KEY not configured');
+    throw new Error('GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY not configured');
   }
 
   const client = new GoogleGenerativeAI(apiKey);
+  const model = client.getGenerativeModel({ model: EMBEDDING_MODEL });
+  const result = await model.embedContent(query);
 
-  try {
-    const result = await (client as any).embedContent({
-      model: 'models/text-embedding-004',
-      content: {
-        parts: [{ text: query }],
-      },
-    });
+  if (!result.embedding.values) {
+    throw new Error('No embedding returned from Gemini');
+  }
 
-    if (!result.embedding || !result.embedding.values) {
-      throw new Error('No embedding returned from Gemini');
-    }
+  return Array.from(result.embedding.values);
+}
 
-    return result.embedding.values;
-  } catch (error) {
-    console.error('Error embedding query:', error);
-    throw error;
+/**
+ * Map UI norm filter to a set of normalized norms in the KB
+ */
+function normToFilters(norm?: string): string[] | null {
+  if (!norm || norm === 'all') return null; // no filter
+  switch (norm) {
+    case 'LFT':
+      return ['LFT'];
+    case 'LSS':
+    case 'IMSS':
+      return ['LSS', 'R_LSS'];
+    case 'INFONAVIT':
+    case 'INFONAVIT_GROUP':
+      return ['INFONAVIT', 'R_INFONAVIT'];
+    default:
+      return null;
   }
 }
 
 /**
- * Load knowledge base from JSON file
+ * Convert LanceDB cosine distance to a 0-100 similarity score
  */
-function loadKnowledgeBase(): EmbeddedChunk[] {
-  try {
-    const kbPath = path.join(process.cwd(), 'data', 'lance', 'kb.json');
-
-    if (!fs.existsSync(kbPath)) {
-      console.warn(`KB file not found at ${kbPath}`);
-      return [];
-    }
-
-    const content = fs.readFileSync(kbPath, 'utf-8');
-    return JSON.parse(content) as EmbeddedChunk[];
-  } catch (error) {
-    console.error('Error loading KB:', error);
-    return [];
-  }
-}
-
-/**
- * Search knowledge base with query embedding
- */
-function searchKB(
-  queryEmbedding: number[],
-  kb: EmbeddedChunk[],
-  norm?: string,
-  threshold: number = 0.55,
-  topK: number = 10
-): SearchResult[] {
-  const results: Array<{ chunk: EmbeddedChunk; score: number }> = [];
-
-  for (const chunk of kb) {
-    // Filter by norm if specified
-    if (norm && norm !== 'all' && chunk.norm !== norm) {
-      continue;
-    }
-
-    const similarity = cosineSimilarity(queryEmbedding, chunk.embedding);
-
-    // Apply threshold
-    if (similarity >= threshold) {
-      results.push({ chunk, score: similarity });
-    }
-  }
-
-  // Sort by score descending
-  results.sort((a, b) => b.score - a.score);
-
-  // Limit to topK results
-  const topResults = results.slice(0, topK);
-
-  return topResults.map(({ chunk, score }) => ({
-    score: Math.round(score * 1000) / 10, // Convert to 0-100 percentage, 1 decimal
-    snippet: chunk.text.substring(0, 200) + (chunk.text.length > 200 ? '...' : ''),
-    metadata: {
-      norm: chunk.norm,
-      title: chunk.title,
-      article: chunk.article,
-      book: chunk.book,
-      num: chunk.num,
-    },
-  }));
-}
-
-/**
- * Map multiple norms to single norm filter
- * e.g., 'IMSS' maps to ['LSS', 'R_LSS']
- */
-function normToFilter(norm?: string): string | undefined {
-  if (!norm || norm === 'all') return 'all';
-  if (norm === 'IMSS') return 'LSS'; // Search both LSS and R_LSS
-  if (norm === 'INFONAVIT_GROUP')
-    return 'INFONAVIT'; // Search both INFONAVIT and R_INFONAVIT
-  return norm;
+function distanceToScore(distance: number): number {
+  const similarity = 1 - distance; // cosine similarity
+  const score = Math.max(0, Math.min(1, similarity));
+  return Math.round(score * 1000) / 10;
 }
 
 export default async function handler(
@@ -212,32 +138,69 @@ export default async function handler(
     // Embed query with Gemini
     const queryEmbedding = await embedQuery(sanitizedQuery);
 
-    // Load KB
-    const kb = loadKnowledgeBase();
-    if (kb.length === 0) {
-      return res.status(500).json({
+    // Open LanceDB dataset read-only and run vector search
+    const db = await lancedb.connect(LANCE_DIR);
+    const table = await db.openTable(LANCE_TABLE);
+
+    let results = await table
+      .vectorSearch(queryEmbedding)
+      .limit(50)
+      .toArray();
+
+    if (!Array.isArray(results) || results.length === 0) {
+      return res.status(200).json({
         results: [],
-        count: 0,
         query: sanitizedQuery,
         norm: norm || 'all',
+        count: 0,
       });
     }
 
-    // Search
-    const normFilter = normToFilter(norm);
-    const results = searchKB(
-      queryEmbedding,
-      kb,
-      normFilter === 'all' ? undefined : normFilter,
-      0.55,
-      10
-    );
+    // Apply norm filter + threshold + sort + dedupe by article
+    const allowedNorms = normToFilters(norm);
+    const THRESHOLD = 0.4;
+
+    const ranked = (results as any[])
+      .map(row => ({
+        row: row as unknown as LanceRow,
+        score: distanceToScore(row._distance),
+      }))
+      .filter(({ score }) => score >= THRESHOLD * 100)
+      .filter(({ row }) => {
+        if (!allowedNorms) return true;
+        return allowedNorms.includes(row.norm);
+      })
+      .sort((a, b) => b.score - a.score);
+
+    // Keep best chunk per (norm, article) to avoid duplicate articles
+    const seen = new Set<string>();
+    const finalResults: SearchResult[] = [];
+
+    for (const { row, score } of ranked) {
+      const key = `${row.norm}:${row.article}:${row.title}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      finalResults.push({
+        score,
+        snippet: row.text.substring(0, 220) + (row.text.length > 220 ? '...' : ''),
+        metadata: {
+          norm: row.norm,
+          title: row.title,
+          article: row.article,
+          book: row.book,
+          num: row.num,
+        },
+      });
+
+      if (finalResults.length >= 10) break;
+    }
 
     return res.status(200).json({
-      results,
+      results: finalResults,
       query: sanitizedQuery,
       norm: norm || 'all',
-      count: results.length,
+      count: finalResults.length,
     });
   } catch (error) {
     console.error('Search error:', error);
