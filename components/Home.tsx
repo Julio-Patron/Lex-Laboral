@@ -125,19 +125,22 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       <section className="relative py-16 sm:py-24 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 relative z-10 text-center">
           
-          <span className="inline-block font-mono text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1 rounded-full mb-6">
-            Herramientas Jurídicas Laborales • México
+          {/* Hero Brand Logo as Main Title */}
+          <div className="max-w-[280px] sm:max-w-[420px] md:max-w-[480px] mx-auto mb-6 select-none">
+            <img 
+              src="/assets/logo.webp" 
+              alt="Lex Laboral" 
+              className="w-full h-auto object-contain drop-shadow-[0_10px_30px_rgba(212,175,55,0.15)]"
+              loading="eager"
+            />
+          </div>
+
+          <span className="inline-block font-mono text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1 rounded-full mb-4">
+            Calculadoras Jurídicas Laborales • México 2026
           </span>
 
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            Precisión Legal,<br />
-            <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 bg-clip-text text-transparent">
-              Sin Costo ni Registro
-            </span>
-          </h1>
-
-          <p className="mt-4 text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-normal leading-relaxed">
-            Calculadoras oficiales de liquidación por despido, cuotas obrero-patronales del IMSS y proyección de pensión conforme a la legislación vigente.
+          <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto font-normal leading-relaxed">
+            Calculadoras oficiales de liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. 100% gratuito y sin registro.
           </p>
 
         </div>
