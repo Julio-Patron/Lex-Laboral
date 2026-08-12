@@ -1,6 +1,20 @@
 import React from 'react';
 import { AppView } from '../types';
-import { Calculator, FileText, ChevronRight, ShieldCheck, ArrowUpRight, MessageSquare, Award, Download, CheckCircle, BookOpen, Search } from 'lucide-react';
+import { 
+  Calculator, 
+  ShieldCheck, 
+  ChevronRight, 
+  ArrowUpRight, 
+  BookOpen, 
+  Download, 
+  CheckCircle2, 
+  Scale, 
+  FileCheck2,
+  Lock,
+  Sparkles,
+  Smartphone,
+  ExternalLink
+} from 'lucide-react';
 import { getPathForView } from '../lib/routes';
 import { WorkspacePanel } from './ui/Workspace';
 import { SEOContentSection } from './SEOContentSection';
@@ -13,75 +27,60 @@ const tools = [
   {
     view: AppView.CALCULATOR,
     title: 'Liquidación y Finiquito',
-    summary: 'Calculadora completa de indemnizaciones constitucionales, primas de antigüedad y finiquitos de ley.',
-    access: 'Acceso Gratuito',
-    action: 'Calcular Prestaciones',
-    accent: 'text-legal-gold',
-    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
-    icon: <Calculator size={20} className="text-legal-gold" />,
+    subtitle: 'Art. 48, 50, 162 LFT & ISR Art. 93',
+    summary: 'Calculadora completa de indemnizaciones constitucionales (3 meses, 20 días por año), primas de antigüedad e ISR de retención.',
+    access: 'Gratis • Sin Registro',
+    action: 'Calcular Liquidación',
+    badgeStyle: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
+    icon: <Calculator size={22} className="text-amber-400" />,
   },
   {
     view: AppView.SOCIAL_SECURITY,
-    title: 'Calculadora IMSS',
-    summary: 'Proyección detallada de cuotas obrero-patronales, ramos de seguro social e INFONAVIT.',
-    access: 'Acceso Gratuito',
-    action: 'Calcular IMSS',
-    accent: 'text-legal-gold',
-    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
-    icon: <ShieldCheck size={20} className="text-legal-gold" />,
+    title: 'Cuotas IMSS e INFONAVIT',
+    subtitle: 'Ramos de Seguro 2026',
+    summary: 'Desglose exacto de aportaciones obrero-patronales, enfermedad, invalidez, retiro, riesgo de trabajo e INFONAVIT a partir de salario o SBC.',
+    access: 'Gratis • Sin Registro',
+    action: 'Calcular Cuotas IMSS',
+    badgeStyle: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
+    icon: <ShieldCheck size={22} className="text-emerald-400" />,
   },
   {
     view: AppView.PENSION_CALCULATOR,
     title: 'Calculadora de Pensiones',
-    summary: 'Estima tu pensión mensual del IMSS según la Ley de 1973 o 1997 basado en tus semanas cotizadas.',
-    access: 'Acceso Gratuito',
+    subtitle: 'Ley 73 y Ley 97 IMSS',
+    summary: 'Proyecta el importe mensual de tu pensión estimando semanas cotizadas, salario promedio de los últimos 5 años y saldo de AFORE.',
+    access: 'Gratis • Sin Registro',
     action: 'Estimar Pensión',
-    accent: 'text-legal-gold',
-    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
-    icon: <Calculator size={20} className="text-legal-gold" />,
+    badgeStyle: 'border-blue-500/30 bg-blue-500/10 text-blue-400',
+    icon: <Scale size={22} className="text-blue-400" />,
   },
   {
     view: AppView.CONSULTAS,
-    title: 'Consultas Jurídicas',
-    summary: 'Consulta artículos de la Ley Federal del Trabajo, IMSS e INFONAVIT con búsqueda semántica potenciada por IA.',
-    access: 'Acceso Gratuito',
-    action: 'Consultar',
-    accent: 'text-legal-gold',
-    badgeStyle: 'border-legal-gold/20 bg-legal-gold/5 text-legal-gold',
-    icon: <BookOpen size={20} className="text-legal-gold" />,
+    title: 'Consultas Normativas LFT',
+    subtitle: 'Motor Legal Búsqueda RAG',
+    summary: 'Consulta artículos vigentes de la Ley Federal del Trabajo y normatividad laboral con búsqueda semántica precisa.',
+    access: 'Gratis • Sin Registro',
+    action: 'Consultar Ley',
+    badgeStyle: 'border-purple-500/30 bg-purple-500/10 text-purple-400',
+    icon: <BookOpen size={22} className="text-purple-400" />,
   },
 ];
 
-const supportBlocks = [
+const highlights = [
   {
-    title: '1. Herramientas Laborales Completamente Gratuitas',
-    body: 'Acceso gratuito a calculadoras de liquidación, IMSS y pensiones sin necesidad de planes pagados. Diseñadas para trabajadores, abogados y empresas en México.',
+    icon: <FileCheck2 size={24} className="text-amber-400" />,
+    title: 'Cálculos Oficiales LFT 2026',
+    description: 'Basado estrictamente en la Ley Federal del Trabajo y Ley del Seguro Social. Transparencia total en fórmulas y fundamentación legal.'
   },
   {
-    title: '2. Motor de Búsqueda Legal (RAG)',
-    body: 'Sistema de búsqueda semántica que extrae información directamente de la Ley Federal del Trabajo y normatividad laboral vigente. Solo da respuestas basadas en legislación oficial.',
+    icon: <Lock size={24} className="text-emerald-400" />,
+    title: '100% Privado y Local',
+    description: 'Tus datos salariales y cálculos no se envían a servidores externos. Todo permanece guardado de forma segura en tu propio dispositivo.'
   },
   {
-    title: '3. Precisión Legal Absoluta',
-    body: 'Cada cálculo y respuesta se basa en artículos específicos de la ley. Eliminamos la ambigüedad en temas de prestaciones, cuotas y derechos laborales en México.',
-  },
-];
-
-const galleryItems = [
-  {
-    src: '/assets/screenshots/screenshot-liquidacion.svg',
-    alt: 'Calculadora de Liquidación y Finiquito',
-    title: 'Liquidación'
-  },
-  {
-    src: '/assets/screenshots/screenshot-imss.svg',
-    alt: 'Calculadora IMSS e INFONAVIT',
-    title: 'IMSS'
-  },
-  {
-    src: '/assets/screenshots/screenshot-consultas.svg',
-    alt: 'Consultas Normatividad Laboral',
-    title: 'Consultas'
+    icon: <Download size={24} className="text-blue-400" />,
+    title: 'Exportación a PDF Gratuita',
+    description: 'Descarga reportes profesionales en formato PDF con desglose concepto por concepto, fecha de emisión y nota legal oficial.'
   }
 ];
 
@@ -92,235 +91,328 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="animate-fade-in font-sans bg-[#020306] text-white min-h-screen">
+    <div className="animate-fade-in font-sans bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500/30 selection:text-amber-200">
+      
+      {/* Top Navbar Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 px-4 sm:px-8 py-3.5">
+        <div className="mx-auto max-w-7xl flex items-center justify-between">
+          <div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={(e) => handleNavClick(e, AppView.HOME)}
+          >
+            <img 
+              src="/assets/logo.webp" 
+              alt="Lex Laboral Logo" 
+              className="h-9 w-auto object-contain transition-transform group-hover:scale-105" 
+            />
+            <span className="hidden sm:inline-block font-mono text-[10px] font-bold tracking-widest text-amber-400/90 uppercase border border-amber-500/20 bg-amber-500/5 px-2 py-0.5 rounded-full">
+              v1.3.0
+            </span>
+          </div>
+
+          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
+            <a 
+              href={getPathForView(AppView.CALCULATOR)} 
+              onClick={(e) => handleNavClick(e, AppView.CALCULATOR)}
+              className="hover:text-amber-400 transition-colors"
+            >
+              Liquidaciones
+            </a>
+            <a 
+              href={getPathForView(AppView.SOCIAL_SECURITY)} 
+              onClick={(e) => handleNavClick(e, AppView.SOCIAL_SECURITY)}
+              className="hover:text-amber-400 transition-colors"
+            >
+              Cuotas IMSS
+            </a>
+            <a 
+              href={getPathForView(AppView.PENSION_CALCULATOR)} 
+              onClick={(e) => handleNavClick(e, AppView.PENSION_CALCULATOR)}
+              className="hover:text-amber-400 transition-colors"
+            >
+              Pensiones
+            </a>
+            <a 
+              href={getPathForView(AppView.CONSULTAS)} 
+              onClick={(e) => handleNavClick(e, AppView.CONSULTAS)}
+              className="hover:text-amber-400 transition-colors"
+            >
+              Consultas LFT
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={(e) => handleNavClick(e, AppView.CALCULATOR)}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-amber-500 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Calculator size={15} />
+              <span>Usar Calculadoras</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-white/5 bg-[radial-gradient(circle_at_top_left,_rgba(163,124,31,0.1),_transparent_45%),linear-gradient(180deg,_#050811_0%,_#020306_100%)] py-12 md:py-24">
-        <div className="absolute right-0 top-0 hidden h-96 w-96 rounded-full bg-legal-gold/5 blur-[120px] md:block" />
-        <div className="absolute -bottom-10 left-10 hidden h-80 w-80 rounded-full bg-slate-900/30 blur-[100px] md:block" />
+      <section className="relative overflow-hidden border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.12),_transparent_60%)] py-16 sm:py-24">
+        {/* Glow Spheres */}
+        <div className="absolute left-1/2 -top-24 -translate-x-1/2 h-96 w-[600px] rounded-full bg-amber-500/10 blur-[130px] pointer-events-none" />
+        <div className="absolute right-0 top-1/3 h-80 w-80 rounded-full bg-emerald-500/5 blur-[100px] pointer-events-none" />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 flex flex-col items-center">
-          {/* Centered Brand & Heading */}
-          <div className="flex flex-col items-center text-center space-y-5 md:space-y-6 max-w-3xl animate-fade-in">
-            <div className="flex flex-col items-center space-y-4">
-              {/* Premium Large Transparent Logo */}
-              <div className="max-w-[360px] sm:max-w-[540px] select-none animate-in fade-in duration-700 hue-rotate-[10deg] brightness-125 saturate-150 contrast-125 drop-shadow-[0_0_20px_rgba(224,175,34,0.45)] -mt-6">
-                <img 
-                  src="/assets/logo.webp" 
-                  alt="Lex Laboral" 
-                  width={800}
-                  height={285}
-                  className="w-full h-auto object-contain drop-shadow-[0_15px_35px_rgba(224,175,34,0.15)]"
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="high"
-                />
-              </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col items-center text-center max-w-4xl mx-auto space-y-6">
+            
+            {/* Top Pill Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-300 backdrop-blur-md shadow-sm">
+              <Sparkles size={14} className="text-amber-400 animate-pulse" />
+              <span>Plataforma Jurídica Laboral Gratis en México</span>
             </div>
 
-            {/* Badges */}
-            <div className="flex flex-wrap gap-1.5 md:gap-2 justify-center">
-              <span className="rounded-full border border-legal-gold/20 bg-legal-gold/5 px-3 py-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-legal-gold">
-                Liquidaciones y Finiquitos
+            {/* Main Brand & Hero Title */}
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15]">
+              Cálculos Laborales Precisos,<br className="hidden sm:inline" />
+              <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 bg-clip-text text-transparent">
+                Sin Costos ni Registro
               </span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 shadow-sm">
-                Seguridad Social IMSS
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
+              Estima tu liquidación por despido, finiquito, cuotas del IMSS e INFONAVIT y proyección de pensión con fundamentación legal actualizada a la <strong>LFT 2026</strong>.
+            </p>
+
+            {/* Feature Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-900/90 border border-slate-800 rounded-full px-3.5 py-1.5 shadow-sm">
+                <CheckCircle2 size={14} className="text-emerald-400" />
+                100% Gratuito y Sin Anuncios
               </span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 shadow-sm">
-                Régimen Vigente 2026
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-900/90 border border-slate-800 rounded-full px-3.5 py-1.5 shadow-sm">
+                <CheckCircle2 size={14} className="text-emerald-400" />
+                Exportación PDF Oficial
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-900/90 border border-slate-800 rounded-full px-3.5 py-1.5 shadow-sm">
+                <CheckCircle2 size={14} className="text-emerald-400" />
+                Datos Privados en Dispositivo
               </span>
             </div>
-
-            {/* No more login/auth UI - all tools are now free */}
           </div>
 
           {/* Tools Grid Section */}
-          <div className="w-full mt-16 max-w-6xl animate-fade-in">
-            <WorkspacePanel className="relative overflow-hidden p-6 sm:p-10 border border-white/5 bg-slate-950/40 backdrop-blur-md rounded-[2.5rem] shadow-[0_30px_70px_-40px_rgba(0,0,0,0.7)]">
-              <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-legal-gold/5 to-transparent pointer-events-none" />
-
-              {/* Tools Cards arranged in 2x2 Grid */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6">
-                {tools.map((tool, index) => (
-                  <a
-                    key={tool.view}
-                    href={getPathForView(tool.view)}
-                    onClick={(event) => handleNavClick(event, tool.view)}
-                    className="group flex items-start gap-3 sm:gap-4.5 rounded-2xl border border-white/5 bg-slate-900/60 p-4 sm:p-5 shadow-[0_8px_30px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-legal-gold/40 hover:bg-slate-900/80"
-                  >
-                    {/* Dark Icon Chip Homogeneous with LexCorporativo */}
-                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-[0.9rem] sm:rounded-[1.1rem] border border-white/10 bg-slate-950 shadow-md group-hover:border-legal-gold/40 transition-colors duration-300">
-                      {tool.icon}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="text-[10px] font-bold text-legal-gold tracking-widest font-mono">
-                          {String(index + 1).padStart(2, '0')}
-                        </span>
-                        <span className={`rounded-full border px-2 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.08em] sm:tracking-[0.16em] ${tool.badgeStyle}`}>
-                          {tool.access}
-                        </span>
+          <div className="mt-14 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {tools.map((tool, index) => (
+                <a
+                  key={tool.view}
+                  href={getPathForView(tool.view)}
+                  onClick={(event) => handleNavClick(event, tool.view)}
+                  className="group relative flex flex-col justify-between rounded-3xl border border-slate-800/90 bg-gradient-to-b from-slate-900/90 to-slate-950 p-6 sm:p-7 shadow-xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10"
+                >
+                  <div>
+                    {/* Header line of card */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-700/60 bg-slate-950 shadow-md group-hover:border-amber-500/50 transition-colors">
+                          {tool.icon}
+                        </div>
+                        <div>
+                          <span className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tool.badgeStyle}`}>
+                            {tool.access}
+                          </span>
+                          <p className="text-xs font-mono text-slate-400 mt-0.5">{tool.subtitle}</p>
+                        </div>
                       </div>
-                      <h2 className="mt-2 text-md font-bold text-white transition-colors group-hover:text-legal-gold">{tool.title}</h2>
-                      <p className="mt-1.5 text-xs leading-relaxed text-slate-400 font-medium">{tool.summary}</p>
-                      
-                      {/* Premium Information Hierarchy CTA Button */}
-                      <div className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm transition-all duration-300 group-hover:bg-legal-gold group-hover:text-slate-950 group-hover:border-legal-gold group-hover:-translate-y-0.5">
-                        <span>{tool.action}</span>
-                        <ChevronRight size={12} className="transition-transform duration-300 group-hover:translate-x-0.5" />
-                      </div>
+                      <span className="font-mono text-xs font-extrabold text-slate-600 group-hover:text-amber-400 transition-colors">
+                        0{index + 1}
+                      </span>
                     </div>
 
-                    <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 text-slate-500 group-hover:bg-legal-gold/10 group-hover:text-legal-gold transition-colors duration-300">
-                      <ArrowUpRight size={14} />
+                    <h2 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
+                      {tool.title}
+                    </h2>
+                    
+                    <p className="mt-2.5 text-sm leading-relaxed text-slate-300">
+                      {tool.summary}
+                    </p>
+                  </div>
+
+                  {/* CTA Footer */}
+                  <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
+                      {tool.action}
+                      <ChevronRight size={14} className="transition-transform group-hover:translate-x-1" />
+                    </span>
+                    <div className="h-8 w-8 rounded-full bg-slate-800/80 group-hover:bg-amber-500 group-hover:text-slate-950 text-slate-400 flex items-center justify-center transition-all">
+                      <ArrowUpRight size={16} />
                     </div>
-                  </a>
-                ))}
-              </div>
-            </WorkspacePanel>
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:px-10">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {supportBlocks.map((block) => (
-            <WorkspacePanel key={block.title} className="p-5 sm:p-6.5 border border-white/5 bg-slate-950/60 shadow-sm rounded-2xl relative overflow-hidden group hover:border-white/10 transition-colors">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-legal-gold to-slate-900 opacity-80" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-legal-gold">Plataforma Lex Laboral</span>
-              <h2 className="mt-2 text-md font-bold text-white">{block.title}</h2>
-              <p className="mt-2.5 text-xs leading-relaxed text-slate-400 font-medium">{block.body}</p>
-            </WorkspacePanel>
-          ))}
-        </div>
-      </section>
-
-      {/* Gallery / Screenshots Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:px-10">
-        <h2 className="text-center text-2xl md:text-3xl font-bold text-white mb-3">Interfaz Moderna y Accesible</h2>
-        <p className="text-center text-slate-400 text-sm md:text-base mb-10 max-w-2xl mx-auto">
-          Diseñada para trabajadores, abogados y empresas. Disponible en web y móvil con PWA ready.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {galleryItems.map((item) => (
-            <div key={item.src} className="group overflow-hidden rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_8px_30px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 hover:border-legal-gold/40 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(163,124,31,0.15)]">
-              <div className="aspect-video overflow-hidden bg-slate-900">
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-sm font-bold text-white">{item.title}</h3>
-                <p className="text-xs text-slate-400 mt-1">{item.alt}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Available on Web and Mobile Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:px-10">
-        <div className="rounded-2xl border border-white/5 bg-gradient-to-br from-slate-950/60 to-slate-900/40 backdrop-blur-md p-8 md:p-12">
-          <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-            <Download size={32} className="text-legal-gold mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">Disponible en Web y Móvil</h2>
-            <p className="text-slate-300 text-sm md:text-base mb-8">
-              Lex Laboral es una aplicación web progresiva (PWA) totalmente funcional en tu navegador. Acceso inmediato sin necesidad de descargar desde app stores.
+      {/* Highlights / Value Props Section */}
+      <section className="py-16 sm:py-20 border-b border-slate-800/60 bg-slate-900/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+              ¿Por qué utilizar Lex Laboral?
+            </h2>
+            <p className="text-sm text-slate-400 mt-2">
+              Diseñado bajo altos estándares normativos para trabajadores, patrones, contadores y asesores legales en México.
             </p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <div className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 text-center">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Web</p>
-                <p className="text-white font-semibold">Acceso Inmediato</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {highlights.map((item) => (
+              <div 
+                key={item.title} 
+                className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6 sm:p-7 shadow-lg flex flex-col items-start"
+              >
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 mb-5">
+                  {item.icon}
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{item.description}</p>
               </div>
-              <div className="hidden sm:block w-px h-12 bg-white/10" />
-              <div className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 text-center">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Móvil</p>
-                <p className="text-white font-semibold">PWA Ready</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* SEO Content Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10 py-12">
+      {/* Mobile App Download Promo */}
+      <section className="py-16 sm:py-20 relative overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+            
+            <div className="max-w-xl text-center md:text-left">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-400 mb-4">
+                <Smartphone size={14} />
+                <span>Aplicación Móvil Android Disponible</span>
+              </div>
+
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white leading-tight">
+                Lleva las Calculadoras en tu Teléfono
+              </h2>
+              
+              <p className="text-sm sm:text-base text-slate-300 mt-3 leading-relaxed">
+                Descarga la versión nativa para Android en tu dispositivo para realizar cálculos offline sin necesidad de conexión a internet.
+              </p>
+
+              <div className="mt-6 flex flex-wrap items-center justify-center md:justify-start gap-4">
+                <a
+                  href="/LexLaboral-1.3.0-release.apk"
+                  download="LexLaboral-1.3.0.apk"
+                  className="inline-flex items-center gap-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-6 py-3.5 text-sm shadow-xl shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
+                >
+                  <Download size={18} />
+                  <span>Descargar APK Android (v1.3.0)</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Graphic Badge */}
+            <div className="flex shrink-0 items-center justify-center p-6 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-inner max-w-xs text-center">
+              <div>
+                <img 
+                  src="/assets/logo.webp" 
+                  alt="Lex Laboral App" 
+                  className="h-16 w-auto mx-auto object-contain mb-3" 
+                />
+                <p className="text-xs font-bold text-white">Lex Laboral Móvil</p>
+                <p className="text-[11px] text-slate-400 mt-1">Sin registros • 100% Gratis</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* SEO FAQs Section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <SEOContentSection
-          title="Preguntas Frecuentes - Calculadoras y Consultas Laborales"
-          intro="Lex Laboral es tu asistente legal laboral integral. Calcula prestaciones con precisión legal, consulta la normatividad laboral vigente y obtén respuestas basadas en la Ley Federal del Trabajo 2026."
+          title="Preguntas Frecuentes - Calculadoras Laborales México 2026"
+          intro="Respuestas claras basadas estrictamente en la Ley Federal del Trabajo y normatividad legal del IMSS."
           highlights={[
             {
-              title: 'Calculadora de Liquidación Gratuita',
-              body: 'Calcula indemnización constitucional, prima de antigüedad, aguinaldo y finiquito con desglose detallado. Disponible sin registro ni costo.'
+              title: 'Cálculos Según Ley Federal del Trabajo',
+              body: 'Indemnización de 90 días, 20 días por año de servicio, prima de antigüedad de 12 días por año (topada a 2 salarios mínimos / UMA) e ISR conforme al Art. 93 LISR.'
             },
             {
-              title: 'Consultas Normativas Precisas',
-              body: 'Realiza consultas sobre tus derechos laborales y obtén respuestas directas de la Ley Federal del Trabajo. Sistema RAG con búsqueda semántica legal.'
+              title: 'Cuotas Patronales y Obreras IMSS',
+              body: 'Desglose oficial por ramos: Enfermedades y Maternidad, Invalidez y Vida, Retiro, Cesantía y Vejez, Guarderías e INFONAVIT.'
             },
             {
-              title: 'Seguridad Social IMSS',
-              body: 'Calcula cuotas obrero-patronales, INFONAVIT y prima de riesgo con desglose por ramo. Accesible y gratuita para todos.'
+              title: 'Proyección de Pensiones IMSS',
+              body: 'Estimación bajo el Régimen 1973 (500 semanas min.) o Régimen 1997 (825+ semanas) considerando tu AFORE.'
             }
           ]}
           faqs={[
             {
-              question: '¿Cuánto cuesta usar Lex Laboral?',
-              answer: 'Las calculadoras de liquidación, IMSS e INFONAVIT y pensiones son completamente gratuitas. No requieren suscripción ni plan pagado.'
+              question: '¿Cuánto cuesta usar las calculadoras de Lex Laboral?',
+              answer: 'Es 100% gratuito. No requiere pagos, datos bancarios ni suscripciones.'
             },
             {
-              question: '¿Es exacta la calculadora de liquidación?',
-              answer: 'Sí. Nuestra calculadora aplica los artículos 48, 50, 162 y 163 de la Ley Federal del Trabajo vigente en México. Produce resultados precisos basados en la normatividad oficial.'
+              question: '¿Tengo que crear una cuenta o registrarme?',
+              answer: 'No. Todas las funciones están disponibles de inmediato sin necesidad de ingresar correos ni contraseñas.'
             },
             {
-              question: '¿Puedo consultar la normatividad laboral?',
-              answer: 'Sí. Usa el módulo de Consultas para hacer preguntas sobre la Ley Federal del Trabajo. El sistema extrae respuestas directas de los artículos aplicables.'
+              question: '¿Puedo generar un reporte formal en PDF?',
+              answer: 'Sí. Cada calculadora cuenta con una función de exportación a PDF que genera un documento limpio con desglose detallado listo para imprimir o compartir.'
             },
             {
-              question: '¿Funciona en móvil?',
-              answer: 'Completamente. Lex Laboral es una aplicación web progresiva (PWA) optimizada para todos los dispositivos, desde teléfonos hasta desktops.'
-            },
-            {
-              question: '¿Necesito crear una cuenta?',
-              answer: 'No. Todas las herramientas de Lex Laboral son gratuitas y no requieren registro ni inicio de sesión.'
+              question: '¿Mis datos personales o salariales se comparten?',
+              answer: 'No. Los datos que ingresas se procesan y almacenan únicamente dentro de tu navegador o dispositivo. No vendemos ni enviamos datos a servidores externos.'
             }
           ]}
         />
       </section>
 
-      {/* Elegant Homogeneous Footer */}
-      <footer className="mx-auto mt-12 flex max-w-7xl flex-col items-center justify-between gap-6 border-t border-white/5 px-4 sm:px-6 py-10 text-center md:flex-row md:px-10 md:text-left">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl border border-legal-gold/20 bg-slate-950 p-1">
-            <img
-              src="/assets/logo.webp"
-              alt="Logo"
-              width={800}
-              height={285}
-              className="h-full w-full object-contain rounded-md"
-              loading="lazy"
-              decoding="async"
+      {/* Footer */}
+      <footer className="border-t border-slate-800/80 bg-slate-950 py-12 text-slate-400">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          
+          <div className="flex items-center gap-3">
+            <img 
+              src="/assets/logo.webp" 
+              alt="Lex Laboral" 
+              className="h-7 w-auto object-contain" 
             />
+            <span className="text-xs font-semibold text-slate-400">
+              Lex Laboral © 2026 • Plataforma Jurídica Libre
+            </span>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Lex Laboral © 2026</span>
-        </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
-          <a href={getPathForView(AppView.TERMS)} onClick={(event) => handleNavClick(event, AppView.TERMS)} className="transition-colors hover:text-white">
-            Términos
-          </a>
-          <a href={getPathForView(AppView.PRIVACY)} onClick={(event) => handleNavClick(event, AppView.PRIVACY)} className="transition-colors hover:text-white">
-            Privacidad
-          </a>
-        </div>
+          <div className="flex items-center gap-6 text-xs font-medium">
+            <a 
+              href="/privacy.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors flex items-center gap-1"
+            >
+              <span>Aviso de Privacidad</span>
+              <ExternalLink size={12} />
+            </a>
+            <a 
+              href="/terms.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors flex items-center gap-1"
+            >
+              <span>Términos y Condiciones</span>
+              <ExternalLink size={12} />
+            </a>
+          </div>
 
-        <p className="text-[11px] text-slate-500 font-medium">
-          Desarrollado por <span className="font-bold text-slate-300">filex dev</span>
-        </p>
+          <p className="text-xs text-slate-400">
+            Desarrollado por <span className="font-bold text-slate-300">filex dev</span>
+          </p>
+        </div>
       </footer>
+
     </div>
   );
 };
+
