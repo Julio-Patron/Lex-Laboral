@@ -155,9 +155,9 @@ export const SocialSecurityCalculator: React.FC<{
         icon={<ShieldCheck size={28} />}
       />
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-4 space-y-8">
-            <WorkspacePanel className="space-y-8 p-8">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
+          <div className="min-w-0 space-y-6 lg:col-span-4 lg:space-y-8">
+            <WorkspacePanel className="space-y-6 p-5 sm:p-8 lg:space-y-8">
               <div>
                 <h3 className="text-sm font-bold text-slate-950">Datos de cotización</h3>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-400">Proyección rápida</p>
@@ -186,6 +186,63 @@ export const SocialSecurityCalculator: React.FC<{
                   </select>
                 </div>
 
+                <AnimatePresence>
+                  {showRiskCalc && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="ui-subtle-block space-y-5 overflow-hidden p-4 sm:p-6"
+                    >
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">Prima de riesgo variable</h4>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          Captura los datos anuales para estimar la prima y aplicarla al cálculo.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <label className="ui-label">Días subsidiados</label>
+                          <input type="number" value={s_days || ''} onChange={(e) => setS_days(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="ui-label">Factor V</label>
+                          <input type="number" value={v_factor || ''} onChange={(e) => setV_factor(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="ui-label">Incapacidades</label>
+                          <input type="number" value={i_disability || ''} onChange={(e) => setI_disability(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="ui-label">Defunciones</label>
+                          <input type="number" value={d_deaths || ''} onChange={(e) => setD_deaths(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="ui-label">Factor F</label>
+                          <input type="number" value={f_factor || ''} onChange={(e) => setF_factor(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="ui-label">Trabajadores</label>
+                          <input type="number" value={n_workers || ''} onChange={(e) => setN_workers(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="ui-label">Prima mínima</label>
+                        <input type="number" value={m_min || ''} onChange={(e) => setM_min(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" step="0.0001" />
+                      </div>
+
+                      <button
+                        onClick={calculateAnnualRiskValue}
+                        className="w-full rounded-2xl bg-white px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-700 shadow-sm transition-all hover:bg-slate-100"
+                      >
+                        Aplicar prima
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="space-y-3">
                   <label className="ui-label">Días</label>
                   <input type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="ui-input" />
@@ -200,7 +257,7 @@ export const SocialSecurityCalculator: React.FC<{
 
                 <AnimatePresence>
                   {showAdvanced && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block space-y-4 overflow-hidden p-6">
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block space-y-4 overflow-hidden p-4 sm:p-6">
                       <div className="space-y-2">
                         <label className="ui-label">Salario mínimo vigente</label>
                         <input type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
@@ -222,7 +279,7 @@ export const SocialSecurityCalculator: React.FC<{
             </WorkspacePanel>
           </div>
 
-          <div className="lg:col-span-8">
+          <div className="min-w-0 lg:col-span-8">
             <AnimatePresence mode="wait">
               {!results ? (
                 <WorkspaceEmpty
@@ -232,25 +289,25 @@ export const SocialSecurityCalculator: React.FC<{
                 />
               ) : (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
                     <WorkspaceStat label="Patrón" value={`$${results.employer.total.toLocaleString()}`} />
                     <WorkspaceStat label="Trabajador" value={`$${results.employee.total.toLocaleString()}`} emphasis="accent" />
                     <WorkspaceStat label="Total" value={`$${results.total.toLocaleString()}`} emphasis="inverse" />
                   </div>
 
                   <WorkspacePanel className="overflow-hidden rounded-[2.4rem]">
-                    <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+                    <div className="flex items-center justify-between gap-4 border-b border-slate-50 p-5 sm:p-8">
                       <h4 className="text-xs font-bold uppercase tracking-[0.24em] text-slate-900">Desglose de cuotas</h4>
                       <button onClick={handleExport} className="p-2 text-slate-400 hover:text-legal-950 transition-colors"><Download size={20} /></button>
                     </div>
                     <div className="p-0 overflow-x-auto no-scrollbar">
-                      <table className="w-full text-left min-w-[600px] md:min-w-0">
+                      <table className="w-full min-w-[560px] text-left lg:min-w-0">
                         <thead>
                           <tr className="bg-slate-50">
-                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-left">Concepto</th>
-                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Patrón</th>
-                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Trabajador</th>
-                            <th className="p-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Total</th>
+                            <th className="p-4 text-left text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Concepto</th>
+                            <th className="p-4 text-right text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Patrón</th>
+                            <th className="p-4 text-right text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Trabajador</th>
+                            <th className="p-4 text-right text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Total</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -267,10 +324,10 @@ export const SocialSecurityCalculator: React.FC<{
                             { label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
                           ].map((row, i) => (
                             <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="p-6 text-sm font-medium text-slate-700">{row.label}</td>
-                              <td className="p-6 text-right font-serif font-bold text-slate-500">${row.pat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                              <td className="p-6 text-right font-serif font-bold text-slate-500">${row.trab.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                              <td className="p-6 text-right font-serif font-bold text-slate-900">${(row.pat + row.trab).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-4 text-sm font-medium text-slate-700 sm:p-6">{row.label}</td>
+                              <td className="p-4 text-right font-serif font-bold text-slate-500 sm:p-6">${row.pat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-4 text-right font-serif font-bold text-slate-500 sm:p-6">${row.trab.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-4 text-right font-serif font-bold text-slate-900 sm:p-6">${(row.pat + row.trab).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             </tr>
                           ))}
                         </tbody>

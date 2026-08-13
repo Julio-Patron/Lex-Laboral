@@ -2,6 +2,73 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import type { IncomingMessage, ServerResponse } from 'http';
+
+const readRequestBody = (req: IncomingMessage): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    req.on('error', reject);
+  });
+
+const createApiResponse = (res: ServerResponse) => {
+  const apiRes = {
+    setHeader(key: string, value: string) {
+      res.setHeader(key, value);
+      return apiRes;
+    },
+    status(code: number) {
+      res.statusCode = code;
+      return apiRes;
+    },
+    json(payload: unknown) {
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'application/json');
+      }
+      res.end(JSON.stringify(payload));
+      return apiRes;
+    },
+    end(payload?: string) {
+      res.end(payload);
+      return apiRes;
+    },
+  };
+
+  return apiRes;
+};
+
+const localApiSearchPlugin = () => ({
+  name: 'lex-local-api-search',
+  configureServer(server: any) {
+    server.middlewares.use('/api/search', async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+      if (req.method !== 'POST' && req.method !== 'OPTIONS') {
+        next();
+        return;
+      }
+
+      try {
+        const rawBody = await readRequestBody(req);
+        const { default: handler } = await import('./api/search');
+        await handler(
+          {
+            method: req.method,
+            headers: req.headers,
+            body: rawBody ? JSON.parse(rawBody) : {},
+          },
+          createApiResponse(res)
+        );
+      } catch (error) {
+        console.error('Local /api/search middleware failed:', error);
+        if (!res.headersSent) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+        }
+        res.end(JSON.stringify({ results: [], count: 0, message: 'Local search middleware failed.' }));
+      }
+    });
+  },
+});
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
@@ -15,7 +82,7 @@ export default defineConfig(({ mode }) => {
           : false,
         allowedHosts: exposeDevServer ? true : ['localhost', '127.0.0.1']
       },
-      plugins: [react(), tailwindcss()],
+      plugins: [localApiSearchPlugin(), react(), tailwindcss()],
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),

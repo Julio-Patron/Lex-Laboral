@@ -29,7 +29,7 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
   };
 
   return (
-    <div className="w-72 bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print">
+    <div className="w-[min(18rem,86vw)] bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print md:w-72">
       {/* Header */}
       <div className="p-6 pb-2 space-y-6">
         <div 

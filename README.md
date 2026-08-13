@@ -16,7 +16,7 @@ Lex Laboral es una plataforma gratuita de herramientas jurídicas laborales para
 
 *   **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS, desplegado en **Vercel**.
 *   **IA:** Google Gemini API (`text-embedding-004`) para recuperación semántica.
-*   **Datos:** Base de conocimiento embebida en `data/lance/kb.json` (solo lectura).
+*   **Datos:** Base semántica LanceDB en `data/lance` cuando está disponible, con respaldo local versionado en `data/search-index.json`.
 
 ## 📜 Licencia
 

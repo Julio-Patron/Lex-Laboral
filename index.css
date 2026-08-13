@@ -58,22 +58,34 @@
 }
 
 @layer base {
+  html,
+  #root {
+    min-height: 100%;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased h-screen overflow-hidden;
+    @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen overflow-hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    min-width: 0;
   }
 }
 
 @layer components {
   .ui-panel {
-    @apply rounded-[2rem] border border-slate-200/80 bg-white/90 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm;
+    @apply w-full min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white/90 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:rounded-[2rem];
   }
 
   .ui-panel-muted {
-    @apply rounded-[2rem] border border-slate-200/70 bg-slate-50/85 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.35)];
+    @apply w-full min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border border-slate-200/70 bg-slate-50/85 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.35)] sm:rounded-[2rem];
   }
 
   .ui-icon-chip {
-    @apply flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-slate-200/80 bg-white text-legal-gold shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)];
+    @apply flex h-12 w-12 items-center justify-center rounded-[1.15rem] border border-slate-200/80 bg-white text-legal-gold shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)] sm:h-14 sm:w-14 sm:rounded-[1.4rem];
   }
 
   .ui-label {
@@ -81,19 +93,19 @@
   }
 
   .ui-input {
-    @apply w-full rounded-2xl border border-slate-200/90 bg-white px-5 py-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-legal-gold/60 focus:bg-white focus:ring-4 focus:ring-legal-gold/10;
+    @apply w-full min-w-0 rounded-2xl border border-slate-200/90 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-legal-gold/60 focus:bg-white focus:ring-4 focus:ring-legal-gold/10 sm:px-5 sm:py-4;
   }
 
   .ui-input-lg {
-    @apply rounded-[1.6rem] border border-slate-200/80 bg-white px-5 py-4 font-serif text-xl font-bold text-slate-950 outline-none transition-all placeholder:text-slate-300 focus:border-legal-gold/70 focus:ring-4 focus:ring-legal-gold/10;
+    @apply min-w-0 rounded-[1.35rem] border border-slate-200/80 bg-white px-4 py-3.5 font-serif text-lg font-bold text-slate-950 outline-none transition-all placeholder:text-slate-300 focus:border-legal-gold/70 focus:ring-4 focus:ring-legal-gold/10 sm:rounded-[1.6rem] sm:px-5 sm:py-4 sm:text-xl;
   }
 
   .ui-subtle-block {
-    @apply rounded-[1.75rem] border border-slate-200/80 bg-white/75;
+    @apply min-w-0 max-w-full overflow-hidden rounded-[1.35rem] border border-slate-200/80 bg-white/75 sm:rounded-[1.75rem];
   }
 
   .ui-empty-state {
-    @apply flex min-h-[520px] flex-col items-center justify-center rounded-[2.4rem] border border-dashed border-slate-200 bg-gradient-to-b from-white to-slate-50 px-8 py-12 text-center;
+    @apply flex min-h-[340px] min-w-0 flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-200 bg-gradient-to-b from-white to-slate-50 px-5 py-10 text-center sm:min-h-[420px] sm:rounded-[2.4rem] sm:px-8 sm:py-12 lg:min-h-[520px];
   }
 
   .ui-empty-icon {

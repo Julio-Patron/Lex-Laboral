@@ -26,6 +26,8 @@ interface SearchResponse {
   query?: string;
   norm?: string;
   count: number;
+  mode?: 'semantic' | 'local';
+  warning?: string;
 }
 
 export const Consultas: React.FC = () => {
@@ -35,6 +37,7 @@ export const Consultas: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchMode, setSearchMode] = useState<'semantic' | 'local' | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
@@ -62,6 +65,7 @@ export const Consultas: React.FC = () => {
       setResults([]);
       setSearched(false);
       setError(null);
+      setSearchMode(null);
       return;
     }
 
@@ -82,15 +86,18 @@ export const Consultas: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Search failed: ${response.status}`);
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.message || `Search failed: ${response.status}`);
       }
 
       const data: SearchResponse = await response.json();
       setResults(data.results || []);
+      setSearchMode(data.mode || 'semantic');
     } catch (err) {
       console.error('Search error:', err);
-      setError('No se pudo realizar la búsqueda. Intenta nuevamente.');
+      setError('No se pudo realizar la búsqueda. Revisa que el servicio esté desplegado e intenta nuevamente.');
       setResults([]);
+      setSearchMode(null);
     } finally {
       setLoading(false);
     }
@@ -110,6 +117,7 @@ export const Consultas: React.FC = () => {
       } else {
         setResults([]);
         setSearched(false);
+        setSearchMode(null);
       }
     }, 300);
 
@@ -148,7 +156,7 @@ export const Consultas: React.FC = () => {
       />
 
       {/* Search Panel */}
-      <WorkspacePanel className="mb-8">
+      <WorkspacePanel className="mb-8 p-5 sm:p-8">
         <div className="space-y-6">
           {/* Search Input */}
           <div className="relative">
@@ -158,18 +166,18 @@ export const Consultas: React.FC = () => {
               placeholder="Busca por tema: 'salario mínimo', 'vacaciones', 'pensión', etc."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-legal-gold focus:outline-none focus:ring-2 focus:ring-legal-gold/20 transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-legal-gold focus:outline-none focus:ring-2 focus:ring-legal-gold/20 sm:text-base"
             />
           </div>
 
           {/* Norm Filter */}
-          <div className="flex flex-wrap gap-2">
-            <span className="text-xs font-semibold text-slate-600 pt-2">Filtrar por:</span>
+          <div className="flex min-w-0 flex-wrap gap-2">
+            <span className="w-full pt-1 text-xs font-semibold text-slate-600 sm:w-auto sm:pt-2">Filtrar por:</span>
             {(['all', 'LFT', 'IMSS', 'INFONAVIT'] as const).map((norm) => (
               <button
                 key={norm}
                 onClick={() => setSelectedNorm(norm)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                className={`min-w-0 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:px-4 sm:text-sm ${
                   selectedNorm === norm
                     ? 'bg-legal-gold text-slate-950 shadow-md'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -208,21 +216,38 @@ export const Consultas: React.FC = () => {
 
       {!loading && results.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Search size={16} className="text-legal-gold" />
-            <span className="text-sm font-semibold text-slate-600">
-              {results.length} resultado{results.length !== 1 ? 's' : ''}
-            </span>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Search size={16} className="text-legal-gold" />
+              <span className="text-sm font-semibold text-slate-600">
+                {results.length} resultado{results.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            {searchMode && (
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${
+                searchMode === 'semantic'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'bg-amber-50 text-amber-700'
+              }`}>
+                {searchMode === 'semantic' ? 'Semántico activo' : 'Índice local'}
+              </span>
+            )}
           </div>
 
+          {searchMode === 'local' && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+              La búsqueda semántica no está disponible en este entorno; se muestran coincidencias del índice local para mantener las consultas activas.
+            </div>
+          )}
+
           {results.map((result, idx) => (
-            <WorkspacePanel key={idx} className="hover:shadow-md transition-shadow">
+            <WorkspacePanel key={idx} className="p-5 transition-shadow hover:shadow-md sm:p-6">
               <div className="space-y-3">
                 {/* Header with similarity score */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-serif font-bold text-slate-900">
+                      <span className="break-words font-serif font-bold text-slate-900">
                         {result.metadata.article} {result.metadata.num}
                       </span>
                       <span
@@ -241,7 +266,7 @@ export const Consultas: React.FC = () => {
                       {result.metadata.title}
                     </p>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="shrink-0 text-left sm:text-right">
                     <div className="text-2xl font-bold text-legal-gold">
                       {result.score.toFixed(1)}%
                     </div>
@@ -255,7 +280,7 @@ export const Consultas: React.FC = () => {
                 </p>
 
                 {/* Metadata footer */}
-                <div className="flex gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+                <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-2 text-xs text-slate-500">
                   <span>
                     <strong>Ley:</strong> {result.metadata.norm}
                   </span>

@@ -61,7 +61,7 @@ function App() {
 
   const renderView = () => {
     return (
-      <div className="h-full w-full animate-fade-in relative overflow-y-auto">
+      <div className="min-h-full w-full animate-fade-in relative">
         <Suspense fallback={
           <div className="h-full w-full min-h-[600px] flex items-center justify-center animate-in fade-in duration-500">
              <div className="flex flex-col items-center">
@@ -106,13 +106,13 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden font-sans selection:bg-legal-gold/30">
+      <div className="flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden bg-slate-100 font-sans selection:bg-legal-gold/30 md:flex-row">
         <NotificationHub notifications={notifications} onDismiss={dismissNotification} />
       
       {currentView !== AppView.HOME && (
         <>
           {/* Mobile Header */}
-          <div className="md:hidden flex items-center justify-between px-6 py-4 bg-legal-950 text-white z-40 border-b border-white/5 shadow-2xl">
+          <div className="z-40 flex shrink-0 items-center justify-between border-b border-white/5 bg-legal-950 px-4 py-3.5 text-white shadow-2xl sm:px-6 md:hidden">
             <div 
               className="flex items-center cursor-pointer"
               onClick={() => handleViewChange(AppView.HOME)}
@@ -136,7 +136,7 @@ function App() {
           />
 
           {/* Sidebar Container */}
-          <div className={`fixed inset-y-0 left-0 z-[70] transition-transform duration-300 transform md:relative md:translate-x-0 ${
+          <div className={`fixed inset-y-0 left-0 z-[70] max-w-[86vw] transition-transform duration-300 transform md:relative md:max-w-none md:translate-x-0 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}>
             <Suspense fallback={null}>
@@ -150,8 +150,8 @@ function App() {
         </>
       )}
 
-      <main className="flex-1 relative overflow-hidden flex flex-col h-full bg-slate-50">
-        <div className="flex-1 overflow-y-auto no-scrollbar">
+      <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
+        <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
           {renderView()}
         </div>
       </main>

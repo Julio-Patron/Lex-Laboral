@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "test": "vitest",
-    "ingest:kb": "tsx scripts/ingest/index.ts"
+    "ingest:kb": "tsx scripts/ingest/index.ts",
+    "ingest:search-index": "tsx scripts/ingest/build-search-index.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
