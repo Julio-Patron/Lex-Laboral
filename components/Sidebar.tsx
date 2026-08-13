@@ -7,16 +7,22 @@ import {
   ShieldCheck, 
   Home,
   BookOpen,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Shield,
 } from 'lucide-react';
 
 interface SidebarProps {
   currentView: AppView;
   onChangeView: (view: AppView) => void;
   onNewCase: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase }) => {
+export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, isCollapsed = false, onToggleCollapse }) => {
   const navItems = [
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={18} /> },
     { id: AppView.CALCULATOR, label: 'Liquidación y Finiquito', icon: <Calculator size={18} /> },
@@ -30,24 +36,46 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
   };
 
   return (
-    <aside className="no-print relative z-50 flex h-full w-[min(17rem,86vw)] flex-shrink-0 flex-col border-r border-white/10 bg-slate-950 text-white shadow-2xl md:w-64">
+    <aside
+      className={`no-print relative z-50 flex h-full w-[min(18rem,86vw)] flex-shrink-0 flex-col border-r border-white/10 bg-slate-950 text-white shadow-2xl transition-[width] duration-300 ease-out ${
+        isCollapsed ? 'md:w-20' : 'md:w-72'
+      }`}
+    >
       {/* Header */}
-      <div className="border-b border-white/10 px-5 py-5">
-        <button
-          type="button"
-          className="group flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-white/[0.04]"
-          onClick={() => onChangeView(AppView.HOME)}
-        >
-          <img src="/assets/logo.webp" alt="Lex Laboral" className="h-12 w-12 shrink-0 object-contain opacity-95 transition-opacity group-hover:opacity-100" loading="lazy" />
-          <div className="min-w-0">
-            <p className="truncate font-serif text-lg font-bold leading-tight text-white">Lex Laboral</p>
-            <p className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Herramientas</p>
-          </div>
-        </button>
+      <div className={`border-b border-white/10 py-5 ${isCollapsed ? 'px-3' : 'px-5'}`}>
+        <div className={`flex gap-2 ${isCollapsed ? 'items-center justify-center md:flex-col' : 'items-center justify-between'}`}>
+          <button
+            type="button"
+            className={`group flex min-w-0 items-center rounded-lg p-2 text-left transition-colors hover:bg-white/[0.04] ${
+              isCollapsed ? 'justify-center' : 'flex-1 gap-3'
+            }`}
+            onClick={() => onChangeView(AppView.HOME)}
+            title="Inicio"
+          >
+            <img src="/assets/logo.webp" alt="Lex Laboral" className="h-10 w-10 shrink-0 object-contain opacity-95 transition-opacity group-hover:opacity-100" loading="lazy" />
+            {!isCollapsed && (
+              <div className="min-w-0">
+                <p className="truncate font-serif text-lg font-bold leading-tight text-white">Lex Laboral</p>
+                <p className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Herramientas</p>
+              </div>
+            )}
+          </button>
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label={isCollapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
+              title={isCollapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
+              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-slate-400 transition-all hover:bg-white/[0.08] hover:text-white md:inline-flex"
+            >
+              {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Navigation */}
-      <nav className="custom-scrollbar mt-2 flex-1 overflow-y-auto px-3 py-3">
+      <nav className={`custom-scrollbar mt-2 flex-1 overflow-y-auto py-3 ${isCollapsed ? 'px-2' : 'px-3'}`}>
         <ul className="space-y-1.5">
           {navItems.map((item) => {
             const isActive = currentView === item.id;
@@ -58,19 +86,20 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => handleNavClick(item.id)}
-                  className={`group flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-[13px] font-semibold leading-5 transition-all ${
+                  title={item.label}
+                  className={`group flex w-full min-w-0 items-center rounded-lg py-3 text-left text-[13px] font-semibold leading-5 transition-all ${
                     isActive
                       ? 'border border-white/10 bg-white/[0.09] text-legal-gold shadow-[inset_3px_0_0_rgba(212,175,55,0.95)]'
                       : 'border border-transparent text-slate-400 hover:bg-white/[0.05] hover:text-white'
-                  }`}
+                  } ${isCollapsed ? 'justify-center px-2' : 'justify-between gap-3 px-3'}`}
                 >
-                  <span className="flex min-w-0 items-center gap-3">
+                  <span className={`flex min-w-0 items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                     <span className={`shrink-0 transition-colors ${isActive ? 'text-legal-gold' : 'text-slate-500 group-hover:text-slate-300'}`}>
                       {item.icon}
                     </span>
-                    <span className="min-w-0 break-words">{item.label}</span>
+                    <span className={isCollapsed ? 'sr-only' : 'min-w-0 break-words'}>{item.label}</span>
                   </span>
-                  {isActive && <ChevronRight size={14} className="shrink-0 animate-in fade-in slide-in-from-left-2 duration-300" />}
+                  {isActive && !isCollapsed && <ChevronRight size={14} className="shrink-0 animate-in fade-in slide-in-from-left-2 duration-300" />}
                 </motion.button>
               </li>
             );
@@ -79,20 +108,24 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
       </nav>
 
       {/* Footer Links */}
-      <div className="mt-auto border-t border-white/10 bg-black/20 p-4">
-        <div className="flex items-center justify-between gap-3 px-1">
+      <div className={`mt-auto border-t border-white/10 bg-black/20 p-4 ${isCollapsed ? 'md:px-3' : ''}`}>
+        <div className={`flex items-center gap-3 px-1 ${isCollapsed ? 'md:flex-col md:justify-center' : 'justify-between'}`}>
             <button 
               onClick={() => onChangeView(AppView.PRIVACY)}
-              className="text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
+              title="Privacidad"
             >
-              Privacidad
+              <Shield size={15} />
+              <span className={isCollapsed ? 'md:sr-only' : ''}>Privacidad</span>
             </button>
-            <span className="text-slate-700 text-xs">•</span>
+            {!isCollapsed && <span className="text-slate-700 text-xs">•</span>}
             <button 
               onClick={() => onChangeView(AppView.TERMS)}
-              className="text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
+              title="Términos"
             >
-              Términos
+              <FileText size={15} />
+              <span className={isCollapsed ? 'md:sr-only' : ''}>Términos</span>
             </button>
         </div>
       </div>

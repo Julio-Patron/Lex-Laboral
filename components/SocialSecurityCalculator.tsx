@@ -24,6 +24,16 @@ import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
 import { calculateSocialSecurity, calculateAnnualRisk, type SocialSecurityInput, type RiskCalculationInput } from '../lib/calculators/social-security';
 
+const riskPresets = [
+  { label: 'Oficina', hint: 'Clase I', value: 0.54355 },
+  { label: 'Comercio', hint: 'Clase II', value: 1.13065 },
+  { label: 'Industria', hint: 'Clase III', value: 2.59840 },
+  { label: 'Construcción', hint: 'Clase IV', value: 4.65325 },
+];
+
+const formatCurrency = (value: number) =>
+  value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
@@ -68,6 +78,21 @@ export const SocialSecurityCalculator: React.FC<{
     };
     total: number;
   } | null>(null);
+
+  const loadExample = () => {
+    setSbc(650);
+    setRiskClass(1.13065);
+    setDays(30);
+    setShowRiskCalc(false);
+    setShowAdvanced(false);
+    setResults(null);
+    notify('Ejemplo cargado para IMSS e INFONAVIT', 'info');
+  };
+
+  const applyRiskPreset = (value: number) => {
+    setRiskClass(value);
+    setResults(null);
+  };
 
   const calculate = async () => {
     if (sbc <= 0) {
@@ -158,23 +183,49 @@ export const SocialSecurityCalculator: React.FC<{
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
           <div className="min-w-0 space-y-5 lg:col-span-4">
             <WorkspacePanel className="space-y-5 p-5 sm:p-6">
-              <div>
-                <h3 className="text-sm font-bold text-slate-950">Datos de cotización</h3>
-                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Proyección rápida</p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-950">Datos de cotización</h3>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Proyección rápida</p>
+                </div>
+                <button type="button" onClick={loadExample} className="ui-secondary-action shrink-0">
+                  <Zap size={14} />
+                  Ejemplo
+                </button>
               </div>
               <div className="space-y-5">
                 <div className="space-y-3">
-                  <label className="ui-label">Salario Base de Cotización (SBC)</label>
+                  <label className="ui-label">Salario diario base de cotización</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">$</span>
                     <input type="number" value={sbc || ''} onChange={(e) => setSbc(Number(e.target.value))} className="ui-input w-full pl-10 pr-4 text-lg font-bold" placeholder="0.00" />
                   </div>
+                  <p className="px-1 text-xs leading-5 text-slate-500">
+                    También lo verás como SBC. Normalmente aparece en nómina, SUA o IDSE.
+                  </p>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-1">
                     <label className="ui-label px-0">Clase de riesgo</label>
-                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="rounded-md px-2 py-1 text-xs font-bold text-legal-gold transition-colors hover:bg-legal-gold/10">Variable</button>
+                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="rounded-md px-2 py-1 text-xs font-bold text-legal-gold transition-colors hover:bg-legal-gold/10">
+                      Calcular prima anual
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {riskPresets.map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => applyRiskPreset(preset.value)}
+                        className={`min-w-0 rounded-lg border p-3 text-left transition-all hover:border-legal-gold/60 hover:bg-legal-gold/5 ${
+                          riskClass === preset.value ? 'border-legal-gold/70 bg-legal-gold/10 text-slate-950' : 'border-slate-200 bg-white text-slate-700'
+                        }`}
+                      >
+                        <span className="block text-xs font-extrabold">{preset.label}</span>
+                        <span className="mt-1 block text-[11px] font-semibold text-slate-500">{preset.hint}</span>
+                      </button>
+                    ))}
                   </div>
                   <select value={riskClass} onChange={(e) => setRiskClass(Number(e.target.value))} className="ui-input">
                     <option value={0}>Seleccione clase...</option>
@@ -184,6 +235,9 @@ export const SocialSecurityCalculator: React.FC<{
                     <option value={4.65325}>Clase IV (4.65325%)</option>
                     <option value={7.58875}>Clase V (7.58875%)</option>
                   </select>
+                  <p className="px-1 text-xs leading-5 text-slate-500">
+                    Si no tienes la clase exacta, usa una guía rápida y confirma después con el registro patronal.
+                  </p>
                 </div>
 
                 <AnimatePresence>
@@ -244,8 +298,9 @@ export const SocialSecurityCalculator: React.FC<{
                 </AnimatePresence>
 
                 <div className="space-y-3">
-                  <label className="ui-label">Días</label>
+                  <label className="ui-label">Días cotizados</label>
                   <input type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="ui-input" />
+                  <p className="px-1 text-xs leading-5 text-slate-500">Usa 30 para estimación mensual o el número real de días del periodo.</p>
                 </div>
 
                 <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
@@ -295,6 +350,35 @@ export const SocialSecurityCalculator: React.FC<{
                     <WorkspaceStat label="Total" value={`$${results.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="inverse" />
                   </div>
 
+                  <WorkspacePanel className="p-5 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-3">
+                          <div className="ui-icon-chip h-10 w-10 sm:h-10 sm:w-10">
+                            <Activity size={18} />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Lectura rápida</p>
+                            <h4 className="mt-1 text-base font-bold text-slate-950">Costo estimado del periodo</h4>
+                          </div>
+                        </div>
+                        <p className="mt-4 text-sm leading-6 text-slate-600">
+                          Para {days} días con SBC de ${formatCurrency(sbc)}, el patrón absorbería ${formatCurrency(results.employer.total)} y el trabajador ${formatCurrency(results.employee.total)}.
+                        </p>
+                      </div>
+                      <div className="grid min-w-[180px] grid-cols-2 gap-2 text-xs">
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                          <span className="block font-bold uppercase tracking-[0.12em] text-slate-500">Prima</span>
+                          <strong className="mt-1 block text-slate-950">{riskClass.toFixed(5)}%</strong>
+                        </div>
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                          <span className="block font-bold uppercase tracking-[0.12em] text-slate-500">INFONAVIT</span>
+                          <strong className="mt-1 block text-slate-950">${formatCurrency(results.employer.infonavit)}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </WorkspacePanel>
+
                   <WorkspacePanel className="overflow-hidden">
                     <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-5 sm:p-6">
                       <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-900">Desglose de cuotas</h4>
@@ -312,23 +396,32 @@ export const SocialSecurityCalculator: React.FC<{
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {[
-                            { label: 'Enf. y Mat. (Cuota Fija)', pat: results.employer.fixed, trab: 0 },
-                            { label: 'Enf. y Mat. (Excedente 3 UMA)', pat: results.employer.excedente, trab: results.employee.excedente },
-                            { label: 'Enf. y Mat. (Prest. en Dinero)', pat: results.employer.dinero, trab: results.employee.dinero },
-                            { label: 'Enf. y Mat. (Gastos Méd. Pens.)', pat: results.employer.pensionados, trab: results.employee.pensionados },
-                            { label: 'Invalidez y Vida', pat: results.employer.invalidez, trab: results.employee.invalidez },
-                            { label: 'Riesgos de Trabajo', pat: results.employer.riesgo, trab: 0 },
-                            { label: 'Guarderías y Prest. Sociales', pat: results.employer.guarderia, trab: 0 },
-                            { label: 'Retiro', pat: results.employer.retiro, trab: 0 },
-                            { label: 'Cesantía en Edad Avanzada y Vejez', pat: results.employer.cesantia, trab: results.employee.cesantia },
-                            { label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
-                          ].map((row, i) => (
-                            <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="max-w-[260px] break-words p-4 text-sm font-semibold leading-5 text-slate-700">{row.label}</td>
-                              <td className="p-4 text-right font-sans font-bold tabular-nums text-slate-600">${row.pat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                              <td className="p-4 text-right font-sans font-bold tabular-nums text-slate-600">${row.trab.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                              <td className="p-4 text-right font-sans font-extrabold tabular-nums text-slate-950">${(row.pat + row.trab).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            </tr>
+                            { group: 'IMSS', label: 'Enfermedad y maternidad: cuota fija', pat: results.employer.fixed, trab: 0 },
+                            { group: 'IMSS', label: 'Enfermedad y maternidad: excedente de 3 UMA', pat: results.employer.excedente, trab: results.employee.excedente },
+                            { group: 'IMSS', label: 'Enfermedad y maternidad: prestaciones en dinero', pat: results.employer.dinero, trab: results.employee.dinero },
+                            { group: 'IMSS', label: 'Gastos médicos para pensionados', pat: results.employer.pensionados, trab: results.employee.pensionados },
+                            { group: 'IMSS', label: 'Invalidez y vida', pat: results.employer.invalidez, trab: results.employee.invalidez },
+                            { group: 'IMSS', label: 'Riesgos de trabajo', pat: results.employer.riesgo, trab: 0 },
+                            { group: 'IMSS', label: 'Guarderías y prestaciones sociales', pat: results.employer.guarderia, trab: 0 },
+                            { group: 'Retiro y vivienda', label: 'Retiro', pat: results.employer.retiro, trab: 0 },
+                            { group: 'Retiro y vivienda', label: 'Cesantía en edad avanzada y vejez', pat: results.employer.cesantia, trab: results.employee.cesantia },
+                            { group: 'Retiro y vivienda', label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
+                          ].map((row, i, rows) => (
+                            <React.Fragment key={row.label}>
+                              {(i === 0 || rows[i - 1].group !== row.group) && (
+                                <tr>
+                                  <td colSpan={4} className="bg-slate-50 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                                    {row.group}
+                                  </td>
+                                </tr>
+                              )}
+                              <tr className="transition-colors hover:bg-slate-50/50">
+                                <td className="max-w-[260px] break-words p-4 text-sm font-semibold leading-5 text-slate-700">{row.label}</td>
+                                <td className="p-4 text-right font-sans font-bold tabular-nums text-slate-600">${formatCurrency(row.pat)}</td>
+                                <td className="p-4 text-right font-sans font-bold tabular-nums text-slate-600">${formatCurrency(row.trab)}</td>
+                                <td className="p-4 text-right font-sans font-extrabold tabular-nums text-slate-950">${formatCurrency(row.pat + row.trab)}</td>
+                              </tr>
+                            </React.Fragment>
                           ))}
                         </tbody>
                       </table>

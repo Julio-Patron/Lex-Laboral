@@ -23,6 +23,10 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => getViewForPath(window.location.pathname));
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('lex.sidebar.collapsed') === 'true';
+  });
 
   const notify = useCallback((message: string, type: NotificationType = 'info', title?: string) => {
     const id = crypto.randomUUID();
@@ -58,6 +62,10 @@ function App() {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('lex.sidebar.collapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   const renderView = () => {
     return (
@@ -145,6 +153,8 @@ function App() {
                 currentView={currentView}
                 onChangeView={(v) => { handleViewChange(v); setIsSidebarOpen(false); }}
                 onNewCase={() => handleViewChange(AppView.HOME)}
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed((value) => !value)}
               />
             </Suspense>
           </div>

@@ -8,7 +8,8 @@ import {
   User,
   FileDown,
   Info,
-  Building
+  Building,
+  Sparkles
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,6 +56,26 @@ export const PensionCalculator: React.FC<{
       ageFactor: string;
     };
   } | null>(null);
+
+  const loadExample = () => {
+    setAge(65);
+    if (regime === '1973') {
+      setWeeks(1250);
+      setAverageSalary(850);
+      setAforeBalance(0);
+      setHasSpouse(false);
+      setChildrenCount(0);
+    } else {
+      setWeeks(1000);
+      setAverageSalary(0);
+      setAforeBalance(950000);
+      setHasSpouse(false);
+      setChildrenCount(0);
+    }
+    setShowAdvanced(false);
+    setResults(null);
+    notify('Ejemplo cargado para pensiones', 'info');
+  };
 
   const calculatePension = () => {
     const input: PensionInput = {
@@ -175,20 +196,26 @@ export const PensionCalculator: React.FC<{
     <WorkspacePage>
       <WorkspaceHeader
         eyebrow="Calculadora de Pensiones"
-        title="Estimación IMSS"
+        title="Estimaciones IMSS"
         description="Calcula el estimado de tu pensión mensual bajo el régimen de 1973 o 1997."
         icon={<Building size={28} />}
         actions={
-          <div className="ui-segmented grid-cols-2 sm:w-auto">
-            {(['1973', '1997'] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRegime(r)}
-                className={`ui-segmented-option ${regime === r ? 'ui-segmented-option-active' : ''}`}
-              >
-                Ley {r}
-              </button>
-            ))}
+          <div className="w-full space-y-2 sm:min-w-[16rem] lg:w-auto">
+            <p className="px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Régimen de cálculo</p>
+            <div className="ui-segmented grid-cols-2">
+              {(['1973', '1997'] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => {
+                    setRegime(r);
+                    setResults(null);
+                  }}
+                  className={`ui-segmented-option ${regime === r ? 'ui-segmented-option-active' : ''}`}
+                >
+                  Ley {r}
+                </button>
+              ))}
+            </div>
           </div>
         }
       />
@@ -196,41 +223,62 @@ export const PensionCalculator: React.FC<{
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
         <div className="min-w-0 space-y-5 lg:col-span-5">
           <WorkspacePanel className="space-y-5 p-5 sm:p-6">
-            <div className="flex items-center gap-3 text-slate-900">
-              <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-950">Datos de Cotización</h3>
-                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Régimen {regime}</p>
+            <div className="flex flex-wrap items-start justify-between gap-3 text-slate-900">
+              <div className="flex items-center gap-3">
+                <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-950">Datos de cotización</h3>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Régimen {regime}</p>
+                </div>
               </div>
+              <button type="button" onClick={loadExample} className="ui-secondary-action shrink-0">
+                <Sparkles size={14} />
+                Ejemplo
+              </button>
             </div>
 
             <div className="space-y-5">
+              <div className="ui-subtle-block p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Guía rápida</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {regime === '1973'
+                    ? 'Usa Ley 73 si empezaste a cotizar antes del 1 de julio de 1997 y tienes salario promedio de las últimas 250 semanas.'
+                    : 'Usa Ley 97 si tu pensión depende del saldo acumulado en tu cuenta individual AFORE.'}
+                </p>
+              </div>
+
               <div className="ui-form-grid">
                 <div className="space-y-2">
-                  <label className="ui-label">Edad (años)</label>
+                  <label className="ui-label">Edad al retiro</label>
                   <input type="number" value={age || ''} onChange={(e) => setAge(Number(e.target.value))} className="ui-input-lg w-full px-4" placeholder="60" min="60" />
+                  <p className="px-1 text-xs leading-5 text-slate-500">Mínimo 60 años para cesantía; 65 para vejez.</p>
                 </div>
                 <div className="space-y-2">
-                  <label className="ui-label">Semanas Cotizadas</label>
+                  <label className="ui-label">Semanas reconocidas</label>
                   <input type="number" value={weeks || ''} onChange={(e) => setWeeks(Number(e.target.value))} className="ui-input-lg w-full px-4" placeholder="500" />
+                  <p className="px-1 text-xs leading-5 text-slate-500">
+                    {regime === '1973' ? 'Ley 73 requiere al menos 500 semanas.' : 'Ley 97 requiere 875 semanas en 2026.'}
+                  </p>
                 </div>
               </div>
 
               {regime === '1973' ? (
                 <div className="ui-subtle-block space-y-4 p-4">
-                  <label className="ui-label">Salario Diario Promedio (Últimos 5 años)</label>
+                  <label className="ui-label">Salario diario promedio de las últimas 250 semanas</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
                     <input type="number" value={averageSalary || ''} onChange={(e) => setAverageSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                   </div>
+                  <p className="text-xs leading-5 text-slate-500">Si tienes tu constancia de semanas, usa el promedio salarial que aparece como referencia.</p>
                 </div>
               ) : (
                 <div className="ui-subtle-block space-y-4 p-4">
-                  <label className="ui-label">Saldo Acumulado AFORE</label>
+                  <label className="ui-label">Saldo acumulado en AFORE</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
                     <input type="number" value={aforeBalance || ''} onChange={(e) => setAforeBalance(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                   </div>
+                  <p className="text-xs leading-5 text-slate-500">Captura el saldo total de la cuenta individual para estimar una mensualidad aproximada.</p>
                 </div>
               )}
 
@@ -248,11 +296,11 @@ export const PensionCalculator: React.FC<{
                     {regime === '1973' && (
                       <>
                         <div className="space-y-2 col-span-2 flex items-center justify-between">
-                          <label className="ui-label mb-0">¿Tiene Cónyuge?</label>
+                          <label className="ui-label mb-0">Asignación por cónyuge</label>
                           <input type="checkbox" checked={hasSpouse} onChange={(e) => setHasSpouse(e.target.checked)} className="w-5 h-5 rounded border-slate-300 text-legal-gold focus:ring-legal-gold" />
                         </div>
                         <div className="space-y-2 col-span-2">
-                          <label className="ui-label">Hijos (menores de 16 o estudiantes hasta 25)</label>
+                          <label className="ui-label">Hijos con posible asignación familiar</label>
                           <input type="number" value={childrenCount === 0 ? '' : childrenCount} onChange={(e) => setChildrenCount(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" placeholder="0" />
                         </div>
                       </>
@@ -272,7 +320,7 @@ export const PensionCalculator: React.FC<{
               <button onClick={calculatePension} className="ui-primary-action group">
                 <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
-                <span className="tracking-wide">Calcular Pensión</span>
+                <span className="tracking-wide">Calcular estimación</span>
               </button>
             </div>
           </WorkspacePanel>
@@ -298,6 +346,17 @@ export const PensionCalculator: React.FC<{
                           ${results.monthlyPension.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </h3>
                         <span className="text-slate-400 font-bold text-sm">MXN</span>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {[
+                          `Ley ${results.regimeUsed}`,
+                          `${age} años`,
+                          `${weeks.toLocaleString('es-MX')} semanas`,
+                        ].map((item) => (
+                          <span key={item} className="rounded-lg border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-extrabold text-white">
+                            {item}
+                          </span>
+                        ))}
                       </div>
                     </div>
                     <div className="flex shrink-0 gap-3">

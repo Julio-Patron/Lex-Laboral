@@ -37,10 +37,16 @@ export const LaborCalculator: React.FC<{
 }> = ({ notify, onOpenImss }) => {
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const dismissalOptions: Array<{ value: DismissalType; label: string }> = [
-    { value: 'injustificado', label: 'Injustificado' },
+    { value: 'injustificado', label: 'Despido' },
     { value: 'renuncia', label: 'Renuncia' },
     { value: 'rescision_patron', label: 'Rescisión' },
   ];
+  const dismissalLabels: Record<DismissalType, string> = {
+    injustificado: 'Despido injustificado',
+    renuncia: 'Renuncia',
+    rescision_patron: 'Rescisión por causa imputable al trabajador',
+    rescision_trabajador: 'Rescisión por causa imputable al patrón',
+  };
   const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
@@ -121,6 +127,24 @@ export const LaborCalculator: React.FC<{
       isr: string;
     };
   } | null>(null);
+
+  const loadExampleCase = () => {
+    setSalaryPeriod('monthly');
+    setBaseSalary(30000);
+    setStartDate('');
+    setEndDate('');
+    setYearsOfService(3);
+    setDaysOfService(180);
+    setVacationDays(12);
+    setVacationPremium(25);
+    setAguinaldoDays(15);
+    setDoubleOvertimeHours(0);
+    setTripleOvertimeHours(0);
+    setDismissalType('injustificado');
+    setShowErrors(false);
+    setResults(null);
+    notify('Ejemplo cargado para liquidación', 'info');
+  };
 
   const calculate = async () => {
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
@@ -242,16 +266,20 @@ export const LaborCalculator: React.FC<{
         description="Calcula finiquito, indemnización y total estimado en una sola vista."
         icon={<Calculator size={28} />}
         actions={
-          <div className="ui-segmented grid-cols-3 sm:w-auto">
-            {dismissalOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setDismissalType(option.value)}
-                className={`ui-segmented-option ${dismissalType === option.value ? 'ui-segmented-option-active' : ''}`}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="w-full space-y-2 sm:min-w-[21rem] lg:w-auto">
+            <p className="px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Tipo de separación</p>
+            <div className="ui-segmented grid-cols-3">
+              {dismissalOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setDismissalType(option.value)}
+                  title={dismissalLabels[option.value]}
+                  className={`ui-segmented-option ${dismissalType === option.value ? 'ui-segmented-option-active' : ''}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         }
       />
@@ -260,18 +288,27 @@ export const LaborCalculator: React.FC<{
           {/* Inputs Section */}
           <div className="min-w-0 space-y-5 lg:col-span-5">
             <WorkspacePanel className="space-y-5 p-5 sm:p-6">
-              <div className="flex items-center gap-3 text-slate-900">
-                <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-950">Datos del caso</h3>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Cálculo inmediato</p>
+              <div className="flex flex-wrap items-start justify-between gap-3 text-slate-900">
+                <div className="flex items-center gap-3">
+                  <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-950">Datos del caso</h3>
+                    <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Cálculo inmediato</p>
+                  </div>
                 </div>
+                <button type="button" onClick={loadExampleCase} className="ui-secondary-action shrink-0">
+                  <Sparkles size={14} />
+                  Ejemplo
+                </button>
               </div>
 
               <div className="space-y-5">
                 <div className="ui-subtle-block space-y-4 p-4">
                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <label className="ui-label">Periodo de pago</label>
+                      <div>
+                        <label className="ui-label px-0">Sueldo bruto por periodo</label>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">Elige si capturas sueldo diario, semanal, quincenal o mensual.</p>
+                      </div>
                       <div className="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1">
                         {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
                           <button
@@ -290,6 +327,9 @@ export const LaborCalculator: React.FC<{
                       <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
                       <input type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                    </div>
+                   <p className="px-2 text-xs leading-5 text-slate-500">
+                     Calculamos el salario diario integrado con aguinaldo, vacaciones y prima vacacional.
+                   </p>
                    {isSdiCalculated && baseSalary > 0 && (
                       <div className="flex items-center justify-between px-2 pt-1">
                         <span className="text-xs font-semibold text-slate-500">SDI integrado</span>
@@ -306,17 +346,20 @@ export const LaborCalculator: React.FC<{
                 <div className="ui-form-grid">
                   <div className="space-y-3">
                     <label htmlFor="startDateInput" className="ui-label flex items-center gap-2">
-                      <Calendar size={12} className="text-legal-gold" /> Ingreso
+                      <Calendar size={12} className="text-legal-gold" /> Fecha de ingreso
                     </label>
                     <input id="startDateInput" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ui-input" />
                   </div>
                   <div className="space-y-3">
                     <label htmlFor="endDateInput" className="ui-label flex items-center gap-2">
-                      <Calendar size={12} className="text-legal-gold" /> Baja
+                      <Calendar size={12} className="text-legal-gold" /> Fecha de baja
                     </label>
                     <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
                   </div>
                 </div>
+                <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
+                  Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
+                </p>
 
                 <div className="ui-subtle-block space-y-4 p-4">
                   <div className="flex items-start gap-3">
@@ -371,11 +414,11 @@ export const LaborCalculator: React.FC<{
                   {showAdvanced && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block grid grid-cols-1 gap-4 overflow-hidden p-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="ui-label">Aguinaldo (Días)</label>
+                        <label className="ui-label">Aguinaldo anual en días</label>
                         <input type="number" value={aguinaldoDays} onChange={(e) => setAguinaldoDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
-                        <label className="ui-label">Vacaciones (Días)</label>
+                        <label className="ui-label">Vacaciones anuales en días</label>
                         <input type="number" value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
@@ -393,7 +436,7 @@ export const LaborCalculator: React.FC<{
                 <button onClick={calculate} className="ui-primary-action group">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
-                  <span className="tracking-wide">Calcular</span>
+                  <span className="tracking-wide">Calcular pago estimado</span>
                 </button>
               </div>
             </WorkspacePanel>
@@ -420,6 +463,19 @@ export const LaborCalculator: React.FC<{
                             ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                           </h3>
                           <span className="text-slate-400 font-bold text-sm">MXN</span>
+                        </div>
+                        <p className="mt-2 text-xs font-semibold text-slate-400">{dismissalLabels[dismissalType]}</p>
+                        <div className="mt-4 grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+                          {[
+                            { label: 'Finiquito', value: `$${results.finiquito.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+                            { label: 'Liquidación', value: `$${results.liquidacion.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+                            { label: 'ISR estimado', value: `-$${results.isr.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+                          ].map((item) => (
+                            <div key={item.label} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.06] p-3">
+                              <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{item.label}</span>
+                              <strong className="mt-1 block break-words text-xs font-extrabold leading-5 text-white">{item.value}</strong>
+                            </div>
+                          ))}
                         </div>
                       </div>
                       <div className="flex shrink-0 gap-3">
