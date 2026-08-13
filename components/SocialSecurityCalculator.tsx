@@ -155,14 +155,14 @@ export const SocialSecurityCalculator: React.FC<{
         icon={<ShieldCheck size={28} />}
       />
 
-      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
-          <div className="min-w-0 space-y-6 lg:col-span-4 lg:space-y-8">
-            <WorkspacePanel className="space-y-6 p-5 sm:p-8 lg:space-y-8">
+      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
+          <div className="min-w-0 space-y-5 lg:col-span-4">
+            <WorkspacePanel className="space-y-5 p-5 sm:p-6">
               <div>
                 <h3 className="text-sm font-bold text-slate-950">Datos de cotización</h3>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-400">Proyección rápida</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Proyección rápida</p>
               </div>
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="space-y-3">
                   <label className="ui-label">Salario Base de Cotización (SBC)</label>
                   <div className="relative group">
@@ -174,7 +174,7 @@ export const SocialSecurityCalculator: React.FC<{
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-1">
                     <label className="ui-label px-0">Clase de riesgo</label>
-                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="text-xs font-bold text-legal-gold hover:underline">Variable</button>
+                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="rounded-md px-2 py-1 text-xs font-bold text-legal-gold transition-colors hover:bg-legal-gold/10">Variable</button>
                   </div>
                   <select value={riskClass} onChange={(e) => setRiskClass(Number(e.target.value))} className="ui-input">
                     <option value={0}>Seleccione clase...</option>
@@ -192,7 +192,7 @@ export const SocialSecurityCalculator: React.FC<{
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="ui-subtle-block space-y-5 overflow-hidden p-4 sm:p-6"
+                      className="ui-subtle-block space-y-5 overflow-hidden p-4"
                     >
                       <div>
                         <h4 className="text-sm font-bold text-slate-900">Prima de riesgo variable</h4>
@@ -235,7 +235,7 @@ export const SocialSecurityCalculator: React.FC<{
 
                       <button
                         onClick={calculateAnnualRiskValue}
-                        className="w-full rounded-2xl bg-white px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-700 shadow-sm transition-all hover:bg-slate-100"
+                        className="ui-secondary-action w-full uppercase tracking-[0.12em]"
                       >
                         Aplicar prima
                       </button>
@@ -248,7 +248,7 @@ export const SocialSecurityCalculator: React.FC<{
                   <input type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="ui-input" />
                 </div>
 
-                <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-500 transition-all hover:bg-slate-100">
+                <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
                   <div className="flex items-center gap-3">
                     <Settings2 size={16} />
                     <span className="text-xs font-bold uppercase tracking-[0.2em]">Constantes 2026</span>
@@ -257,7 +257,7 @@ export const SocialSecurityCalculator: React.FC<{
 
                 <AnimatePresence>
                   {showAdvanced && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block space-y-4 overflow-hidden p-4 sm:p-6">
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block space-y-4 overflow-hidden p-4">
                       <div className="space-y-2">
                         <label className="ui-label">Salario mínimo vigente</label>
                         <input type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
@@ -270,7 +270,7 @@ export const SocialSecurityCalculator: React.FC<{
                   )}
                 </AnimatePresence>
 
-                <button onClick={calculate} className="w-full py-5 bg-gradient-to-r from-legal-950 to-slate-900 text-legal-gold rounded-[1.5rem] font-bold shadow-2xl shadow-legal-950/20 hover:shadow-legal-950/40 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group relative overflow-hidden">
+                <button onClick={calculate} className="ui-primary-action group">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular cuotas</span>
@@ -290,27 +290,27 @@ export const SocialSecurityCalculator: React.FC<{
               ) : (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
-                    <WorkspaceStat label="Patrón" value={`$${results.employer.total.toLocaleString()}`} />
-                    <WorkspaceStat label="Trabajador" value={`$${results.employee.total.toLocaleString()}`} emphasis="accent" />
-                    <WorkspaceStat label="Total" value={`$${results.total.toLocaleString()}`} emphasis="inverse" />
+                    <WorkspaceStat label="Patrón" value={`$${results.employer.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} />
+                    <WorkspaceStat label="Trabajador" value={`$${results.employee.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="accent" />
+                    <WorkspaceStat label="Total" value={`$${results.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="inverse" />
                   </div>
 
-                  <WorkspacePanel className="overflow-hidden rounded-[2.4rem]">
-                    <div className="flex items-center justify-between gap-4 border-b border-slate-50 p-5 sm:p-8">
-                      <h4 className="text-xs font-bold uppercase tracking-[0.24em] text-slate-900">Desglose de cuotas</h4>
-                      <button onClick={handleExport} className="p-2 text-slate-400 hover:text-legal-950 transition-colors"><Download size={20} /></button>
+                  <WorkspacePanel className="overflow-hidden">
+                    <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-5 sm:p-6">
+                      <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-900">Desglose de cuotas</h4>
+                      <button onClick={handleExport} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-legal-950" aria-label="Exportar PDF"><Download size={20} /></button>
                     </div>
-                    <div className="p-0 overflow-x-auto no-scrollbar">
-                      <table className="w-full min-w-[560px] text-left lg:min-w-0">
+                    <div className="overflow-x-auto p-0 no-scrollbar">
+                      <table className="w-full min-w-[620px] text-left lg:min-w-0">
                         <thead>
                           <tr className="bg-slate-50">
-                            <th className="p-4 text-left text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Concepto</th>
-                            <th className="p-4 text-right text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Patrón</th>
-                            <th className="p-4 text-right text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Trabajador</th>
-                            <th className="p-4 text-right text-xs font-bold uppercase tracking-widest text-slate-400 sm:p-6">Total</th>
+                            <th className="p-4 text-left text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Concepto</th>
+                            <th className="p-4 text-right text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Patrón</th>
+                            <th className="p-4 text-right text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Trabajador</th>
+                            <th className="p-4 text-right text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Total</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-slate-100">
                           {[
                             { label: 'Enf. y Mat. (Cuota Fija)', pat: results.employer.fixed, trab: 0 },
                             { label: 'Enf. y Mat. (Excedente 3 UMA)', pat: results.employer.excedente, trab: results.employee.excedente },
@@ -324,10 +324,10 @@ export const SocialSecurityCalculator: React.FC<{
                             { label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
                           ].map((row, i) => (
                             <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="p-4 text-sm font-medium text-slate-700 sm:p-6">{row.label}</td>
-                              <td className="p-4 text-right font-serif font-bold text-slate-500 sm:p-6">${row.pat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                              <td className="p-4 text-right font-serif font-bold text-slate-500 sm:p-6">${row.trab.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                              <td className="p-4 text-right font-serif font-bold text-slate-900 sm:p-6">${(row.pat + row.trab).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="max-w-[260px] break-words p-4 text-sm font-semibold leading-5 text-slate-700">{row.label}</td>
+                              <td className="p-4 text-right font-sans font-bold tabular-nums text-slate-600">${row.pat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-4 text-right font-sans font-bold tabular-nums text-slate-600">${row.trab.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                              <td className="p-4 text-right font-sans font-extrabold tabular-nums text-slate-950">${(row.pat + row.trab).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             </tr>
                           ))}
                         </tbody>

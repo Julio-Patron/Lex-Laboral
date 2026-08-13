@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { AppView } from '../types';
 import { 
   Calculator, 
@@ -29,40 +30,48 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
   };
 
   return (
-    <div className="w-[min(18rem,86vw)] bg-legal-950 text-white flex flex-col h-full border-r border-white/5 flex-shrink-0 z-50 relative shadow-2xl no-print md:w-72">
+    <aside className="no-print relative z-50 flex h-full w-[min(17rem,86vw)] flex-shrink-0 flex-col border-r border-white/10 bg-slate-950 text-white shadow-2xl md:w-64">
       {/* Header */}
-      <div className="p-6 pb-2 space-y-6">
-        <div 
-          className="flex items-center justify-center px-6 py-8 cursor-pointer group"
+      <div className="border-b border-white/10 px-5 py-5">
+        <button
+          type="button"
+          className="group flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-white/[0.04]"
           onClick={() => onChangeView(AppView.HOME)}
         >
-          <img src="/assets/logo.webp" alt="Lex Laboral" className="w-44 h-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-[0_0_15px_rgba(212,175,55,0.15)]" loading="lazy" />
-        </div>
+          <img src="/assets/logo.webp" alt="Lex Laboral" className="h-12 w-12 shrink-0 object-contain opacity-95 transition-opacity group-hover:opacity-100" loading="lazy" />
+          <div className="min-w-0">
+            <p className="truncate font-serif text-lg font-bold leading-tight text-white">Lex Laboral</p>
+            <p className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Herramientas</p>
+          </div>
+        </button>
       </div>
       
       {/* Navigation */}
-      <nav className="px-4 flex-1 overflow-y-auto custom-scrollbar mt-4">
-        <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Herramientas</p>
-        <ul className="space-y-1">
+      <nav className="custom-scrollbar mt-2 flex-1 overflow-y-auto px-3 py-3">
+        <ul className="space-y-1.5">
           {navItems.map((item) => {
+            const isActive = currentView === item.id;
             return (
               <li key={item.id}>
-                <button
+                <motion.button
+                  type="button"
+                  whileHover={{ x: 2 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-medium transition-all group ${
-                    currentView === item.id
-                      ? 'bg-white/10 text-legal-gold border border-white/5'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  className={`group flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-3 text-left text-[13px] font-semibold leading-5 transition-all ${
+                    isActive
+                      ? 'border border-white/10 bg-white/[0.09] text-legal-gold shadow-[inset_3px_0_0_rgba(212,175,55,0.95)]'
+                      : 'border border-transparent text-slate-400 hover:bg-white/[0.05] hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className={currentView === item.id ? 'text-legal-gold' : 'text-slate-400 group-hover:text-slate-300'}>
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className={`shrink-0 transition-colors ${isActive ? 'text-legal-gold' : 'text-slate-500 group-hover:text-slate-300'}`}>
                       {item.icon}
                     </span>
-                    <span>{item.label}</span>
-                  </div>
-                  {currentView === item.id && <ChevronRight size={14} className="animate-in fade-in slide-in-from-left-2 duration-300" />}
-                </button>
+                    <span className="min-w-0 break-words">{item.label}</span>
+                  </span>
+                  {isActive && <ChevronRight size={14} className="shrink-0 animate-in fade-in slide-in-from-left-2 duration-300" />}
+                </motion.button>
               </li>
             );
           })}
@@ -70,24 +79,24 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
       </nav>
 
       {/* Footer Links */}
-      <div className="p-4 mt-auto border-t border-white/5 bg-black/20">
-        <div className="flex items-center justify-between px-1 opacity-60">
+      <div className="mt-auto border-t border-white/10 bg-black/20 p-4">
+        <div className="flex items-center justify-between gap-3 px-1">
             <button 
               onClick={() => onChangeView(AppView.PRIVACY)}
-              className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+              className="text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
             >
               Privacidad
             </button>
             <span className="text-slate-700 text-xs">•</span>
             <button 
               onClick={() => onChangeView(AppView.TERMS)}
-              className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+              className="text-xs font-semibold text-slate-400 transition-colors hover:text-slate-200"
             >
               Términos
             </button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 });
 Sidebar.displayName = 'Sidebar';

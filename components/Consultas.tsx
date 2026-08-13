@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Search, BookOpen, TrendingUp } from 'lucide-react';
+import { AlertCircle, Search, BookOpen, TrendingUp } from 'lucide-react';
 import { WorkspacePage, WorkspaceHeader, WorkspacePanel, WorkspaceEmpty } from './ui/Workspace';
 
 type NormFilter = 'LFT' | 'IMSS' | 'INFONAVIT' | 'all';
@@ -150,40 +150,40 @@ export const Consultas: React.FC = () => {
     <WorkspacePage>
       <WorkspaceHeader
         eyebrow="Consultas Jurídicas"
-        title="Búsqueda Semántica en Leyes Laborales"
-        description="Encuentra rápidamente los artículos más relevantes de la Ley Federal del Trabajo (LFT), Ley del Seguro Social (IMSS) e INFONAVIT usando inteligencia artificial."
+        title="Búsqueda jurídica laboral"
+        description="Encuentra artículos relevantes de la Ley Federal del Trabajo, Seguro Social e INFONAVIT con una consulta rápida y enfocada."
         icon={<BookOpen size={24} className="text-legal-gold" />}
       />
 
       {/* Search Panel */}
-      <WorkspacePanel className="mb-8 p-5 sm:p-8">
-        <div className="space-y-6">
+      <WorkspacePanel className="mb-6 p-5 sm:p-6">
+        <div className="space-y-5">
           {/* Search Input */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
             <input
               type="text"
               placeholder="Busca por tema: 'salario mínimo', 'vacaciones', 'pensión', etc."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-legal-gold focus:outline-none focus:ring-2 focus:ring-legal-gold/20 sm:text-base"
+              className="ui-input py-4 pl-12 pr-4 text-base"
             />
           </div>
 
           {/* Norm Filter */}
-          <div className="flex min-w-0 flex-wrap gap-2">
-            <span className="w-full pt-1 text-xs font-semibold text-slate-600 sm:w-auto sm:pt-2">Filtrar por:</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="w-full text-xs font-bold uppercase tracking-[0.14em] text-slate-500 sm:w-auto">Filtrar</span>
             {(['all', 'LFT', 'IMSS', 'INFONAVIT'] as const).map((norm) => (
               <button
                 key={norm}
                 onClick={() => setSelectedNorm(norm)}
-                className={`min-w-0 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:px-4 sm:text-sm ${
+                className={`min-w-0 rounded-lg px-3 py-2 text-xs font-bold transition-all sm:px-4 ${
                   selectedNorm === norm
-                    ? 'bg-legal-gold text-slate-950 shadow-md'
+                    ? 'bg-slate-950 text-legal-gold shadow-md'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
-                {norm === 'all' ? 'Todas las Leyes' : norm}
+                {norm === 'all' ? 'Todas' : norm}
               </button>
             ))}
           </div>
@@ -209,8 +209,9 @@ export const Consultas: React.FC = () => {
       )}
 
       {error && (
-        <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
-          {error}
+        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800">
+          <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-600" />
+          <span>{error}</span>
         </div>
       )}
 
@@ -224,24 +225,24 @@ export const Consultas: React.FC = () => {
               </span>
             </div>
             {searchMode && (
-              <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${
                 searchMode === 'semantic'
                   ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-amber-50 text-amber-700'
+                  : 'bg-slate-100 text-slate-700'
               }`}>
-                {searchMode === 'semantic' ? 'Semántico activo' : 'Índice local'}
+                {searchMode === 'semantic' ? 'Semántico activo' : 'Índice jurídico activo'}
               </span>
             )}
           </div>
 
           {searchMode === 'local' && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
-              La búsqueda semántica no está disponible en este entorno; se muestran coincidencias del índice local para mantener las consultas activas.
+            <div className="rounded-lg border border-slate-200 bg-white/80 p-4 text-sm leading-6 text-slate-600">
+              Se muestran coincidencias del índice jurídico local mientras el índice semántico no esté habilitado en este entorno.
             </div>
           )}
 
           {results.map((result, idx) => (
-            <WorkspacePanel key={idx} className="p-5 transition-shadow hover:shadow-md sm:p-6">
+            <WorkspacePanel key={idx} className="p-5 transition-shadow hover:shadow-md">
               <div className="space-y-3">
                 {/* Header with similarity score */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -262,12 +263,12 @@ export const Consultas: React.FC = () => {
                             : result.metadata.norm}
                       </span>
                     </div>
-                    <p className="text-sm font-medium text-slate-700 mt-1">
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-700">
                       {result.metadata.title}
                     </p>
                   </div>
                   <div className="shrink-0 text-left sm:text-right">
-                    <div className="text-2xl font-bold text-legal-gold">
+                    <div className="font-sans text-2xl font-extrabold tabular-nums text-legal-gold">
                       {result.score.toFixed(1)}%
                     </div>
                     <span className="text-xs text-slate-500">similitud</span>
@@ -275,7 +276,7 @@ export const Consultas: React.FC = () => {
                 </div>
 
                 {/* Snippet */}
-                <p className="text-sm text-slate-600 leading-6 bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
                   {result.snippet}
                 </p>
 

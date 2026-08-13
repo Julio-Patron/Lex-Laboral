@@ -242,16 +242,12 @@ export const LaborCalculator: React.FC<{
         description="Calcula finiquito, indemnización y total estimado en una sola vista."
         icon={<Calculator size={28} />}
         actions={
-          <div className="grid w-full grid-cols-3 rounded-[1.35rem] border border-slate-200/80 bg-white/90 p-1.5 shadow-sm sm:w-auto">
+          <div className="ui-segmented grid-cols-3 sm:w-auto">
             {dismissalOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setDismissalType(option.value)}
-                className={`min-w-0 rounded-[1rem] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] transition-all sm:px-5 sm:text-[11px] sm:tracking-[0.18em] ${
-                  dismissalType === option.value
-                    ? 'bg-slate-950 text-legal-gold shadow-[0_18px_40px_-24px_rgba(15,23,42,0.9)]'
-                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700'
-                }`}
+                className={`ui-segmented-option ${dismissalType === option.value ? 'ui-segmented-option-active' : ''}`}
               >
                 {option.label}
               </button>
@@ -260,43 +256,54 @@ export const LaborCalculator: React.FC<{
         }
       />
 
-      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
+      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
           {/* Inputs Section */}
-          <div className="min-w-0 space-y-6 lg:col-span-5 lg:space-y-8">
-            <WorkspacePanel className="space-y-6 p-5 sm:p-8 lg:space-y-8">
+          <div className="min-w-0 space-y-5 lg:col-span-5">
+            <WorkspacePanel className="space-y-5 p-5 sm:p-6">
               <div className="flex items-center gap-3 text-slate-900">
-                <div className="ui-icon-chip h-11 w-11 rounded-[1rem]"><User size={18} className="text-legal-gold" /></div>
+                <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-950">Datos del caso</h3>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-400">Cálculo inmediato</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Cálculo inmediato</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="ui-subtle-block space-y-4 p-4 sm:p-6">
-                   <div className="flex items-center justify-between">
+              <div className="space-y-5">
+                <div className="ui-subtle-block space-y-4 p-4">
+                   <div className="flex flex-wrap items-center justify-between gap-3">
                       <label className="ui-label">Periodo de pago</label>
-                      <div className="grid grid-cols-4 gap-1">
+                      <div className="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1">
                         {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
-                          <button key={p} onClick={() => setSalaryPeriod(p)} className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${salaryPeriod === p ? 'bg-legal-950 text-white' : 'text-slate-400 hover:bg-white'}`}>
-                            {p === 'daily' ? 'D' : p === 'weekly' ? 'S' : p === 'biweekly' ? 'Q' : 'M'}
+                          <button
+                            key={p}
+                            type="button"
+                            aria-label={`Periodo ${p}`}
+                            onClick={() => setSalaryPeriod(p)}
+                            className={`rounded-md px-2 py-1.5 text-[11px] font-extrabold transition-all ${salaryPeriod === p ? 'bg-slate-950 text-legal-gold shadow-sm' : 'text-slate-500 hover:bg-white hover:text-slate-800'}`}
+                          >
+                            {p === 'daily' ? 'Día' : p === 'weekly' ? 'Sem' : p === 'biweekly' ? 'Quin' : 'Mes'}
                           </button>
                         ))}
                       </div>
                    </div>
                    <div className="relative group">
-                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
                       <input type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                    </div>
                    {isSdiCalculated && baseSalary > 0 && (
                       <div className="flex items-center justify-between px-2 pt-1">
-                        <span className="text-xs text-slate-400 font-medium">SDI Integrado:</span>
-                        <span className="text-xs font-bold text-emerald-600">${dailySalary.toFixed(2)}</span>
+                        <span className="text-xs font-semibold text-slate-500">SDI integrado</span>
+                        <span className="text-xs font-extrabold text-emerald-700">${dailySalary.toFixed(2)}</span>
                       </div>
+                   )}
+                   {showErrors && dailySalary <= 0 && (
+                      <p className="flex items-center gap-2 px-2 text-xs font-semibold text-amber-700">
+                        <AlertCircle size={14} /> Captura un salario mayor a cero.
+                      </p>
                    )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
+                <div className="ui-form-grid">
                   <div className="space-y-3">
                     <label htmlFor="startDateInput" className="ui-label flex items-center gap-2">
                       <Calendar size={12} className="text-legal-gold" /> Ingreso
@@ -311,7 +318,48 @@ export const LaborCalculator: React.FC<{
                   </div>
                 </div>
 
-                <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-500 transition-all hover:bg-slate-100">
+                <div className="ui-subtle-block space-y-4 p-4">
+                  <div className="flex items-start gap-3">
+                    <Briefcase size={16} className="mt-0.5 shrink-0 text-legal-gold" />
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-slate-900">Antigüedad</h4>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Se calcula con las fechas o puede ajustarse manualmente.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="ui-label">Años</label>
+                      <input
+                        type="number"
+                        value={yearsOfService || ''}
+                        min="0"
+                        onChange={(e) => setYearsOfService(Number(e.target.value))}
+                        className="ui-input"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="ui-label">Días</label>
+                      <input
+                        type="number"
+                        value={daysOfService || ''}
+                        min="0"
+                        onChange={(e) => setDaysOfService(Number(e.target.value))}
+                        className="ui-input"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  {showErrors && yearsOfService <= 0 && daysOfService <= 0 && (
+                    <p className="flex items-center gap-2 text-xs font-semibold text-amber-700">
+                      <AlertCircle size={14} /> Captura fechas o antigüedad para calcular.
+                    </p>
+                  )}
+                </div>
+
+                <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
                   <div className="flex items-center gap-3">
                     <Settings2 size={16} />
                     <span className="text-xs font-bold uppercase tracking-[0.2em]">Más opciones</span>
@@ -321,7 +369,7 @@ export const LaborCalculator: React.FC<{
 
                 <AnimatePresence>
                   {showAdvanced && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block grid grid-cols-1 gap-5 overflow-hidden p-4 sm:grid-cols-2 sm:gap-6 sm:p-6">
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block grid grid-cols-1 gap-4 overflow-hidden p-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="ui-label">Aguinaldo (Días)</label>
                         <input type="number" value={aguinaldoDays} onChange={(e) => setAguinaldoDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
@@ -342,7 +390,7 @@ export const LaborCalculator: React.FC<{
                   )}
                 </AnimatePresence>
 
-                <button onClick={calculate} className="w-full py-5 bg-gradient-to-r from-legal-950 to-slate-900 text-legal-gold rounded-[1.5rem] font-bold shadow-2xl shadow-legal-950/20 hover:shadow-legal-950/40 hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group relative overflow-hidden">
+                <button onClick={calculate} className="ui-primary-action group">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular</span>
@@ -359,34 +407,34 @@ export const LaborCalculator: React.FC<{
                   icon={<Calculator size={44} />}
                   title="Tu cálculo aparecerá aquí"
                   description="Captura sueldo y fechas para ver finiquito, liquidación y total."
-                  className="lg:min-h-[600px]"
+                  className="lg:min-h-[520px]"
                 />
               ) : (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                  <WorkspacePanel className="overflow-hidden rounded-[2.4rem]">
-                    <div className="flex flex-col items-start justify-between gap-5 border-b border-slate-50 bg-gradient-to-br from-slate-900 to-legal-950 p-5 text-white sm:p-8 md:flex-row md:items-center lg:p-10">
+                  <WorkspacePanel className="overflow-hidden">
+                    <div className="flex flex-col items-start justify-between gap-5 border-b border-slate-800 bg-slate-950 p-5 text-white sm:p-6 md:flex-row md:items-center">
                       <div className="min-w-0">
                         <span className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Total estimado</span>
                         <div className="mt-2 flex min-w-0 flex-wrap items-baseline gap-2 sm:gap-3">
-                          <h3 className="break-words font-serif text-3xl font-bold text-legal-gold sm:text-4xl lg:text-5xl">
+                          <h3 className="break-words font-sans text-3xl font-extrabold tabular-nums text-legal-gold sm:text-4xl">
                             ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                           </h3>
                           <span className="text-slate-400 font-bold text-sm">MXN</span>
                         </div>
                       </div>
                       <div className="flex shrink-0 gap-3">
-                        <button onClick={handleExportPDF} className="flex items-center gap-3 px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all border border-white/10 active:scale-95 text-xs">
+                        <button onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
                           <FileDown size={18} /> <span>PDF</span>
                         </button>
-                        <button onClick={() => setResults(null)} className="p-3.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-2xl transition-all">
+                        <button onClick={() => setResults(null)} className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10">
                           <RefreshCw size={18} />
                         </button>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2">
-                      <div className="border-b border-slate-50 p-5 sm:p-8 md:border-b-0 md:border-r lg:p-10">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Composición</h4>
+                      <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
+                        <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
                         <div className="h-[280px]">
                           <React.Suspense fallback={<div className="h-full rounded-2xl bg-slate-50" />}>
                             <LazyBreakdownChart data={chartData} />
@@ -394,8 +442,8 @@ export const LaborCalculator: React.FC<{
                         </div>
                       </div>
 
-                      <div className="max-h-none space-y-4 overflow-visible p-5 sm:p-8 md:max-h-[500px] md:overflow-y-auto lg:p-10 no-scrollbar">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Desglose</h4>
+                      <div className="space-y-4 overflow-visible p-5 sm:p-6">
+                        <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
                         {[
                           { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo },
                           { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations },
@@ -410,7 +458,7 @@ export const LaborCalculator: React.FC<{
                                 {item.key === 'isr' ? '-' : ''}${item.val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                               </span>
                             </div>
-                            <div className="break-words p-3 bg-slate-50 rounded-xl text-xs text-slate-500 font-mono leading-relaxed border border-slate-100 whitespace-pre-wrap">
+                            <div className="ui-detail-card break-words font-mono whitespace-pre-wrap">
                               {item.f}
                             </div>
                           </div>
@@ -422,13 +470,13 @@ export const LaborCalculator: React.FC<{
                               <span className="text-xs font-bold text-red-700">Retención de ISR</span>
                               <span className="shrink-0 text-sm font-serif font-bold text-red-700">-${results.isr.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                             </div>
-                            <div className="break-words p-3 bg-red-50 rounded-xl text-xs text-red-700/80 font-mono leading-relaxed border border-red-100 whitespace-pre-wrap">
+                            <div className="break-words rounded-lg border border-red-100 bg-red-50 p-3 font-mono text-xs leading-relaxed text-red-700/90 whitespace-pre-wrap">
                               {results.formulas.isr}
                             </div>
                           </div>
                         )}
                         
-                        <div className="mt-8 p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-start gap-3">
+                        <div className="mt-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
                           <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
                           <div>
                             <span className="text-xs font-bold text-orange-800 tracking-wide uppercase">Cálculo de ISR</span>
@@ -444,12 +492,12 @@ export const LaborCalculator: React.FC<{
                   <div className="grid gap-4 md:grid-cols-1">
                     <button
                       onClick={handleImssNextStep}
-                      className="group w-full min-w-0 rounded-[1.5rem] border border-slate-200/80 bg-white p-5 text-left shadow-[0_24px_70px_-40px_rgba(15,23,42,0.45)] transition-all hover:-translate-y-0.5 sm:rounded-[2rem] sm:p-8"
+                      className="group w-full min-w-0 rounded-lg border border-slate-200/80 bg-white p-5 text-left shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)] transition-all hover:-translate-y-0.5 sm:p-6"
                     >
                       <div>
                         <div className="flex items-center gap-3">
                           <Scale className="text-emerald-600" size={20} />
-                          <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">IMSS</span>
+                          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">IMSS</span>
                         </div>
                         <h4 className="mt-4 text-lg font-bold text-slate-950">
                           Abrir IMSS

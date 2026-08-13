@@ -121,7 +121,8 @@ function App() {
             </div>
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all"
+              aria-label={isSidebarOpen ? 'Cerrar navegación' : 'Abrir navegación'}
+              className="rounded-lg bg-white/10 p-2 transition-all hover:bg-white/20"
             >
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -136,7 +137,7 @@ function App() {
           />
 
           {/* Sidebar Container */}
-          <div className={`fixed inset-y-0 left-0 z-[70] max-w-[86vw] transition-transform duration-300 transform md:relative md:max-w-none md:translate-x-0 ${
+          <div className={`fixed inset-y-0 left-0 z-[70] max-w-[86vw] transform transition-transform duration-300 ease-out md:relative md:max-w-none md:translate-x-0 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}>
             <Suspense fallback={null}>

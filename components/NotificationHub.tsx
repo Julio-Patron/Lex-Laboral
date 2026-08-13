@@ -28,18 +28,18 @@ export const NotificationHub: React.FC<NotificationHubProps> = ({ notifications,
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end space-y-3 w-full max-w-sm px-4 pointer-events-none">
+    <div className="pointer-events-none fixed bottom-4 left-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] flex-col items-end space-y-3 sm:left-auto sm:w-full sm:max-w-sm">
       {notifications.map((n) => (
         <div 
           key={n.id}
-          className={`w-full pointer-events-auto flex items-start p-4 rounded-xl border-l-4 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${getBgColor(n.type)}`}
+          className={`pointer-events-auto flex w-full items-start rounded-lg border-l-4 p-4 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${getBgColor(n.type)}`}
         >
           <div className="flex-shrink-0 mt-0.5">
             {getIcon(n.type)}
           </div>
           <div className="ml-3 flex-1">
             {n.title && <p className="text-sm font-bold text-slate-900 mb-0.5">{n.title}</p>}
-            <p className="text-sm text-slate-700 leading-relaxed">{n.message}</p>
+            <p className="break-words text-sm leading-relaxed text-slate-700">{n.message}</p>
           </div>
           <button 
             onClick={() => onDismiss(n.id)}

@@ -77,39 +77,81 @@
 
 @layer components {
   .ui-panel {
-    @apply w-full min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white/90 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:rounded-[2rem];
+    @apply w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)] backdrop-blur-sm;
   }
 
   .ui-panel-muted {
-    @apply w-full min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border border-slate-200/70 bg-slate-50/85 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.35)] sm:rounded-[2rem];
+    @apply w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-slate-200/70 bg-slate-50/90 shadow-[0_14px_42px_-36px_rgba(15,23,42,0.35)];
   }
 
   .ui-icon-chip {
-    @apply flex h-12 w-12 items-center justify-center rounded-[1.15rem] border border-slate-200/80 bg-white text-legal-gold shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)] sm:h-14 sm:w-14 sm:rounded-[1.4rem];
+    @apply flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200/80 bg-white text-legal-gold shadow-[0_10px_26px_-20px_rgba(15,23,42,0.35)] sm:h-12 sm:w-12;
   }
 
   .ui-label {
-    @apply px-1 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-600;
+    @apply px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-600;
   }
 
   .ui-input {
-    @apply w-full min-w-0 rounded-2xl border border-slate-200/90 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-legal-gold/60 focus:bg-white focus:ring-4 focus:ring-legal-gold/10 sm:px-5 sm:py-4;
+    @apply w-full min-w-0 rounded-lg border border-slate-200/90 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-legal-gold/70 focus:bg-white focus:ring-4 focus:ring-legal-gold/10 sm:px-4 sm:py-3.5;
   }
 
   .ui-input-lg {
-    @apply min-w-0 rounded-[1.35rem] border border-slate-200/80 bg-white px-4 py-3.5 font-serif text-lg font-bold text-slate-950 outline-none transition-all placeholder:text-slate-300 focus:border-legal-gold/70 focus:ring-4 focus:ring-legal-gold/10 sm:rounded-[1.6rem] sm:px-5 sm:py-4 sm:text-xl;
+    @apply min-w-0 rounded-lg border border-slate-200/80 bg-white px-4 py-3.5 font-sans text-base font-extrabold tabular-nums text-slate-950 outline-none transition-all placeholder:text-slate-400 focus:border-legal-gold/70 focus:ring-4 focus:ring-legal-gold/10 sm:px-5 sm:text-lg;
   }
 
   .ui-subtle-block {
-    @apply min-w-0 max-w-full overflow-hidden rounded-[1.35rem] border border-slate-200/80 bg-white/75 sm:rounded-[1.75rem];
+    @apply min-w-0 max-w-full overflow-hidden rounded-lg border border-slate-200/80 bg-white/80;
   }
 
   .ui-empty-state {
-    @apply flex min-h-[340px] min-w-0 flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-200 bg-gradient-to-b from-white to-slate-50 px-5 py-10 text-center sm:min-h-[420px] sm:rounded-[2.4rem] sm:px-8 sm:py-12 lg:min-h-[520px];
+    @apply flex min-h-[280px] min-w-0 flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-gradient-to-b from-white to-slate-50 px-5 py-9 text-center sm:min-h-[340px] sm:px-8 sm:py-10 lg:min-h-[420px];
   }
 
   .ui-empty-icon {
-    @apply mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 text-slate-300;
+    @apply mb-5 flex h-20 w-20 items-center justify-center rounded-lg bg-slate-100 text-slate-400;
+  }
+
+  .ui-primary-action {
+    @apply relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-lg bg-slate-950 px-5 py-4 text-sm font-extrabold text-legal-gold shadow-[0_18px_40px_-28px_rgba(15,23,42,0.8)] transition-all hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-[0_22px_48px_-30px_rgba(15,23,42,0.9)] active:translate-y-0 active:scale-[0.99];
+  }
+
+  .ui-secondary-action {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98];
+  }
+
+  .ui-segmented {
+    @apply grid w-full rounded-lg border border-slate-200/80 bg-white/95 p-1 shadow-sm;
+  }
+
+  .ui-segmented-option {
+    @apply min-w-0 rounded-md px-3 py-2 text-center text-[11px] font-extrabold uppercase tracking-[0.1em] text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-800;
+  }
+
+  .ui-segmented-option-active {
+    @apply bg-slate-950 text-legal-gold shadow-[0_12px_26px_-18px_rgba(15,23,42,0.85)];
+  }
+
+  .ui-form-grid {
+    @apply grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2;
+  }
+
+  .ui-detail-card {
+    @apply rounded-lg border border-slate-100 bg-slate-50/80 p-3 text-xs leading-5 text-slate-600;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
   }
 }
 
@@ -125,6 +167,17 @@
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 @media print {
   html, body, #root, main, main > div, .WorkspacePage, .WorkspacePanel {

@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/search.ts": {
-      "includeFiles": "data/**"
+      "includeFiles": "data/search-index.json"
     }
   },
   "rewrites": [

@@ -6,9 +6,9 @@
  * Gemini embeddings and cosine similarity via LanceDB vectorSearch
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { handlePreflight, sanitizeInput, setCorsHeaders, setSecurityHeaders } from './_utils/security';
 
 interface LanceRow {
@@ -50,6 +50,12 @@ const EMBEDDING_MODEL = 'text-embedding-004';
 const LANCE_DIR = path.join(process.cwd(), 'data', 'lance');
 const LANCE_TABLE = 'kb';
 const LOCAL_INDEX_PATH = path.join(process.cwd(), 'data', 'search-index.json');
+const MODULE_LOCAL_INDEX_PATH = fileURLToPath(new URL('../data/search-index.json', import.meta.url));
+const LOCAL_INDEX_CANDIDATES = [
+  LOCAL_INDEX_PATH,
+  MODULE_LOCAL_INDEX_PATH,
+  path.join(process.cwd(), '..', 'data', 'search-index.json'),
+];
 
 interface SearchIndexRow {
   id: string;
@@ -121,6 +127,10 @@ function getGeminiApiKey(): string | null {
   return process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || null;
 }
 
+function findLocalIndexPath(): string | null {
+  return LOCAL_INDEX_CANDIDATES.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
 /**
  * Embed query text using Gemini (correct API)
  */
@@ -130,6 +140,7 @@ async function embedQuery(query: string): Promise<number[]> {
     throw new Error('GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY not configured');
   }
 
+  const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const client = new GoogleGenerativeAI(apiKey);
   const model = client.getGenerativeModel({ model: EMBEDDING_MODEL });
   const result = await model.embedContent(query);
@@ -195,11 +206,12 @@ function countTokenHits(text: string, token: string): number {
 
 function loadLocalRows(): NormalizedSearchIndexRow[] {
   if (cachedLocalRows) return cachedLocalRows;
-  if (!fs.existsSync(LOCAL_INDEX_PATH)) {
-    throw new Error(`Local search index not found: ${LOCAL_INDEX_PATH}`);
+  const indexPath = findLocalIndexPath();
+  if (!indexPath) {
+    throw new Error(`Local search index not found. Checked: ${LOCAL_INDEX_CANDIDATES.join(', ')}`);
   }
 
-  const parsed = JSON.parse(fs.readFileSync(LOCAL_INDEX_PATH, 'utf-8')) as SearchIndexFile | SearchIndexRow[];
+  const parsed = JSON.parse(fs.readFileSync(indexPath, 'utf-8')) as SearchIndexFile | SearchIndexRow[];
   const rows = Array.isArray(parsed) ? parsed : parsed.rows;
 
   cachedLocalRows = rows
@@ -389,7 +401,7 @@ export default async function handler(
         count: 0,
         query: '',
         norm: norm || 'all',
-        mode: fs.existsSync(LOCAL_INDEX_PATH) ? 'local' : undefined,
+        mode: findLocalIndexPath() ? 'local' : undefined,
       });
     }
 
