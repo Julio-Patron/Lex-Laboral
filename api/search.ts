@@ -8,7 +8,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { handlePreflight, sanitizeInput, setCorsHeaders, setSecurityHeaders } from './_utils/security';
 
 interface LanceRow {
@@ -49,12 +48,11 @@ interface SearchResponse {
 const EMBEDDING_MODEL = 'text-embedding-004';
 const LANCE_DIR = path.join(process.cwd(), 'data', 'lance');
 const LANCE_TABLE = 'kb';
-const LOCAL_INDEX_PATH = path.join(process.cwd(), 'data', 'search-index.json');
-const MODULE_LOCAL_INDEX_PATH = fileURLToPath(new URL('../data/search-index.json', import.meta.url));
+const LOCAL_INDEX_PATH = path.resolve(process.cwd(), 'data', 'search-index.json');
 const LOCAL_INDEX_CANDIDATES = [
   LOCAL_INDEX_PATH,
-  MODULE_LOCAL_INDEX_PATH,
-  path.join(process.cwd(), '..', 'data', 'search-index.json'),
+  path.resolve(process.cwd(), '..', 'data', 'search-index.json'),
+  path.resolve(process.cwd(), 'api', '..', 'data', 'search-index.json'),
 ];
 
 interface SearchIndexRow {
