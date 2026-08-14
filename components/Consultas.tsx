@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { AlertCircle, Search, BookOpen, TrendingUp } from 'lucide-react';
+import { AlertCircle, Search, BookOpen, TrendingUp, X } from 'lucide-react';
 import { WorkspacePage, WorkspaceHeader, WorkspacePanel, WorkspaceEmpty } from './ui/Workspace';
 
 type NormFilter = 'LFT' | 'IMSS' | 'INFONAVIT' | 'all';
@@ -128,6 +128,11 @@ export const Consultas: React.FC = () => {
     };
   }, [query, selectedNorm, performSearch]);
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    performSearch(query, selectedNorm);
+  };
+
   /**
    * Get badge color for norm
    */
@@ -157,20 +162,39 @@ export const Consultas: React.FC = () => {
 
       {/* Search Panel */}
       <WorkspacePanel className="mb-6 p-5 sm:p-6">
-        <div className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-            <input
-              type="text"
-              placeholder="Busca por tema: 'salario mínimo', 'vacaciones', 'pensión', etc."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="ui-input py-4 pl-12 pr-4 text-base"
-            />
+          <div className="space-y-3">
+            <label htmlFor="legal-search-query" className="ui-label px-0">
+              Escribe tu consulta jurídica
+            </label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-4 text-slate-500" size={20} />
+              <textarea
+                id="legal-search-query"
+                placeholder="Ejemplo: ¿Qué artículos regulan vacaciones, aguinaldo o despido injustificado?"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="ui-input min-h-[132px] resize-y py-4 pl-12 pr-12 text-base leading-7"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  className="absolute right-3 top-3 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  aria-label="Limpiar consulta"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+            <p className="text-xs leading-5 text-slate-500">
+              Puedes escribir una pregunta completa o palabras clave. El buscador se actualiza automáticamente y también puedes usar el botón.
+            </p>
           </div>
 
-          {/* Norm Filter */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Norm Filter */}
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className="w-full text-xs font-bold uppercase tracking-[0.14em] text-slate-500 sm:w-auto">Filtrar</span>
             {(['all', 'LFT', 'IMSS', 'INFONAVIT'] as const).map((norm) => (
@@ -187,7 +211,12 @@ export const Consultas: React.FC = () => {
               </button>
             ))}
           </div>
-        </div>
+            <button type="submit" className="ui-primary-action w-full sm:w-auto sm:px-6">
+              <Search size={18} />
+              <span>Buscar</span>
+            </button>
+          </div>
+        </form>
       </WorkspacePanel>
 
       {/* Results */}
