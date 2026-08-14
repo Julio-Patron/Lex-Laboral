@@ -8,7 +8,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { handlePreflight, sanitizeInput, setCorsHeaders, setSecurityHeaders } from './_utils/security';
 
 interface LanceRow {
   id: string;
@@ -54,6 +53,37 @@ const LOCAL_INDEX_CANDIDATES = [
   path.resolve(process.cwd(), '..', 'data', 'search-index.json'),
   path.resolve(process.cwd(), 'api', '..', 'data', 'search-index.json'),
 ];
+
+function handlePreflight(req: any, res: any): boolean {
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return true;
+  }
+  return false;
+}
+
+function setCorsHeaders(req: any, res: any): void {
+  const origin = req.headers?.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+}
+
+function setSecurityHeaders(res: any): void {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+}
+
+function sanitizeInput(input: string | undefined, maxLength: number = 500): string {
+  if (!input || typeof input !== 'string') {
+    return '';
+  }
+
+  return input.trim().substring(0, maxLength).replace(/[<>"']/g, '');
+}
 
 interface SearchIndexRow {
   id: string;
