@@ -28,7 +28,7 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
     { id: AppView.CALCULATOR, label: 'Liquidación y Finiquito', icon: <Calculator size={18} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'IMSS e INFONAVIT', icon: <ShieldCheck size={18} /> },
     { id: AppView.PENSION_CALCULATOR, label: 'Calculadora de Pensiones', icon: <Calculator size={18} /> },
-    { id: AppView.CONSULTAS, label: 'Consultas Jurídicas', icon: <BookOpen size={18} /> },
+    { id: AppView.CONSULTAS, label: 'Fundamentador Jurídico', icon: <BookOpen size={18} /> },
   ];
 
   const handleNavClick = (viewId: AppView) => {

@@ -60,11 +60,11 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
     ogDescription: 'Calcula la estimación de tu pensión del IMSS basada en tus semanas cotizadas y salario o saldo de AFORE.',
   },
   [AppView.CONSULTAS]: {
-    title: `Consultas Normatividad Laboral | ${SITE_NAME}`,
-    description: 'Consulta la Ley Federal del Trabajo y normatividad laboral vigente en México. Respuestas precisas sobre derechos laborales y prestaciones.',
+    title: `Fundamentador Jurídico Laboral | ${SITE_NAME}`,
+    description: 'Fundamentador jurídico laboral para localizar artículos de la LFT, Seguro Social e INFONAVIT y armar una base normativa sugerida para tu caso.',
     path: getPathForView(AppView.CONSULTAS),
-    ogTitle: 'Consultas Normatividad Laboral México',
-    ogDescription: 'Consulta artículos de la Ley Federal del Trabajo con respuestas precisas basadas en legislación vigente.',
+    ogTitle: 'Fundamentador Jurídico Laboral México',
+    ogDescription: 'Localiza artículos laborales y genera una base de fundamento jurídico sugerido con búsqueda semántica.',
   },
   [AppView.TERMS]: {
     title: `Términos y Condiciones | ${SITE_NAME}`,
@@ -163,7 +163,7 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
     [AppView.CALCULATOR]: ['Inicio', 'Calculadora de Liquidación'],
     [AppView.SOCIAL_SECURITY]: ['Inicio', 'Calculadora IMSS'],
     [AppView.PENSION_CALCULATOR]: ['Inicio', 'Calculadora de Pensiones'],
-    [AppView.CONSULTAS]: ['Inicio', 'Consultas Normatividad'],
+    [AppView.CONSULTAS]: ['Inicio', 'Fundamentador Jurídico'],
     [AppView.TERMS]: ['Inicio', 'Términos'],
     [AppView.PRIVACY]: ['Inicio', 'Privacidad'],
   };
@@ -262,12 +262,12 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
     ],
     [AppView.CONSULTAS]: [
       {
-        question: '¿Qué puedo consultar en Lex Laboral?',
-        answer: 'Puedes consultar artículos específicos de la Ley Federal del Trabajo sobre derechos laborales, prestaciones, terminación de relaciones, salarios y normatividad vigente en México.',
+        question: '¿Qué hace el fundamentador jurídico de Lex Laboral?',
+        answer: 'Localiza artículos relevantes de la Ley Federal del Trabajo, Seguro Social e INFONAVIT y los organiza como una base de fundamento jurídico sugerido para revisar el caso.',
       },
       {
-        question: '¿Las consultas son precisas?',
-        answer: 'Sí, las respuestas se basan directamente en los artículos de la Ley Federal del Trabajo vigente. Utilizamos búsqueda semántica para extraer información de fuentes oficiales.',
+        question: '¿El fundamento jurídico sustituye la revisión de un abogado?',
+        answer: 'No. El fundamento sugerido es una guía de apoyo basada en el índice jurídico disponible y debe validarse contra el expediente, los hechos y la estrategia del caso.',
       },
     ],
   };

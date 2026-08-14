@@ -48,11 +48,11 @@ const tools = [
   },
   {
     view: AppView.CONSULTAS,
-    title: 'Consultas Normativas LFT',
-    subtitle: 'Ley Federal del Trabajo',
-    summary: 'Búsqueda de artículos oficiales y respuestas normativas sobre derechos laborales.',
-    action: 'Consultar Ley',
-    badge: 'Búsqueda RAG',
+    title: 'Fundamentador Jurídico',
+    subtitle: 'LFT, IMSS e INFONAVIT',
+    summary: 'Localiza artículos y arma un fundamento jurídico sugerido para el caso planteado.',
+    action: 'Fundamentar Caso',
+    badge: 'RAG Jurídico',
     icon: <BookOpen size={20} className="text-purple-400" />,
   },
 ];
@@ -107,7 +107,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               onClick={(e) => handleNavClick(e, AppView.CONSULTAS)}
               className="hover:text-amber-400 transition-colors"
             >
-              Consultas
+              Fundamentador
             </a>
           </nav>
 
