@@ -259,7 +259,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               alt="Lex Laboral" 
               className="h-6 w-auto object-contain" 
             />
-            <span>Lex Laboral © 2026 • filex dev</span>
+            <span>Lex Laboral © 2026 • lexlaboral.com.mx</span>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-5 font-medium">

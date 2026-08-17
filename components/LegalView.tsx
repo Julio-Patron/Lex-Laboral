@@ -19,7 +19,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
         </div>
         <div>
           <h1 className="text-3xl font-serif font-bold text-slate-900 leading-tight">Términos y Condiciones</h1>
-          <p className="text-slate-500 text-sm font-medium">Última actualización: Agosto 2026 • filex dev (Mérida, Yucatán)</p>
+          <p className="text-slate-500 text-sm font-medium">Última actualización: Agosto 2026 • lexlaboral.com.mx (Mérida, Yucatán)</p>
         </div>
       </div>
 
@@ -29,7 +29,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
             <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">01</span>
             Aceptación y Titularidad
           </h2>
-          <p>Bienvenido a <strong>Lex Laboral</strong>. Al acceder y utilizar este sitio web, la aplicación móvil y sus herramientas jurídicas, usted acepta estar sujeto a estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México.</p>
+          <p>Bienvenido a <strong>Lex Laboral</strong>. Al acceder y utilizar este sitio web, la aplicación móvil y sus herramientas jurídicas, usted acepta estar sujeto a estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>lexlaboral.com.mx</strong>, con domicilio en la ciudad de Mérida, Yucatán, México.</p>
         </section>
 
         <section>
@@ -43,7 +43,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
               <p className="text-amber-900 font-bold mb-2 flex items-center gap-2 italic uppercase tracking-wider text-xs">
                 ⚠️ DESLINDE DE RESPONSABILIDAD CRÍTICO (DISCLAIMER)
               </p>
-              <p className="text-sm leading-6"><strong>LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> Los resultados y documentos emitidos son estimaciones matemáticas e informativas que deben ser evaluadas por un abogado o profesional legal antes de utilizarse en procedimientos judiciales o acuerdos laborales formales. filex dev no se responsabiliza por resoluciones o decisiones adoptadas a partir del uso de la aplicación.</p>
+              <p className="text-sm leading-6"><strong>LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> Los resultados y documentos emitidos son estimaciones matemáticas e informativas que deben ser evaluadas por un abogado o profesional legal antes de utilizarse en procedimientos judiciales o acuerdos laborales formales. lexlaboral.com.mx no se responsabiliza por resoluciones o decisiones adoptadas a partir del uso de la aplicación.</p>
             </div>
           </div>
         </section>
@@ -69,7 +69,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
             <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">05</span>
             Propiedad Intelectual
           </h2>
-          <p>Todos los derechos sobre el software, código, diseño, marcas y logotipos pertenecen a <strong>filex dev</strong>. Se otorga una licencia de uso personal o profesional legítimo, sin autorización para redistribución comercial o ingeniería inversa.</p>
+          <p>Todos los derechos sobre el software, código, diseño, marcas y logotipos pertenecen a <strong>lexlaboral.com.mx</strong>. Se otorga una licencia de uso personal o profesional legítimo, sin autorización para redistribución comercial o ingeniería inversa.</p>
         </section>
 
         <section>
@@ -125,7 +125,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
              <ShieldCheck size={20} className="text-emerald-700" />
              Identidad del Responsable
           </h2>
-          <p className="text-sm"><strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México, es el responsable del tratamiento de sus datos personales conforme a la LFPDPPP. Correo de contacto oficial: <strong>admin@lexlaboral.com.mx</strong>.</p>
+          <p className="text-sm"><strong>lexlaboral.com.mx</strong>, con domicilio en la ciudad de Mérida, Yucatán, México, es el responsable del tratamiento de sus datos personales conforme a la LFPDPPP. Correo de contacto oficial: <strong>admin@lexlaboral.com.mx</strong>.</p>
         </section>
 
         <section>
@@ -210,7 +210,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
           
           <div className="mt-16 pt-8 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-              Lex Laboral © 2026 • filex dev • Mérida, Yucatán
+              Lex Laboral © 2026 • lexlaboral.com.mx • Mérida, Yucatán
             </p>
           </div>
         </motion.div>

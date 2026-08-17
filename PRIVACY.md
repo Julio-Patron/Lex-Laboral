@@ -4,7 +4,7 @@
 
 ## Identidad y Domicilio del Responsable
 
-**filex dev**, con domicilio en Mérida, Yucatán, México, es responsable del tratamiento de sus datos personales en cumplimiento con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP). 
+**lexlaboral.com.mx**, con domicilio en Mérida, Yucatán, México, es responsable del tratamiento de sus datos personales en cumplimiento con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP). 
 
 - **Correo electrónico de contacto:** `admin@lexlaboral.com.mx`
 
