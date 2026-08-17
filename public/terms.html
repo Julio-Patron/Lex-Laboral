@@ -3,141 +3,280 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Términos y Condiciones - Lex Laboral</title>
+  <title>Términos y Condiciones — Lex Laboral México 2026</title>
+  <meta name="description" content="Términos y condiciones de uso de la plataforma y aplicación móvil Lex Laboral. Herramientas jurídicas y laborales para México." />
+  <link rel="canonical" href="https://lexlaboral.com.mx/terminos" />
+  <link rel="icon" type="image/webp" href="/assets/logo.webp" />
   <style>
     :root {
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --primary: #0f172a;
-      --accent: #d97706;
-      --accent-bg: #fffbeb;
-      --accent-border: #fde68a;
-      --text: #334155;
-      --text-heading: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
+      --bg-color: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --text: #e2e8f0;
+      --text-heading: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-bg: rgba(245, 158, 11, 0.08);
+      --accent-border: rgba(245, 158, 11, 0.25);
+    }
+    * {
+      box-sizing: border-box;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.7;
       margin: 0;
       padding: 0;
     }
     .container {
-      max-width: 800px;
+      max-width: 860px;
       margin: 40px auto;
       padding: 0 20px;
+    }
+    .back-nav {
+      margin-bottom: 24px;
+    }
+    .back-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .back-nav a:hover {
+      color: var(--primary);
     }
     .card {
       background-color: var(--card-bg);
       border-radius: 24px;
-      padding: 40px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-      border: 1px solid var(--border);
+      padding: 44px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
     }
     .header {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
       margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
     }
     .icon-badge {
-      width: 48px;
-      height: 48px;
-      background-color: var(--primary);
-      color: #fbbf24;
-      border-radius: 16px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid var(--accent-border);
+      color: var(--primary);
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 28px;
+      flex-shrink: 0;
     }
     h1 {
       color: var(--text-heading);
       font-size: 28px;
+      font-weight: 800;
       margin: 0;
       line-height: 1.2;
     }
     .subtitle {
       color: var(--text-muted);
       font-size: 14px;
-      margin: 4px 0 0 0;
+      margin: 6px 0 0 0;
     }
     .warning-box {
       background-color: var(--accent-bg);
-      border-left: 4px solid var(--accent);
-      border-radius: 0 16px 16px 0;
+      border: 1px solid var(--accent-border);
+      border-left: 4px solid var(--primary);
+      border-radius: 16px;
       padding: 20px;
-      color: #92400e;
-      margin: 24px 0;
+      color: #fef3c7;
+      margin: 28px 0;
+      font-size: 14px;
     }
     .warning-box strong {
       display: block;
-      margin-bottom: 4px;
+      color: var(--primary);
+      margin-bottom: 6px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
     h2 {
       color: var(--text-heading);
-      font-size: 20px;
+      font-size: 19px;
       margin-top: 32px;
       margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge-num {
+      background-color: rgba(245, 158, 11, 0.15);
+      color: var(--primary);
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+    }
+    p {
+      color: #cbd5e1;
+      font-size: 14.5px;
+      margin: 0 0 16px 0;
+    }
+    ul {
+      padding-left: 20px;
+      color: #cbd5e1;
+      font-size: 14.5px;
+      margin: 0 0 16px 0;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .contact-box {
+      background-color: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 32px;
+    }
+    .contact-box h3 {
+      margin: 0 0 12px 0;
+      color: var(--text-heading);
+      font-size: 16px;
+    }
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #1e293b;
+      color: #f8fafc;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #334155;
+      transition: all 0.2s;
+    }
+    .contact-btn:hover {
+      background-color: #334155;
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
     }
     .footer {
       margin-top: 40px;
       padding-top: 24px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--card-border);
       text-align: center;
       font-size: 12px;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+    }
+    @media (max-width: 640px) {
+      .card {
+        padding: 24px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="back-nav">
+      <a href="/">← Volver a Lex Laboral</a>
+    </div>
+
     <div class="card">
       <div class="header">
         <div class="icon-badge">⚖️</div>
         <div>
           <h1>Términos y Condiciones</h1>
-          <p class="subtitle">Condiciones de Uso y Términos Legales</p>
+          <p class="subtitle">Última actualización: Agosto 2026 • filex dev (Mérida, Yucatán, México)</p>
         </div>
       </div>
 
       <section>
-        <h2>1. Aceptación y Titularidad</h2>
-        <p>Bienvenido a <strong>Lex Laboral</strong>. Al acceder y utilizar esta aplicación móvil y sus servicios asociados, usted acepta estar sujeto a estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México.</p>
+        <h2><span class="badge-num">01</span> Aceptación y Titularidad</h2>
+        <p>Bienvenido a <strong>Lex Laboral</strong> (en adelante, "la Plataforma" o "la Aplicación"). Al acceder y utilizar este sitio web, la aplicación móvil y sus herramientas jurídicas, usted acepta obligarse bajo estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>filex dev</strong>, con sede en la ciudad de Mérida, Yucatán, México.</p>
       </section>
 
       <section>
-        <h2>2. Naturaleza de los Servicios</h2>
-        <p>La aplicación móvil Lex Laboral ofrece calculadoras informativas de prestaciones laborales, cuotas IMSS e INFONAVIT y estimaciones de pensión bajo la legislación mexicana.</p>
-        
+        <h2><span class="badge-num">02</span> Naturaleza de los Servicios y Parámetros 2026</h2>
+        <p>Lex Laboral ofrece herramientas digitales de cálculo e información basadas en la legislación laboral y de seguridad social mexicana vigente para 2026, incluyendo:</p>
+        <ul>
+          <li><strong>Calculadora de Liquidación y Finiquito:</strong> Estimación de indemnización constitucional de 90 días (Art. 48 LFT), 20 días por año de servicio (Art. 50 LFT), prima de antigüedad (Art. 162 LFT topada a 2 UMA), partes proporcionales de aguinaldo, vacaciones, prima vacacional y retención estimada de ISR (Art. 93 LISR).</li>
+          <li><strong>Calculadora de Cuotas IMSS e INFONAVIT:</strong> Desglose de cuotas obrero-patronales con tablas de Cesantía y Vejez progresivas y prima de riesgo de trabajo.</li>
+          <li><strong>Calculadora de Pensiones IMSS:</strong> Estimación proyectada bajo los regímenes de la Ley del Seguro Social de 1973 y Ley de 1997.</li>
+          <li><strong>Fundamentador y Consultas Jurídicas:</strong> Búsqueda semántica en la Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT.</li>
+        </ul>
+
         <div class="warning-box">
-          <strong>⚠️ DESLINDE DE RESPONSABILIDAD CRÍTICO:</strong>
-          LA APLICACIÓN NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL. Los resultados obtenidos son estimaciones numéricas informativas y deben ser revisados por un profesional antes de utilizarse en decisiones legales, laborales o económicas oficiales.
+          <strong>⚠️ Deslinde de Responsabilidad Jurídica (Disclaimer):</strong>
+          LEX LABORAL NO CONSTITUYE NI SUSTITUYE LA ASESORÍA LEGAL PROFESIONAL. Los resultados, cálculos y textos provistos son estimaciones numéricas informativas y modelos de referencia. Toda decisión laboral, litigiosa, económica o patronal debe ser revisada y avalada por un abogado o asesor profesional titulado. filex dev no asume responsabilidad civil, laboral ni fiscal por decisiones tomadas a partir del uso de la aplicación.
         </div>
       </section>
 
       <section>
-        <h2>3. Servicio Gratuito y Sin Cuenta</h2>
-        <p>Lex Laboral es una herramienta completamente gratuita. No requiere registro de cuenta, suscripciones ni pagos para su uso.</p>
+        <h2><span class="badge-num">03</span> Servicio 100% Gratuito y Sin Registro</h2>
+        <p>Lex Laboral es un ecosistema <strong>completamente gratuito</strong>. No requiere registro de cuenta de usuario, membresías, compras dentro de la aplicación (in-app purchases) ni cobros por suscripción recurrente. El acceso a todas las calculadoras y descargas oficiales de la aplicación nativa Android (APK) se ofrece de forma libre y transparente.</p>
       </section>
 
       <section>
-        <h2>4. Propiedad Intelectual</h2>
-        <p>Todos los derechos sobre el software, código, diseño, marcas y logotipos pertenecen a <strong>filex dev</strong>. El usuario recibe una licencia limitada de uso personal o profesional, sin derecho a comercializar o redistribuir el software.</p>
+        <h2><span class="badge-num">04</span> Privacidad y Procesamiento en Dispositivo</h2>
+        <p>En estricto apego a nuestra política de privacidad y a la <em>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</em>:</p>
+        <ul>
+          <li>Los datos salariales y laborales ingresados en las calculadoras se procesan <strong>de manera local en su dispositivo o navegador</strong>.</li>
+          <li>Lex Laboral <strong>no almacena</strong> sus cálculos, expedientes ni cifras en bases de datos remotas.</li>
+          <li>Las consultas semánticas se procesan de forma anónima y efímera.</li>
+        </ul>
       </section>
 
       <section>
-        <h2>5. Jurisdicción y Ley Aplicable</h2>
-        <p>Para la interpretación y cumplimiento de estos términos, las partes se someten a las leyes vigentes de los Estados Unidos Mexicanos y a la jurisdicción de los tribunales competentes en la ciudad de Mérida, Yucatán.</p>
+        <h2><span class="badge-num">05</span> Propiedad Intelectual</h2>
+        <p>Todos los derechos sobre el software, código fuente, algoritmos, arquitectura, diseños, logotipos y la marca <strong>Lex Laboral</strong> son propiedad exclusiva de <strong>filex dev</strong>. Se concede al usuario una licencia limitada, no exclusiva, no transferible y revocable para uso personal y profesional legítimo, quedando estrictamente prohibida la ingeniería inversa, reventa o redistribución comercial no autorizada del software.</p>
       </section>
+
+      <section>
+        <h2><span class="badge-num">06</span> Jurisdicción y Ley Aplicable</h2>
+        <p>Para la interpretación, cumplimiento y resolución de cualquier controversia derivada de estos términos, las partes se someten a las leyes aplicables de los <strong>Estados Unidos Mexicanos</strong> y a la competencia de los tribunales correspondientes de la ciudad de <strong>Mérida, Yucatán</strong>, renunciando a cualquier otro fuero que pudiera corresponderles por razón de sus domicilios presentes o futuros.</p>
+      </section>
+
+      <div class="contact-box">
+        <h3>📬 Canales Oficiales de Contacto y Soporte</h3>
+        <p>Para dudas sobre estos términos, comentarios, sugerencias o soporte técnico, puede comunicarse a través de nuestros canales oficiales:</p>
+        <div class="contact-links">
+          <a href="mailto:admin@lexlaboral.com.mx" class="contact-btn">
+            ✉️ admin@lexlaboral.com.mx
+          </a>
+          <a href="https://www.facebook.com/LexLaboral" target="_blank" rel="noopener noreferrer" class="contact-btn">
+            🌐 Facebook Oficial
+          </a>
+        </div>
+      </div>
 
       <div class="footer">
-        Lex Laboral • Términos y Condiciones de Uso
+        Lex Laboral © 2026 • filex dev • Mérida, Yucatán, México
       </div>
     </div>
   </div>

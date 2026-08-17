@@ -9,7 +9,9 @@ import {
   Download, 
   Scale, 
   Smartphone,
-  ExternalLink
+  ExternalLink,
+  Mail,
+  Globe
 } from 'lucide-react';
 import { getPathForView } from '../lib/routes';
 import { SEOContentSection } from './SEOContentSection';
@@ -248,8 +250,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       </section>
 
       {/* Minimalist Footer */}
-      <footer className="border-t border-slate-800/60 bg-slate-950 py-8 text-slate-400 text-xs">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-slate-800/60 bg-slate-950 py-10 text-slate-400 text-xs">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
           
           <div className="flex items-center gap-2.5">
             <img 
@@ -257,10 +259,27 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               alt="Lex Laboral" 
               className="h-6 w-auto object-contain" 
             />
-            <span>Lex Laboral © 2026</span>
+            <span>Lex Laboral © 2026 • filex dev</span>
           </div>
 
-          <div className="flex items-center gap-5 font-medium">
+          <div className="flex flex-wrap items-center justify-center gap-5 font-medium">
+            <a 
+              href="mailto:admin@lexlaboral.com.mx"
+              className="hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            >
+              <Mail size={13} />
+              <span>admin@lexlaboral.com.mx</span>
+            </a>
+            <a 
+              href="https://www.facebook.com/LexLaboral"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            >
+              <Globe size={13} />
+              <span>Facebook</span>
+              <ExternalLink size={11} />
+            </a>
             <a 
               href="/privacy.html"
               target="_blank"
@@ -280,10 +299,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               <ExternalLink size={11} />
             </a>
           </div>
-
-          <p className="text-slate-400">
-            filex dev
-          </p>
         </div>
       </footer>
 

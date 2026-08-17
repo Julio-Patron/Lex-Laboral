@@ -1,10 +1,8 @@
 /**
  * SEO Manager — Dynamic Head Tags for SPA
  * 
- * Actualiza <title>, <meta description>, canonical, y OG tags
+ * Actualiza <title>, <meta description>, canonical, OpenGraph y schemas JSON-LD
  * dinámicamente al navegar entre vistas en la SPA.
- * 
- * Uso: llamar updateSEO(AppView.CALCULATOR) al cambiar de vista.
  */
 
 import { AppView } from '../types';
@@ -13,6 +11,8 @@ import { getPathForView } from './routes';
 const SITE_NAME = 'Lex Laboral';
 const BASE_URL = 'https://lexlaboral.com.mx';
 const DEFAULT_OG_IMAGE = `${BASE_URL}/assets/og-image.png`;
+const FACEBOOK_PAGE = 'https://www.facebook.com/LexLaboral';
+const CONTACT_EMAIL = 'admin@lexlaboral.com.mx';
 
 interface SEOConfig {
   title: string;
@@ -184,13 +184,13 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
     '@type': 'SoftwareApplication',
     name: title,
     applicationCategory: 'BusinessApplication',
-    operatingSystem: 'Web',
+    operatingSystem: 'Web, Android',
     url: fullUrl,
     description,
     offers: {
       '@type': 'Offer',
       priceCurrency: 'MXN',
-      price: view === AppView.CALCULATOR || view === AppView.HOME || view === AppView.PENSION_CALCULATOR ? '0' : '0',
+      price: '0',
       availability: 'https://schema.org/InStock',
     },
     provider: {
@@ -214,60 +214,63 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       name: SITE_NAME,
       url: BASE_URL,
       logo: `${BASE_URL}/assets/logo.png`,
+      sameAs: [FACEBOOK_PAGE],
       areaServed: 'MX',
-      email: 'admin@lexlaboral.com.mx',
+      email: CONTACT_EMAIL,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: CONTACT_EMAIL,
+        contactType: 'customer support',
+        availableLanguage: 'Spanish',
+      },
     };
   }
 
   const faqByView: Partial<Record<AppView, FaqSchemaItem[]>> = {
     [AppView.HOME]: [
       {
-        question: 'Que herramientas ofrece Lex Laboral?',
-        answer: 'Lex Laboral ofrece calculadoras gratuitas de liquidación, IMSS e INFONAVIT y pensiones IMSS, más un módulo de consultas sobre normatividad laboral vigente.',
+        question: '¿Qué herramientas ofrece Lex Laboral?',
+        answer: 'Lex Laboral ofrece calculadoras gratuitas de liquidación y finiquito LFT 2026, cuotas obrero-patronales del IMSS e INFONAVIT, cálculo de pensiones IMSS Ley 73 y 97, y fundamentador jurídico laboral.',
       },
       {
-        question: 'Que parte de la plataforma es gratis?',
-        answer: 'Todas las herramientas principales son gratuitas: calculadora de liquidación, IMSS, pensiones y consultas normativas. No requieren registro ni pago.'
+        question: '¿Las calculadoras de Lex Laboral son gratuitas?',
+        answer: 'Sí, todas las calculadoras y descargas de la aplicación móvil APK son 100% gratuitas, sin registro previo y sin cobros ocultos.',
       },
     ],
     [AppView.CALCULATOR]: [
       {
-        question: 'Como calcular una liquidacion en Mexico?',
-        answer: 'Generalmente debes considerar indemnización constitucional, 20 días por año cuando proceda, prima de antigüedad y prestaciones proporcionales como aguinaldo, vacaciones y prima vacacional.',
+        question: '¿Cómo calcular una liquidación por despido en México en 2026?',
+        answer: 'Para un despido injustificado se consideran: 3 meses de salario (indemnización constitucional Art. 48 LFT), 20 días por año trabajado (Art. 50 LFT), prima de antigüedad de 12 días por año topada a 2 UMA (Art. 162 LFT), más partes proporcionales de aguinaldo, vacaciones y prima vacacional con retención de ISR conforme al Art. 93 LISR.',
       },
       {
-        question: 'La calculadora de liquidacion es gratis?',
-        answer: 'Sí, la calculadora de prestaciones es gratuita y no requiere registro.',
+        question: '¿La calculadora de liquidación incluye el cálculo de ISR?',
+        answer: 'Sí, calcula la exención de 90 UMA por cada año de servicio y la tasa efectiva de retención de ISR aplicable a la indemnización gravada.',
       },
     ],
     [AppView.SOCIAL_SECURITY]: [
       {
-        question: 'Que calcula la calculadora IMSS?',
-        answer: 'Calcula cuotas obrero-patronales IMSS e INFONAVIT con desglose por ramo de seguro y apoyo para revisar la prima de riesgo de trabajo.',
+        question: '¿Qué cuotas del IMSS e INFONAVIT calcula la herramienta?',
+        answer: 'Calcula las cuotas obrero-patronales de enfermedades y maternidad, invalidez y vida, guarderías, retiro, cesantía en edad avanzada y vejez (con tablas progresivas vigentes) y aportación al INFONAVIT del 5%.',
       },
       {
-        question: 'La calculadora IMSS es gratuita?',
-        answer: 'Sí, está disponible completamente gratuita y sin registro.',
+        question: '¿Es posible calcular la prima de riesgo de trabajo?',
+        answer: 'Sí, permite ingresar la clase de riesgo y el porcentaje específico de la prima de riesgo de la empresa.',
       },
     ],
     [AppView.PENSION_CALCULATOR]: [
       {
-        question: '¿Qué ley de IMSS utiliza esta calculadora de pensiones?',
-        answer: 'Soporta cálculos estimados tanto para la Ley del Seguro Social de 1973 (basada en salario promedio y semanas cotizadas) como para la Ley de 1997 (basada en el saldo de la AFORE).',
+        question: '¿Qué régimen del IMSS calcula la herramienta de pensiones?',
+        answer: 'Permite proyectar pensiones tanto bajo el Régimen de 1973 (basado en salario promedio de las últimas 250 semanas y total de semanas cotizadas) como bajo el Régimen de 1997 (basado en el saldo acumulado en la AFORE y semanas requeridas).',
       },
       {
-        question: '¿Es exacta la calculadora de pensiones?',
-        answer: 'Los resultados son estimaciones basadas en las fórmulas generales de la Ley del Seguro Social. Para obtener tu resolución definitiva debes acudir al IMSS.',
+        question: '¿La estimación de pensión sustituye la resolución oficial del IMSS?',
+        answer: 'No, es una proyección numérica matemática con base en la Ley del Seguro Social. Para tramitar la pensión definitiva se debe acudir a la subdelegación del IMSS.',
       },
     ],
     [AppView.CONSULTAS]: [
       {
-        question: '¿Qué hace el fundamentador jurídico de Lex Laboral?',
-        answer: 'Localiza artículos relevantes de la Ley Federal del Trabajo, Seguro Social e INFONAVIT y los organiza como una base de fundamento jurídico sugerido para revisar el caso.',
-      },
-      {
-        question: '¿El fundamento jurídico sustituye la revisión de un abogado?',
-        answer: 'No. El fundamento sugerido es una guía de apoyo basada en el índice jurídico disponible y debe validarse contra el expediente, los hechos y la estrategia del caso.',
+        question: '¿Cómo funciona el fundamentador jurídico de Lex Laboral?',
+        answer: 'Utiliza un índice semántico de la Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT para encontrar los artículos aplicables al caso laboral planteado.',
       },
     ],
   };
@@ -337,7 +340,7 @@ export function updateSEO(view: AppView): void {
 }
 
 /**
- * Retorna la configuración SEO para una vista (útil para SSR futuro).
+ * Retorna la configuración SEO para una vista.
  */
 export function getSEOConfig(view: AppView): SEOConfig {
   return SEO_MAP[view] || SEO_MAP[AppView.HOME];

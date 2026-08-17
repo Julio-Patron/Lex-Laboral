@@ -3,154 +3,250 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aviso de Privacidad - Lex Laboral</title>
+  <title>Aviso de Privacidad — Lex Laboral México 2026</title>
+  <meta name="description" content="Aviso de privacidad integral y protección de datos personales de Lex Laboral conforme a la LFPDPPP en México." />
+  <link rel="canonical" href="https://lexlaboral.com.mx/privacidad" />
+  <link rel="icon" type="image/webp" href="/assets/logo.webp" />
   <style>
     :root {
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --primary: #0f172a;
-      --accent: #059669;
-      --accent-bg: #ecfdf5;
-      --accent-border: #a7f3d0;
-      --text: #334155;
-      --text-heading: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
+      --bg-color: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --text: #e2e8f0;
+      --text-heading: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-bg: rgba(16, 185, 129, 0.08);
+      --accent-border: rgba(16, 185, 129, 0.25);
+    }
+    * {
+      box-sizing: border-box;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.7;
       margin: 0;
       padding: 0;
     }
     .container {
-      max-width: 800px;
+      max-width: 860px;
       margin: 40px auto;
       padding: 0 20px;
+    }
+    .back-nav {
+      margin-bottom: 24px;
+    }
+    .back-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .back-nav a:hover {
+      color: var(--primary);
     }
     .card {
       background-color: var(--card-bg);
       border-radius: 24px;
-      padding: 40px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-      border: 1px solid var(--border);
+      padding: 44px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
     }
     .header {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
       margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
     }
     .icon-badge {
-      width: 48px;
-      height: 48px;
-      background-color: var(--accent);
-      color: white;
-      border-radius: 16px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #064e3b, #0f172a);
+      border: 1px solid var(--accent-border);
+      color: var(--primary);
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 28px;
+      flex-shrink: 0;
     }
     h1 {
       color: var(--text-heading);
       font-size: 28px;
+      font-weight: 800;
       margin: 0;
       line-height: 1.2;
     }
     .subtitle {
       color: var(--text-muted);
       font-size: 14px;
-      margin: 4px 0 0 0;
+      margin: 6px 0 0 0;
     }
     .badge-box {
       background-color: var(--accent-bg);
       border: 1px solid var(--accent-border);
+      border-left: 4px solid var(--primary);
       border-radius: 16px;
       padding: 20px;
-      color: #065f46;
+      color: #d1fae5;
       margin-bottom: 32px;
     }
     .badge-box h2 {
-      margin-top: 0;
-      color: #065f46;
-      font-size: 18px;
+      margin: 0 0 8px 0;
+      color: var(--primary);
+      font-size: 16px;
     }
     h2 {
       color: var(--text-heading);
-      font-size: 20px;
+      font-size: 19px;
       margin-top: 32px;
       margin-bottom: 12px;
     }
+    p {
+      color: #cbd5e1;
+      font-size: 14.5px;
+      margin: 0 0 16px 0;
+    }
     ul {
       padding-left: 20px;
+      color: #cbd5e1;
+      font-size: 14.5px;
+      margin: 0 0 16px 0;
     }
     li {
       margin-bottom: 8px;
     }
+    .contact-box {
+      background-color: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 32px;
+    }
+    .contact-box h3 {
+      margin: 0 0 12px 0;
+      color: var(--text-heading);
+      font-size: 16px;
+    }
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #1e293b;
+      color: #f8fafc;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #334155;
+      transition: all 0.2s;
+    }
+    .contact-btn:hover {
+      background-color: #334155;
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
     .footer {
       margin-top: 40px;
       padding-top: 24px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--card-border);
       text-align: center;
       font-size: 12px;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+    }
+    @media (max-width: 640px) {
+      .card {
+        padding: 24px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="back-nav">
+      <a href="/">← Volver a Lex Laboral</a>
+    </div>
+
     <div class="card">
       <div class="header">
         <div class="icon-badge">🛡️</div>
         <div>
           <h1>Aviso de Privacidad</h1>
-          <p class="subtitle">Integral • Ley Federal de Protección de Datos Personales en Posesión de los Particulares</p>
+          <p class="subtitle">Integral • Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</p>
         </div>
       </div>
 
       <div class="badge-box">
         <h2>Identidad y Domicilio del Responsable</h2>
-        <p><strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México, es el responsable del tratamiento de sus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP). Correo de contacto: <strong>admin@lexlaboral.com.mx</strong>.</p>
+        <p><strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México, es el responsable del tratamiento de sus datos personales conforme a la LFPDPPP. Correo oficial de contacto y atención de derechos ARCO: <strong>admin@lexlaboral.com.mx</strong>.</p>
       </div>
 
       <section>
-        <h2>Datos Personales Tratados</h2>
+        <h2>1. Datos Personales Tratados y Política de Cero Almacenamiento</h2>
         <ul>
-          <li><strong>Datos Técnicos y Operativos:</strong> La aplicación <strong>Lex Laboral</strong> en su versión 1.3.0 no requiere registro, inicio de sesión ni creación de cuenta de usuario. No recopila datos de identificación personal como nombres, correos electrónicos, números telefónicos ni ubicaciones exactas en servidores externos.</li>
-          <li><strong>Datos de Cálculo:</strong> Toda la información introducida por el usuario para calcular finiquitos, liquidaciones, cuotas IMSS/INFONAVIT o estimaciones de pensión es procesada localmente en el dispositivo y no es transmitida a servidores remotos.</li>
+          <li><strong>Sin registro obligatorio:</strong> La plataforma web y la aplicación móvil <strong>Lex Laboral v1.3.0</strong> no requieren registro, inicio de sesión ni creación de cuenta.</li>
+          <li><strong>Procesamiento Local:</strong> Los datos laborales, salarios, fechas de ingreso, semanas de cotización o saldos ingresados para efectuar cálculos numéricos se procesan estrictamente de manera local en la memoria de su navegador o dispositivo móvil. No son transmitidos, recopilados ni almacenados en bases de datos o servidores centrales.</li>
+          <li><strong>Consultas Jurídicas:</strong> Las búsquedas y preguntas normativas se procesan de forma transitoria y anónima para devolver los artículos legales aplicables sin asociarse a perfiles individuales.</li>
         </ul>
       </section>
 
       <section>
-        <h2>Finalidades del Tratamiento</h2>
+        <h2>2. Finalidades del Tratamiento</h2>
         <ul>
-          <li><strong>Primarias:</strong> Prestación directa de los servicios de cálculo laboral, cuotas de seguridad social y proyecciones de pensión directamente en el dispositivo móvil.</li>
-          <li><strong>Secundarias:</strong> Garantizar la persistencia local de los últimos cálculos guardados a solicitud del usuario dentro del almacenamiento del dispositivo.</li>
+          <li><strong>Finalidades Primarias:</strong> Proveer de forma inmediata y gratuita los cálculos matemáticos de liquidación, finiquito, cuotas patronales IMSS/INFONAVIT y proyecciones de pensión solicitadas por el usuario.</li>
+          <li><strong>Finalidades Secundarias:</strong> Permitir que el usuario guarde su historial de cálculos de manera local en el almacenamiento de su propio dispositivo si así lo decide.</li>
         </ul>
       </section>
 
       <section>
-        <h2>Almacenamiento y Seguridad de los Datos</h2>
-        <p>Los datos ingresados y los resultados generados permanecen exclusivamente en el almacenamiento local del dispositivo del usuario. El usuario puede borrar los datos en cualquier momento limpiando el almacenamiento de la aplicación o desinstalándola.</p>
+        <h2>3. Transferencias de Datos</h2>
+        <p>Lex Laboral <strong>no comercializa, no cede y no transfiere</strong> datos personales a terceras empresas ni agencias publicitarias. No se implementan rastreadores invasivos de comportamiento publicitario de terceros.</p>
       </section>
 
       <section>
-        <h2>Derechos ARCO (Acceso, Rectificación, Cancelación y Oposición)</h2>
-        <p>Dado que no almacenamos ni tratamos datos personales en servidores o bases de datos centralizadas, el usuario mantiene control total sobre la información almacenada en su dispositivo. Para cualquier duda o consulta referente al tratamiento de datos, puede ponerse en contacto a través de nuestro correo electrónico: <strong>admin@lexlaboral.com.mx</strong>.</p>
+        <h2>4. Ejercicio de Derechos ARCO</h2>
+        <p>Usted tiene en todo momento el derecho de <strong>Acceder, Rectificar, Cancelar u Oponerse (ARCO)</strong> al tratamiento de sus datos. Dado que los cálculos residen localmente en su propio dispositivo, usted puede eliminarlos de inmediato borrando el almacenamiento local del navegador o desinstalando la aplicación móvil.</p>
+        <p>Para cualquier solicitud formal relativa a la privacidad de la plataforma, puede comunicarse directamente a:</p>
       </section>
 
-      <section>
-        <h2>Modificaciones al Aviso de Privacidad</h2>
-        <p>El presente aviso de privacidad puede sufrir modificaciones, cambios o actualizaciones derivadas de nuevos requerimientos legales o de nuevas funcionalidades incorporadas a la aplicación. Cualquier cambio será publicado en este sitio web y reflejado en las actualizaciones de la aplicación.</p>
-      </section>
+      <div class="contact-box">
+        <h3>📬 Canales Oficiales de Contacto</h3>
+        <div class="contact-links">
+          <a href="mailto:admin@lexlaboral.com.mx" class="contact-btn">
+            ✉️ admin@lexlaboral.com.mx
+          </a>
+          <a href="https://www.facebook.com/LexLaboral" target="_blank" rel="noopener noreferrer" class="contact-btn">
+            🌐 Facebook Oficial
+          </a>
+        </div>
+      </div>
 
       <div class="footer">
-        Lex Laboral • Sistema de Protección de Datos y Cumplimiento Normativo
+        Lex Laboral © 2026 • filex dev • Mérida, Yucatán, México
       </div>
     </div>
   </div>

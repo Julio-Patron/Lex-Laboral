@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ArrowLeft, Scale, FileText, Lock } from 'lucide-react';
+import { Shield, ArrowLeft, Scale, Mail, Globe, ExternalLink, ShieldCheck, FileCheck } from 'lucide-react';
 import { AppView } from '../types';
 
 interface LegalViewProps {
@@ -14,62 +14,96 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
   const content = isTerms ? (
     <>
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-slate-900 text-legal-gold rounded-2xl shadow-lg border border-white/10">
+        <div className="p-3 bg-slate-900 text-amber-400 rounded-2xl shadow-lg border border-white/10">
           <Scale size={32} />
         </div>
         <div>
           <h1 className="text-3xl font-serif font-bold text-slate-900 leading-tight">Términos y Condiciones</h1>
-          <p className="text-slate-500 text-sm font-medium">Última actualización: 29 de marzo de 2026</p>
+          <p className="text-slate-500 text-sm font-medium">Última actualización: Agosto 2026 • filex dev (Mérida, Yucatán)</p>
         </div>
       </div>
 
       <div className="prose prose-slate max-w-none space-y-8 text-slate-700 leading-relaxed text-[15px]">
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">01</span>
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">01</span>
             Aceptación y Titularidad
           </h2>
-          <p>Bienvenido a <strong>Lex Laboral</strong>. Al acceder y utilizar este sitio web y sus servicios asociados, usted acepta estar sujeto a estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>filex dev</strong> (en lo sucesivo, "el Titular"), con domicilio en Mérida, Yucatán, México.</p>
+          <p>Bienvenido a <strong>Lex Laboral</strong>. Al acceder y utilizar este sitio web, la aplicación móvil y sus herramientas jurídicas, usted acepta estar sujeto a estos Términos y Condiciones. La plataforma es propiedad de y está operada por <strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México.</p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">02</span>
-            Naturaleza de los Servicios (LegalTech & IA)
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">02</span>
+            Naturaleza de los Servicios y Parámetros Laborales 2026
           </h2>
           <div className="space-y-4">
-            <p><strong>2.1. Alcance:</strong> Lex Laboral es una herramienta de asistencia jurídica basada en inteligencia artificial (Google Gemini API). Provee cálculos de prestaciones laborales en México (LFT, IMSS) y redacción automatizada de borradores legales.</p>
+            <p>Lex Laboral provee herramientas de cálculo laboral y de seguridad social basadas en la legislación mexicana vigente (Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT), con soporte para cálculo de liquidaciones, finiquitos, cuotas obrero-patronales y proyecciones de pensión bajo las leyes de 1973 y 1997.</p>
             <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-2xl shadow-sm my-6">
               <p className="text-amber-900 font-bold mb-2 flex items-center gap-2 italic uppercase tracking-wider text-xs">
-                ⚠️ DESLINDE DE RESPONSABILIDAD CRÍTICO
+                ⚠️ DESLINDE DE RESPONSABILIDAD CRÍTICO (DISCLAIMER)
               </p>
-              <p className="text-sm leading-6"><strong>LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> El contenido es generado mediante algoritmos de IA y debe ser revisado por un abogado titulado antes de su uso oficial. filex dev no se hace responsable por errores en los cálculos o documentos que resulten en perjuicios legales o económicos para el Usuario.</p>
+              <p className="text-sm leading-6"><strong>LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> Los resultados y documentos emitidos son estimaciones matemáticas e informativas que deben ser evaluadas por un abogado o profesional legal antes de utilizarse en procedimientos judiciales o acuerdos laborales formales. filex dev no se responsabiliza por resoluciones o decisiones adoptadas a partir del uso de la aplicación.</p>
             </div>
           </div>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">03</span>
-            Pagos y Suscripciones (Stripe)
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">03</span>
+            Servicio Gratuito y Sin Registro
           </h2>
-          <p>Los pagos se procesan exclusivamente a través de la pasarela segura <strong>Stripe</strong>. Al realizar una compra, usted acepta los términos de uso de Stripe. Las suscripciones ("Pase Mensual" o "Trimestral") se cobran por adelantado y no son reembolsables, salvo disposición legal obligatoria en México.</p>
+          <p>Lex Laboral es un servicio <strong>completamente gratuito</strong>. No requiere registro de cuenta, compras dentro de la aplicación ni membresías de pago. Todas las calculadoras y descargas del archivo APK de la aplicación nativa están disponibles de manera abierta y sin costo.</p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">04</span>
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">04</span>
+            Privacidad y Procesamiento Local
+          </h2>
+          <p>En estricto respeto a la privacidad del usuario, todos los cálculos salariales y simulaciones se procesan de manera local en el navegador o en la aplicación del dispositivo móvil, sin que sus datos o expedientes se almacenen en servidores remotos de la plataforma.</p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">05</span>
             Propiedad Intelectual
           </h2>
-          <p>Todos los derechos sobre el software, código, diseño, logotipos y marcas pertenecen a <strong>filex dev</strong>. El Usuario tiene una licencia de uso limitada para generar y descargar documentos para fines personales o profesionales propios, sin derecho a revender la tecnología de la plataforma.</p>
+          <p>Todos los derechos sobre el software, código, diseño, marcas y logotipos pertenecen a <strong>filex dev</strong>. Se otorga una licencia de uso personal o profesional legítimo, sin autorización para redistribución comercial o ingeniería inversa.</p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-            <span className="w-8 h-8 rounded-xl bg-slate-900 text-legal-gold flex items-center justify-center text-xs font-bold">05</span>
-            Jurisdicción y Ley Aplicable
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">06</span>
+            Jurisdicción, Ley Aplicable y Canales de Contacto
           </h2>
-          <p>Para la interpretación y cumplimiento de estos términos, las partes se someten expresamente a las leyes vigentes de los Estados Unidos Mexicanos y a la jurisdicción de los tribunales competentes en la ciudad de <strong>Mérida, Yucatán</strong>, renunciando a cualquier otro fuero que pudiere corresponderles por razón de sus domicilios presentes o futuros.</p>
+          <p>Para la interpretación de estos términos, las partes se someten a las leyes aplicables de los Estados Unidos Mexicanos y a los tribunales competentes en la ciudad de <strong>Mérida, Yucatán</strong>.</p>
+          
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mt-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div>
+              <p className="text-sm font-bold text-slate-900 mb-1">Contacto Oficial:</p>
+              <p className="text-xs text-slate-600">Atención a dudas normativas, soporte técnico o sugerencias:</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a 
+                href="mailto:admin@lexlaboral.com.mx" 
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-semibold transition-colors"
+              >
+                <Mail size={14} className="text-amber-400" />
+                <span>admin@lexlaboral.com.mx</span>
+              </a>
+              <a 
+                href="https://www.facebook.com/LexLaboral" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-semibold transition-colors"
+              >
+                <Globe size={14} />
+                <span>Facebook Oficial</span>
+                <ExternalLink size={12} />
+              </a>
+            </div>
+          </div>
         </section>
       </div>
     </>
@@ -81,47 +115,74 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
         </div>
         <div>
           <h1 className="text-3xl font-serif font-bold text-slate-900 leading-tight">Aviso de Privacidad</h1>
-          <p className="text-slate-500 text-sm font-medium">Integral • Ley Federal de Protección de Datos Personales</p>
+          <p className="text-slate-500 text-sm font-medium">Integral • Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</p>
         </div>
       </div>
 
       <div className="prose prose-slate max-w-none space-y-8 text-slate-700 leading-relaxed text-[15px]">
         <section className="bg-emerald-50 border border-emerald-100 rounded-3xl p-8 text-emerald-900 mb-8 shadow-sm">
           <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+             <ShieldCheck size={20} className="text-emerald-700" />
              Identidad del Responsable
           </h2>
-          <p className="text-sm"><strong>filex dev</strong>, con domicilio en Mérida, Yucatán, es el responsable del tratamiento de sus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP). Correo de contacto: <strong>admin@lexlaboral.com.mx</strong>.</p>
+          <p className="text-sm"><strong>filex dev</strong>, con domicilio en la ciudad de Mérida, Yucatán, México, es el responsable del tratamiento de sus datos personales conforme a la LFPDPPP. Correo de contacto oficial: <strong>admin@lexlaboral.com.mx</strong>.</p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Datos Personales Tratados</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center text-xs font-bold">01</span>
+            Datos Personales Tratados y Cero Almacenamiento Centralizado
+          </h2>
           <ul className="list-disc pl-6 space-y-3">
-            <li><strong>Identificación:</strong> Nombre o alias para la personalización de documentos.</li>
-            <li><strong>Contacto:</strong> Correo electrónico para el envío de comprobantes de pago y acceso a la plataforma.</li>
-            <li><strong>Información Técnica:</strong> Los documentos que usted sube para análisis son procesados de forma efímera para generar el resultado mediante IA.</li>
+            <li><strong>Sin Registro:</strong> Lex Laboral no solicita cuentas de usuario, contraseñas ni recolección de correos electrónicos para utilizar sus calculadoras laborales.</li>
+            <li><strong>Procesamiento Local:</strong> Los cálculos de salarios, prestaciones, cuotas IMSS o estimaciones de pensión se realizan localmente en el dispositivo del usuario. No se transmiten ni almacenan en bases de datos remotas.</li>
+            <li><strong>Consultas Normativas:</strong> Las búsquedas en la Ley Federal del Trabajo son efímeras y no quedan vinculadas a perfiles de usuarios.</li>
           </ul>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Finalidades del Tratamiento</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center text-xs font-bold">02</span>
+            Finalidades del Tratamiento
+          </h2>
           <ul className="list-disc pl-6 space-y-3">
-            <li><strong>Primarias:</strong> Prestación del servicio de cálculo laboral, generación de borradores jurídicos y procesamiento de pagos vía Stripe.</li>
-            <li><strong>Secundarias:</strong> Mejora de la experiencia de usuario y envío ocasional de actualizaciones del sistema (previo consentimiento).</li>
+            <li><strong>Primarias:</strong> Proveer de forma instantánea y gratuita las estimaciones laborales, desglose de aportaciones patronales y proyecciones de pensión directamente en pantalla o formato PDF.</li>
+            <li><strong>Secundarias:</strong> Permitir al usuario conservar su historial de cálculo exclusivamente en el almacenamiento local de su propio navegador o teléfono móvil.</li>
           </ul>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Transferencias de Datos</h2>
-          <p>Le informamos que sus datos personales pueden ser compartidos con terceros únicamente para los fines del servicio:</p>
-          <ul className="list-disc pl-6 space-y-3 mt-4">
-            <li><strong>Google LLC (Gemini API):</strong> Procesa el contenido para generar el análisis inteligente.</li>
-            <li><strong>Stripe Inc:</strong> Procesa la información financiera de forma cifrada (filex dev no almacena números de tarjeta).</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Derechos ARCO</h2>
-          <p>Usted tiene derecho a conocer qué datos tenemos (Acceso), corregirlos (Rectificación), eliminarlos de nuestras bases (Cancelación) u oponerse al uso de los mismos para fines específicos (Oposición). Para ejercer estos derechos, envíe un correo a <strong>admin@lexlaboral.com.mx</strong>.</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+            <span className="w-8 h-8 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center text-xs font-bold">03</span>
+            Derechos ARCO y Contacto
+          </h2>
+          <p>Usted puede ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) o consultar cualquier aspecto de este aviso enviando un correo electrónico a <strong>admin@lexlaboral.com.mx</strong> o a través de nuestros canales oficiales.</p>
+          
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mt-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div>
+              <p className="text-sm font-bold text-slate-900 mb-1">Canales de Atención:</p>
+              <p className="text-xs text-slate-600">Contacto con el equipo de Lex Laboral:</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a 
+                href="mailto:admin@lexlaboral.com.mx" 
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-semibold transition-colors"
+              >
+                <Mail size={14} className="text-emerald-400" />
+                <span>admin@lexlaboral.com.mx</span>
+              </a>
+              <a 
+                href="https://www.facebook.com/LexLaboral" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-semibold transition-colors"
+              >
+                <Globe size={14} />
+                <span>Facebook Oficial</span>
+                <ExternalLink size={12} />
+              </a>
+            </div>
+          </div>
         </section>
       </div>
     </>
@@ -149,7 +210,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
           
           <div className="mt-16 pt-8 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-              Lex Laboral • Sistema de Protección de Datos y Cumplimiento Normativo
+              Lex Laboral © 2026 • filex dev • Mérida, Yucatán
             </p>
           </div>
         </motion.div>

@@ -43,6 +43,7 @@ android/keystore.properties
 android/app/lexlaboral-release.keystore
 android/app/src/main/assets/
 *.apk
+!public/*.apk
 
 # Firebase
 .firebase/
