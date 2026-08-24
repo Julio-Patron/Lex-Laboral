@@ -60,6 +60,7 @@ export const LaborCalculator: React.FC<{
   const [aguinaldoDays, setAguinaldoDays] = useState<number>(15);
   const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showResultDetails, setShowResultDetails] = useState(false);
   const [expandedBreakdown, setExpandedBreakdown] = useState<string | null>(null);
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
@@ -129,8 +130,26 @@ export const LaborCalculator: React.FC<{
   } | null>(null);
 
   const loadExampleCase = () => {
+    const exampleDailySalary = calculateSDI(30000, 'monthly', 15, 12, 25);
+    const exampleResult = calculateLaborSettlement({
+      dailySalary: exampleDailySalary,
+      yearsOfService: 3,
+      daysOfService: 180,
+      vacationDays: 12,
+      vacationPremium: 25,
+      aguinaldoDays: 15,
+      doubleOvertimeHours: 0,
+      tripleOvertimeHours: 0,
+      hoursPerDay: 8,
+      dismissalType: 'injustificado',
+      minWage: MEXICO_LABOR_DEFAULTS_2026.minWage,
+      umaValue: MEXICO_LABOR_DEFAULTS_2026.uma,
+    });
+
     setSalaryPeriod('monthly');
     setBaseSalary(30000);
+    setDailySalary(exampleDailySalary);
+    setIsSdiCalculated(true);
     setStartDate('');
     setEndDate('');
     setYearsOfService(3);
@@ -140,10 +159,16 @@ export const LaborCalculator: React.FC<{
     setAguinaldoDays(15);
     setDoubleOvertimeHours(0);
     setTripleOvertimeHours(0);
+    setHoursPerDay(8);
     setDismissalType('injustificado');
+    setMinWage(MEXICO_LABOR_DEFAULTS_2026.minWage);
+    setUmaValue(MEXICO_LABOR_DEFAULTS_2026.uma);
     setShowErrors(false);
-    setResults(null);
-    notify('Ejemplo cargado para liquidación', 'info');
+    setShowResultDetails(false);
+    setExpandedBreakdown(null);
+    setResults(exampleResult);
+    notify('Ejemplo calculado para liquidación', 'success');
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const calculate = async () => {
@@ -170,6 +195,8 @@ export const LaborCalculator: React.FC<{
     };
 
     const result = calculateLaborSettlement(input);
+    setShowResultDetails(false);
+    setExpandedBreakdown(null);
     setResults(result);
     
     notify("Cálculo generado exitosamente", "success");
@@ -272,8 +299,10 @@ export const LaborCalculator: React.FC<{
               {dismissalOptions.map((option) => (
                 <button
                   key={option.value}
+                  type="button"
                   onClick={() => setDismissalType(option.value)}
                   title={dismissalLabels[option.value]}
+                  aria-pressed={dismissalType === option.value}
                   className={`ui-segmented-option ${dismissalType === option.value ? 'ui-segmented-option-active' : ''}`}
                 >
                   {option.label}
@@ -306,7 +335,7 @@ export const LaborCalculator: React.FC<{
                 <div className="ui-subtle-block space-y-4 p-4">
                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <label className="ui-label px-0">Sueldo bruto por periodo</label>
+                        <label htmlFor="laborBaseSalary" className="ui-label px-0">Sueldo bruto por periodo</label>
                         <p className="mt-1 text-xs leading-5 text-slate-500">Elige si capturas sueldo diario, semanal, quincenal o mensual.</p>
                       </div>
                       <div className="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1">
@@ -315,6 +344,7 @@ export const LaborCalculator: React.FC<{
                             key={p}
                             type="button"
                             aria-label={`Periodo ${p}`}
+                            aria-pressed={salaryPeriod === p}
                             onClick={() => setSalaryPeriod(p)}
                             className={`rounded-md px-2 py-1.5 text-[11px] font-extrabold transition-all ${salaryPeriod === p ? 'bg-slate-950 text-legal-gold shadow-sm' : 'text-slate-500 hover:bg-white hover:text-slate-800'}`}
                           >
@@ -325,7 +355,7 @@ export const LaborCalculator: React.FC<{
                    </div>
                    <div className="relative group">
                       <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
-                      <input type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
+                      <input id="laborBaseSalary" type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                    </div>
                    <p className="px-2 text-xs leading-5 text-slate-500">
                      Calculamos el salario diario integrado con aguinaldo, vacaciones y prima vacacional.
@@ -373,8 +403,9 @@ export const LaborCalculator: React.FC<{
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <label className="ui-label">Años</label>
+                      <label htmlFor="laborYearsOfService" className="ui-label">Años</label>
                       <input
+                        id="laborYearsOfService"
                         type="number"
                         value={yearsOfService || ''}
                         min="0"
@@ -384,8 +415,9 @@ export const LaborCalculator: React.FC<{
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ui-label">Días</label>
+                      <label htmlFor="laborDaysOfService" className="ui-label">Días</label>
                       <input
+                        id="laborDaysOfService"
                         type="number"
                         value={daysOfService || ''}
                         min="0"
@@ -402,7 +434,7 @@ export const LaborCalculator: React.FC<{
                   )}
                 </div>
 
-                <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
+                <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
                   <div className="flex items-center gap-3">
                     <Settings2 size={16} />
                     <span className="text-xs font-bold uppercase tracking-[0.2em]">Más opciones</span>
@@ -414,20 +446,20 @@ export const LaborCalculator: React.FC<{
                   {showAdvanced && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block grid grid-cols-1 gap-4 overflow-hidden p-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="ui-label">Aguinaldo anual en días</label>
-                        <input type="number" value={aguinaldoDays} onChange={(e) => setAguinaldoDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        <label htmlFor="laborAguinaldoDays" className="ui-label">Aguinaldo anual en días</label>
+                        <input id="laborAguinaldoDays" type="number" value={aguinaldoDays} onChange={(e) => setAguinaldoDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
-                        <label className="ui-label">Vacaciones anuales en días</label>
-                        <input type="number" value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        <label htmlFor="laborVacationDays" className="ui-label">Vacaciones anuales en días</label>
+                        <input id="laborVacationDays" type="number" value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
-                        <label className="ui-label">Salario mínimo vigente</label>
-                        <input type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        <label htmlFor="laborMinWage" className="ui-label">Salario mínimo vigente</label>
+                        <input id="laborMinWage" type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
-                        <label className="ui-label">UMA vigente</label>
-                        <input type="number" value={umaValue} onChange={(e) => setUmaValue(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        <label htmlFor="laborUmaValue" className="ui-label">UMA vigente</label>
+                        <input id="laborUmaValue" type="number" value={umaValue} onChange={(e) => setUmaValue(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                     </motion.div>
                   )}
@@ -479,15 +511,34 @@ export const LaborCalculator: React.FC<{
                         </div>
                       </div>
                       <div className="flex shrink-0 gap-3">
-                        <button onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
+                        <button type="button" onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
                           <FileDown size={18} /> <span>PDF</span>
                         </button>
-                        <button onClick={() => setResults(null)} className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10">
+                        <button
+                          type="button"
+                          onClick={() => { setResults(null); setShowResultDetails(false); }}
+                          aria-label="Reiniciar cálculo laboral"
+                          title="Reiniciar cálculo"
+                          className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
+                        >
                           <RefreshCw size={18} />
                         </button>
                       </div>
                     </div>
 
+                    <div className="border-b border-slate-100 bg-white p-4 sm:p-5">
+                      <button
+                        type="button"
+                        onClick={() => setShowResultDetails((visible) => !visible)}
+                        aria-expanded={showResultDetails}
+                        className="flex w-full items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:bg-slate-100"
+                      >
+                        <span>{showResultDetails ? 'Ocultar composición y desglose' : 'Ver composición y desglose'}</span>
+                        <ChevronDown size={16} className={`shrink-0 transition-transform ${showResultDetails ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+
+                    {showResultDetails && (
                     <div className="grid grid-cols-1 md:grid-cols-2">
                       <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
                         <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
@@ -543,6 +594,7 @@ export const LaborCalculator: React.FC<{
                         </div>
                       </div>
                     </div>
+                    )}
                   </WorkspacePanel>
 
                   <div className="grid gap-4 md:grid-cols-1">

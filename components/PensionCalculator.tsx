@@ -37,6 +37,7 @@ export const PensionCalculator: React.FC<{
 
   // Advanced options
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showResultDetails, setShowResultDetails] = useState(false);
   const [hasSpouse, setHasSpouse] = useState(false);
   const [childrenCount, setChildrenCount] = useState<number>(0);
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
@@ -58,6 +59,20 @@ export const PensionCalculator: React.FC<{
   } | null>(null);
 
   const loadExample = () => {
+    const exampleInput: PensionInput = {
+      age: 65,
+      weeks: regime === '1973' ? 1250 : 1000,
+      averageSalary: regime === '1973' ? 850 : 0,
+      aforeBalance: regime === '1997' ? 950000 : 0,
+      hasSpouse: false,
+      childrenCount: 0,
+      minWage,
+      umaValue,
+    };
+    const exampleResult = regime === '1973'
+      ? calculatePension73(exampleInput)
+      : calculatePension97(exampleInput);
+
     setAge(65);
     if (regime === '1973') {
       setWeeks(1250);
@@ -73,8 +88,10 @@ export const PensionCalculator: React.FC<{
       setChildrenCount(0);
     }
     setShowAdvanced(false);
-    setResults(null);
-    notify('Ejemplo cargado para pensiones', 'info');
+    setShowResultDetails(false);
+    setResults(exampleResult);
+    notify('Ejemplo calculado para pensiones', 'success');
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const calculatePension = () => {
@@ -101,6 +118,7 @@ export const PensionCalculator: React.FC<{
       return;
     }
 
+    setShowResultDetails(false);
     setResults(result);
 
     notify("Cálculo realizado exitosamente", "success");
@@ -112,12 +130,7 @@ export const PensionCalculator: React.FC<{
   };
 
   const chartData = useMemo(() => {
-    if (!results) return [];
-    if (results.regimeUsed === '1997') {
-      return [
-        { name: 'Pensión AFORE', value: results.monthlyPension, color: '#0f172a' }
-      ];
-    }
+    if (!results || results.regimeUsed !== '1973') return [];
 
     return [
       { name: 'Cuantía Básica', value: results.basicAmount, color: '#94a3b8' },
@@ -206,10 +219,13 @@ export const PensionCalculator: React.FC<{
               {(['1973', '1997'] as const).map((r) => (
                 <button
                   key={r}
+                  type="button"
                   onClick={() => {
                     setRegime(r);
                     setResults(null);
+                    setShowResultDetails(false);
                   }}
+                  aria-pressed={regime === r}
                   className={`ui-segmented-option ${regime === r ? 'ui-segmented-option-active' : ''}`}
                 >
                   Ley {r}
@@ -249,13 +265,13 @@ export const PensionCalculator: React.FC<{
 
               <div className="ui-form-grid">
                 <div className="space-y-2">
-                  <label className="ui-label">Edad al retiro</label>
-                  <input type="number" value={age || ''} onChange={(e) => setAge(Number(e.target.value))} className="ui-input-lg w-full px-4" placeholder="60" min="60" />
+                  <label htmlFor="pensionAge" className="ui-label">Edad al retiro</label>
+                  <input id="pensionAge" type="number" value={age || ''} onChange={(e) => setAge(Number(e.target.value))} className="ui-input-lg w-full px-4" placeholder="60" min="60" />
                   <p className="px-1 text-xs leading-5 text-slate-500">Mínimo 60 años para cesantía; 65 para vejez.</p>
                 </div>
                 <div className="space-y-2">
-                  <label className="ui-label">Semanas reconocidas</label>
-                  <input type="number" value={weeks || ''} onChange={(e) => setWeeks(Number(e.target.value))} className="ui-input-lg w-full px-4" placeholder="500" />
+                  <label htmlFor="pensionWeeks" className="ui-label">Semanas reconocidas</label>
+                  <input id="pensionWeeks" type="number" value={weeks || ''} onChange={(e) => setWeeks(Number(e.target.value))} className="ui-input-lg w-full px-4" placeholder="500" />
                   <p className="px-1 text-xs leading-5 text-slate-500">
                     {regime === '1973' ? 'Ley 73 requiere al menos 500 semanas.' : 'Ley 97 requiere 875 semanas en 2026.'}
                   </p>
@@ -264,25 +280,25 @@ export const PensionCalculator: React.FC<{
 
               {regime === '1973' ? (
                 <div className="ui-subtle-block space-y-4 p-4">
-                  <label className="ui-label">Salario diario promedio de las últimas 250 semanas</label>
+                  <label htmlFor="pensionAverageSalary" className="ui-label">Salario diario promedio de las últimas 250 semanas</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
-                    <input type="number" value={averageSalary || ''} onChange={(e) => setAverageSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
+                    <input id="pensionAverageSalary" type="number" value={averageSalary || ''} onChange={(e) => setAverageSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                   </div>
                   <p className="text-xs leading-5 text-slate-500">Si tienes tu constancia de semanas, usa el promedio salarial que aparece como referencia.</p>
                 </div>
               ) : (
                 <div className="ui-subtle-block space-y-4 p-4">
-                  <label className="ui-label">Saldo acumulado en AFORE</label>
+                  <label htmlFor="pensionAforeBalance" className="ui-label">Saldo acumulado en AFORE</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
-                    <input type="number" value={aforeBalance || ''} onChange={(e) => setAforeBalance(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
+                    <input id="pensionAforeBalance" type="number" value={aforeBalance || ''} onChange={(e) => setAforeBalance(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                   </div>
                   <p className="text-xs leading-5 text-slate-500">Captura el saldo total de la cuenta individual para estimar una mensualidad aproximada.</p>
                 </div>
               )}
 
-              <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
+              <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
                 <div className="flex items-center gap-3">
                   <Settings2 size={16} />
                   <span className="text-xs font-bold uppercase tracking-[0.2em]">Configuración Adicional</span>
@@ -296,22 +312,22 @@ export const PensionCalculator: React.FC<{
                     {regime === '1973' && (
                       <>
                         <div className="space-y-2 col-span-2 flex items-center justify-between">
-                          <label className="ui-label mb-0">Asignación por cónyuge</label>
-                          <input type="checkbox" checked={hasSpouse} onChange={(e) => setHasSpouse(e.target.checked)} className="w-5 h-5 rounded border-slate-300 text-legal-gold focus:ring-legal-gold" />
+                          <label htmlFor="pensionHasSpouse" className="ui-label mb-0">Asignación por cónyuge</label>
+                          <input id="pensionHasSpouse" type="checkbox" checked={hasSpouse} onChange={(e) => setHasSpouse(e.target.checked)} className="w-5 h-5 rounded border-slate-300 text-legal-gold focus:ring-legal-gold" />
                         </div>
                         <div className="space-y-2 col-span-2">
-                          <label className="ui-label">Hijos con posible asignación familiar</label>
-                          <input type="number" value={childrenCount === 0 ? '' : childrenCount} onChange={(e) => setChildrenCount(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" placeholder="0" />
+                          <label htmlFor="pensionChildren" className="ui-label">Hijos con posible asignación familiar</label>
+                          <input id="pensionChildren" type="number" value={childrenCount === 0 ? '' : childrenCount} onChange={(e) => setChildrenCount(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" placeholder="0" />
                         </div>
                       </>
                     )}
                     <div className="space-y-2">
-                      <label className="ui-label">Salario Mínimo</label>
-                      <input type="number" value={minWage || ''} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" />
+                      <label htmlFor="pensionMinWage" className="ui-label">Salario Mínimo</label>
+                      <input id="pensionMinWage" type="number" value={minWage || ''} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" />
                     </div>
                     <div className="space-y-2">
-                      <label className="ui-label">Valor UMA</label>
-                      <input type="number" value={umaValue || ''} onChange={(e) => setUmaValue(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" />
+                      <label htmlFor="pensionUmaValue" className="ui-label">Valor UMA</label>
+                      <input id="pensionUmaValue" type="number" value={umaValue || ''} onChange={(e) => setUmaValue(Number(e.target.value))} className="ui-input w-full px-4 py-3 text-xs" />
                     </div>
                   </motion.div>
                 )}
@@ -360,16 +376,48 @@ export const PensionCalculator: React.FC<{
                       </div>
                     </div>
                     <div className="flex shrink-0 gap-3">
-                      <button onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
+                      <button type="button" onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
                         <FileDown size={18} /> <span>PDF</span>
                       </button>
-                      <button onClick={() => setResults(null)} className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10">
+                      <button
+                        type="button"
+                        onClick={() => { setResults(null); setShowResultDetails(false); }}
+                        aria-label="Reiniciar cálculo de pensión"
+                        title="Reiniciar cálculo"
+                        className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
+                      >
                         <RefreshCw size={18} />
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2">
+                  <div className="border-b border-amber-200 bg-amber-50 p-4 sm:p-5">
+                    <div className="flex items-start gap-3">
+                      <Info size={16} className="mt-0.5 shrink-0 text-orange-500" />
+                      <div>
+                        <span className="text-xs font-bold uppercase tracking-wide text-orange-800">Cálculo estimado</span>
+                        <p className="mt-1 text-xs leading-relaxed text-orange-700/80">
+                          El cálculo oficial debe ser emitido por el IMSS. Esta referencia aplica redondeos y factores simplificados.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-b border-slate-100 bg-white p-4 sm:p-5">
+                    <button
+                      type="button"
+                      onClick={() => setShowResultDetails((visible) => !visible)}
+                      aria-expanded={showResultDetails}
+                      className="flex w-full items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:bg-slate-100"
+                    >
+                      <span>{showResultDetails ? 'Ocultar detalle del cálculo' : 'Ver detalle del cálculo'}</span>
+                      <ChevronDown size={16} className={`shrink-0 transition-transform ${showResultDetails ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+
+                  {showResultDetails && (
+                  <div className={`grid grid-cols-1 ${results.regimeUsed === '1973' ? 'md:grid-cols-2' : ''}`}>
+                    {results.regimeUsed === '1973' && (
                     <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
                       <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
                       <div className="h-[280px]">
@@ -378,6 +426,7 @@ export const PensionCalculator: React.FC<{
                         </React.Suspense>
                       </div>
                     </div>
+                    )}
 
                     <div className="space-y-4 overflow-visible p-5 sm:p-6">
                       <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
@@ -438,17 +487,9 @@ export const PensionCalculator: React.FC<{
                         </div>
                       )}
 
-                      <div className="mt-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                        <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-xs font-bold text-orange-800 tracking-wide uppercase">Cálculo Estimado</span>
-                          <p className="text-xs text-orange-600/80 mt-1 leading-relaxed">
-                            Este resultado es una <strong>estimación</strong>. El cálculo oficial debe ser emitido por el Instituto Mexicano del Seguro Social. Se aplican redondeos y factores simplificados para propósitos ilustrativos.
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   </div>
+                  )}
                 </WorkspacePanel>
               </motion.div>
             )}

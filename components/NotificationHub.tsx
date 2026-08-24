@@ -42,7 +42,9 @@ export const NotificationHub: React.FC<NotificationHubProps> = ({ notifications,
             <p className="break-words text-sm leading-relaxed text-slate-700">{n.message}</p>
           </div>
           <button 
+            type="button"
             onClick={() => onDismiss(n.id)}
+            aria-label="Cerrar notificación"
             className="ml-4 text-slate-400 hover:text-slate-600 transition-colors"
           >
             <X size={16} />

@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useCallback, useEffect, useRef, Suspense, lazy } from 'react';
 import { Home } from './components/Home';
 import { NotificationHub } from './components/NotificationHub';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -23,6 +23,8 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => getViewForPath(window.location.pathname));
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem('lex.sidebar.collapsed') === 'true';
@@ -41,6 +43,13 @@ function App() {
   // SEO: update tags on mount with initial view
   useEffect(() => {
     updateSEO(currentView);
+  }, [currentView]);
+
+  // Cada herramienta es un recorrido independiente: debe empezar desde su encabezado,
+  // incluso al usar Atrás/Adelante del navegador.
+  useEffect(() => {
+    contentScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [currentView]);
 
   // Change view with analytics and SEO
@@ -66,6 +75,19 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem('lex.sidebar.collapsed', String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const syncViewport = (event?: MediaQueryListEvent) => {
+      setIsMobileViewport(event ? event.matches : mediaQuery.matches);
+    };
+
+    syncViewport();
+    mediaQuery.addEventListener('change', syncViewport);
+    return () => mediaQuery.removeEventListener('change', syncViewport);
+  }, []);
+
+  const isMobileSidebarHidden = isMobileViewport && !isSidebarOpen;
 
   const renderView = () => {
     return (
@@ -141,13 +163,18 @@ function App() {
             className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 md:hidden ${
               isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
+            aria-hidden="true"
             onClick={() => setIsSidebarOpen(false)}
           />
 
           {/* Sidebar Container */}
-          <div className={`fixed inset-y-0 left-0 z-[70] max-w-[86vw] transform transition-transform duration-300 ease-out md:relative md:max-w-none md:translate-x-0 ${
-            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}>
+          <div
+            className={`fixed inset-y-0 left-0 z-[70] max-w-[86vw] transform transition-transform duration-300 ease-out md:relative md:max-w-none md:translate-x-0 ${
+              isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+            aria-hidden={isMobileSidebarHidden}
+            inert={isMobileSidebarHidden}
+          >
             <Suspense fallback={null}>
               <Sidebar
                 currentView={currentView}
@@ -162,7 +189,7 @@ function App() {
       )}
 
       <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50">
-        <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
+        <div ref={contentScrollRef} className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
           {renderView()}
         </div>
       </main>

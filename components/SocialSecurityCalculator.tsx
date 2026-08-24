@@ -37,6 +37,7 @@ const formatCurrency = (value: number) =>
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
+  const resultsRef = React.useRef<HTMLDivElement>(null);
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); 
   const [days, setDays] = useState<number>(30);
@@ -53,6 +54,7 @@ export const SocialSecurityCalculator: React.FC<{
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showResultDetails, setShowResultDetails] = useState(false);
 
   const [results, setResults] = useState<{
     employer: {
@@ -79,14 +81,30 @@ export const SocialSecurityCalculator: React.FC<{
     total: number;
   } | null>(null);
 
+  const revealResults = () => {
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  };
+
   const loadExample = () => {
+    const exampleInput: SocialSecurityInput = {
+      sbc: 650,
+      riskClass: 1.13065,
+      days: 30,
+      umaValue: MEXICO_LABOR_DEFAULTS_2026.uma,
+      minWage: MEXICO_LABOR_DEFAULTS_2026.minWage,
+    };
+
     setSbc(650);
     setRiskClass(1.13065);
     setDays(30);
     setShowRiskCalc(false);
     setShowAdvanced(false);
-    setResults(null);
-    notify('Ejemplo cargado para IMSS e INFONAVIT', 'info');
+    setMinWage(MEXICO_LABOR_DEFAULTS_2026.minWage);
+    setUmaValue(MEXICO_LABOR_DEFAULTS_2026.uma);
+    setShowResultDetails(false);
+    setResults(calculateSocialSecurity(exampleInput));
+    notify('Ejemplo calculado para IMSS e INFONAVIT', 'success');
+    revealResults();
   };
 
   const applyRiskPreset = (value: number) => {
@@ -110,9 +128,11 @@ export const SocialSecurityCalculator: React.FC<{
 
     const input: SocialSecurityInput = { sbc, riskClass, days, umaValue, minWage };
     const results = calculateSocialSecurity(input);
+    setShowResultDetails(false);
     setResults(results);
 
     notify("Cálculo finalizado", "success");
+    revealResults();
   };
 
   const calculateAnnualRiskValue = () => {
@@ -171,6 +191,19 @@ export const SocialSecurityCalculator: React.FC<{
     notify('PDF generado correctamente', 'success');
   };
 
+  const contributionRows = results ? [
+    { group: 'IMSS', label: 'Enfermedad y maternidad: cuota fija', pat: results.employer.fixed, trab: 0 },
+    { group: 'IMSS', label: 'Enfermedad y maternidad: excedente de 3 UMA', pat: results.employer.excedente, trab: results.employee.excedente },
+    { group: 'IMSS', label: 'Enfermedad y maternidad: prestaciones en dinero', pat: results.employer.dinero, trab: results.employee.dinero },
+    { group: 'IMSS', label: 'Gastos médicos para pensionados', pat: results.employer.pensionados, trab: results.employee.pensionados },
+    { group: 'IMSS', label: 'Invalidez y vida', pat: results.employer.invalidez, trab: results.employee.invalidez },
+    { group: 'IMSS', label: 'Riesgos de trabajo', pat: results.employer.riesgo, trab: 0 },
+    { group: 'IMSS', label: 'Guarderías y prestaciones sociales', pat: results.employer.guarderia, trab: 0 },
+    { group: 'Retiro y vivienda', label: 'Retiro', pat: results.employer.retiro, trab: 0 },
+    { group: 'Retiro y vivienda', label: 'Cesantía en edad avanzada y vejez', pat: results.employer.cesantia, trab: results.employee.cesantia },
+    { group: 'Retiro y vivienda', label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
+  ] : [];
+
   return (
     <WorkspacePage>
       <WorkspaceHeader
@@ -195,10 +228,10 @@ export const SocialSecurityCalculator: React.FC<{
               </div>
               <div className="space-y-5">
                 <div className="space-y-3">
-                  <label className="ui-label">Salario diario base de cotización</label>
+                  <label htmlFor="imssSbc" className="ui-label">Salario diario base de cotización</label>
                   <div className="relative group">
                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">$</span>
-                    <input type="number" value={sbc || ''} onChange={(e) => setSbc(Number(e.target.value))} className="ui-input w-full pl-10 pr-4 text-lg font-bold" placeholder="0.00" />
+                    <input id="imssSbc" type="number" value={sbc || ''} onChange={(e) => setSbc(Number(e.target.value))} className="ui-input w-full pl-10 pr-4 text-lg font-bold" placeholder="0.00" />
                   </div>
                   <p className="px-1 text-xs leading-5 text-slate-500">
                     También lo verás como SBC. Normalmente aparece en nómina, SUA o IDSE.
@@ -207,8 +240,8 @@ export const SocialSecurityCalculator: React.FC<{
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-1">
-                    <label className="ui-label px-0">Clase de riesgo</label>
-                    <button onClick={() => setShowRiskCalc(!showRiskCalc)} className="rounded-md px-2 py-1 text-xs font-bold text-legal-gold transition-colors hover:bg-legal-gold/10">
+                    <label htmlFor="imssRiskClass" className="ui-label px-0">Clase de riesgo</label>
+                    <button type="button" onClick={() => setShowRiskCalc(!showRiskCalc)} aria-expanded={showRiskCalc} className="rounded-md px-2 py-1 text-xs font-bold text-legal-gold transition-colors hover:bg-legal-gold/10">
                       Calcular prima anual
                     </button>
                   </div>
@@ -218,6 +251,7 @@ export const SocialSecurityCalculator: React.FC<{
                         key={preset.label}
                         type="button"
                         onClick={() => applyRiskPreset(preset.value)}
+                        aria-pressed={riskClass === preset.value}
                         className={`min-w-0 rounded-lg border p-3 text-left transition-all hover:border-legal-gold/60 hover:bg-legal-gold/5 ${
                           riskClass === preset.value ? 'border-legal-gold/70 bg-legal-gold/10 text-slate-950' : 'border-slate-200 bg-white text-slate-700'
                         }`}
@@ -227,7 +261,7 @@ export const SocialSecurityCalculator: React.FC<{
                       </button>
                     ))}
                   </div>
-                  <select value={riskClass} onChange={(e) => setRiskClass(Number(e.target.value))} className="ui-input">
+                  <select id="imssRiskClass" value={riskClass} onChange={(e) => setRiskClass(Number(e.target.value))} className="ui-input">
                     <option value={0}>Seleccione clase...</option>
                     <option value={0.54355}>Clase I (0.54355%)</option>
                     <option value={1.13065}>Clase II (1.13065%)</option>
@@ -257,37 +291,38 @@ export const SocialSecurityCalculator: React.FC<{
 
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="ui-label">Días subsidiados</label>
-                          <input type="number" value={s_days || ''} onChange={(e) => setS_days(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                          <label htmlFor="imssSubsidizedDays" className="ui-label">Días subsidiados</label>
+                          <input id="imssSubsidizedDays" type="number" value={s_days || ''} onChange={(e) => setS_days(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                         </div>
                         <div className="space-y-2">
-                          <label className="ui-label">Factor V</label>
-                          <input type="number" value={v_factor || ''} onChange={(e) => setV_factor(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                          <label htmlFor="imssFactorV" className="ui-label">Factor V</label>
+                          <input id="imssFactorV" type="number" value={v_factor || ''} onChange={(e) => setV_factor(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                         </div>
                         <div className="space-y-2">
-                          <label className="ui-label">Incapacidades</label>
-                          <input type="number" value={i_disability || ''} onChange={(e) => setI_disability(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                          <label htmlFor="imssDisabilities" className="ui-label">Incapacidades</label>
+                          <input id="imssDisabilities" type="number" value={i_disability || ''} onChange={(e) => setI_disability(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                         </div>
                         <div className="space-y-2">
-                          <label className="ui-label">Defunciones</label>
-                          <input type="number" value={d_deaths || ''} onChange={(e) => setD_deaths(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                          <label htmlFor="imssDeaths" className="ui-label">Defunciones</label>
+                          <input id="imssDeaths" type="number" value={d_deaths || ''} onChange={(e) => setD_deaths(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                         </div>
                         <div className="space-y-2">
-                          <label className="ui-label">Factor F</label>
-                          <input type="number" value={f_factor || ''} onChange={(e) => setF_factor(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                          <label htmlFor="imssFactorF" className="ui-label">Factor F</label>
+                          <input id="imssFactorF" type="number" value={f_factor || ''} onChange={(e) => setF_factor(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                         </div>
                         <div className="space-y-2">
-                          <label className="ui-label">Trabajadores</label>
-                          <input type="number" value={n_workers || ''} onChange={(e) => setN_workers(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                          <label htmlFor="imssWorkers" className="ui-label">Trabajadores</label>
+                          <input id="imssWorkers" type="number" value={n_workers || ''} onChange={(e) => setN_workers(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="ui-label">Prima mínima</label>
-                        <input type="number" value={m_min || ''} onChange={(e) => setM_min(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" step="0.0001" />
+                        <label htmlFor="imssMinimumRisk" className="ui-label">Prima mínima</label>
+                        <input id="imssMinimumRisk" type="number" value={m_min || ''} onChange={(e) => setM_min(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" step="0.0001" />
                       </div>
 
                       <button
+                        type="button"
                         onClick={calculateAnnualRiskValue}
                         className="ui-secondary-action w-full uppercase tracking-[0.12em]"
                       >
@@ -298,12 +333,12 @@ export const SocialSecurityCalculator: React.FC<{
                 </AnimatePresence>
 
                 <div className="space-y-3">
-                  <label className="ui-label">Días cotizados</label>
-                  <input type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="ui-input" />
+                  <label htmlFor="imssContributionDays" className="ui-label">Días cotizados</label>
+                  <input id="imssContributionDays" type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} className="ui-input" />
                   <p className="px-1 text-xs leading-5 text-slate-500">Usa 30 para estimación mensual o el número real de días del periodo.</p>
                 </div>
 
-                <button onClick={() => setShowAdvanced(!showAdvanced)} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
+                <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
                   <div className="flex items-center gap-3">
                     <Settings2 size={16} />
                     <span className="text-xs font-bold uppercase tracking-[0.2em]">Constantes 2026</span>
@@ -314,12 +349,12 @@ export const SocialSecurityCalculator: React.FC<{
                   {showAdvanced && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block space-y-4 overflow-hidden p-4">
                       <div className="space-y-2">
-                        <label className="ui-label">Salario mínimo vigente</label>
-                        <input type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        <label htmlFor="imssMinWage" className="ui-label">Salario mínimo vigente</label>
+                        <input id="imssMinWage" type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
-                        <label className="ui-label">UMA vigente</label>
-                        <input type="number" value={umaValue} onChange={(e) => setUmaValue(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                        <label htmlFor="imssUmaValue" className="ui-label">UMA vigente</label>
+                        <input id="imssUmaValue" type="number" value={umaValue} onChange={(e) => setUmaValue(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                     </motion.div>
                   )}
@@ -334,7 +369,7 @@ export const SocialSecurityCalculator: React.FC<{
             </WorkspacePanel>
           </div>
 
-          <div className="min-w-0 lg:col-span-8">
+          <div ref={resultsRef} className="min-w-0 lg:col-span-8">
             <AnimatePresence mode="wait">
               {!results ? (
                 <WorkspaceEmpty
@@ -345,9 +380,9 @@ export const SocialSecurityCalculator: React.FC<{
               ) : (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
+                    <WorkspaceStat label="Total" value={`$${results.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="inverse" />
                     <WorkspaceStat label="Patrón" value={`$${results.employer.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} />
                     <WorkspaceStat label="Trabajador" value={`$${results.employee.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="accent" />
-                    <WorkspaceStat label="Total" value={`$${results.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="inverse" />
                   </div>
 
                   <WorkspacePanel className="p-5 sm:p-6">
@@ -382,9 +417,49 @@ export const SocialSecurityCalculator: React.FC<{
                   <WorkspacePanel className="overflow-hidden">
                     <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-5 sm:p-6">
                       <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-900">Desglose de cuotas</h4>
-                      <button onClick={handleExport} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-legal-950" aria-label="Exportar PDF"><Download size={20} /></button>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={handleExport} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-legal-950" aria-label="Exportar PDF"><Download size={20} /></button>
+                        <button
+                          type="button"
+                          onClick={() => setShowResultDetails((visible) => !visible)}
+                          aria-expanded={showResultDetails}
+                          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700 transition-colors hover:bg-slate-100"
+                        >
+                          {showResultDetails ? 'Ocultar' : 'Ver conceptos'}
+                        </button>
+                      </div>
                     </div>
-                    <div className="overflow-x-auto p-0 no-scrollbar">
+                    {showResultDetails && (
+                    <>
+                    <div className="space-y-3 p-4 lg:hidden">
+                      {contributionRows.map((row, index, rows) => (
+                        <React.Fragment key={row.label}>
+                          {(index === 0 || rows[index - 1].group !== row.group) && (
+                            <p className="px-1 pt-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                              {row.group}
+                            </p>
+                          )}
+                          <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <h5 className="text-sm font-bold leading-5 text-slate-800">{row.label}</h5>
+                            <dl className="mt-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
+                              <div className="rounded-lg bg-slate-950 p-3 text-white">
+                                <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total</dt>
+                                <dd className="mt-1 font-sans text-sm font-extrabold tabular-nums text-legal-gold">${formatCurrency(row.pat + row.trab)}</dd>
+                              </div>
+                              <div className="rounded-lg bg-slate-50 p-3">
+                                <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Patrón</dt>
+                                <dd className="mt-1 font-sans text-sm font-bold tabular-nums text-slate-800">${formatCurrency(row.pat)}</dd>
+                              </div>
+                              <div className="rounded-lg bg-slate-50 p-3">
+                                <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Trabajador</dt>
+                                <dd className="mt-1 font-sans text-sm font-bold tabular-nums text-slate-800">${formatCurrency(row.trab)}</dd>
+                              </div>
+                            </dl>
+                          </article>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    <div className="hidden overflow-x-auto p-0 lg:block">
                       <table className="w-full min-w-[620px] text-left lg:min-w-0">
                         <thead>
                           <tr className="bg-slate-50">
@@ -395,18 +470,7 @@ export const SocialSecurityCalculator: React.FC<{
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                          {[
-                            { group: 'IMSS', label: 'Enfermedad y maternidad: cuota fija', pat: results.employer.fixed, trab: 0 },
-                            { group: 'IMSS', label: 'Enfermedad y maternidad: excedente de 3 UMA', pat: results.employer.excedente, trab: results.employee.excedente },
-                            { group: 'IMSS', label: 'Enfermedad y maternidad: prestaciones en dinero', pat: results.employer.dinero, trab: results.employee.dinero },
-                            { group: 'IMSS', label: 'Gastos médicos para pensionados', pat: results.employer.pensionados, trab: results.employee.pensionados },
-                            { group: 'IMSS', label: 'Invalidez y vida', pat: results.employer.invalidez, trab: results.employee.invalidez },
-                            { group: 'IMSS', label: 'Riesgos de trabajo', pat: results.employer.riesgo, trab: 0 },
-                            { group: 'IMSS', label: 'Guarderías y prestaciones sociales', pat: results.employer.guarderia, trab: 0 },
-                            { group: 'Retiro y vivienda', label: 'Retiro', pat: results.employer.retiro, trab: 0 },
-                            { group: 'Retiro y vivienda', label: 'Cesantía en edad avanzada y vejez', pat: results.employer.cesantia, trab: results.employee.cesantia },
-                            { group: 'Retiro y vivienda', label: 'INFONAVIT 5%', pat: results.employer.infonavit, trab: 0 },
-                          ].map((row, i, rows) => (
+                          {contributionRows.map((row, i, rows) => (
                             <React.Fragment key={row.label}>
                               {(i === 0 || rows[i - 1].group !== row.group) && (
                                 <tr>
@@ -426,6 +490,8 @@ export const SocialSecurityCalculator: React.FC<{
                         </tbody>
                       </table>
                     </div>
+                    </>
+                    )}
                   </WorkspacePanel>
                 </motion.div>
               )}
