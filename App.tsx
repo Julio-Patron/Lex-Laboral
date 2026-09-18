@@ -14,6 +14,7 @@ const LaborCalculator = lazy(() => import('./components/LaborCalculator').then(m
 const SocialSecurityCalculator = lazy(() => import('./components/SocialSecurityCalculator').then(module => ({ default: module.SocialSecurityCalculator })));
 const PensionCalculator = lazy(() => import('./components/PensionCalculator').then(module => ({ default: module.PensionCalculator })));
 const Consultas = lazy(() => import('./components/Consultas').then(module => ({ default: module.Consultas })));
+const GovernmentSourcesView = lazy(() => import('./components/GovernmentSourcesView').then(module => ({ default: module.GovernmentSourcesView })));
 
 import { AppView } from './types';
 import type { AppNotification, NotificationType } from './types';
@@ -125,6 +126,8 @@ function App() {
                 return <LegalView type={AppView.TERMS} onBack={() => handleViewChange(AppView.HOME)} />;
               case AppView.PRIVACY:
                 return <LegalView type={AppView.PRIVACY} onBack={() => handleViewChange(AppView.HOME)} />;
+              case AppView.SOURCES:
+                return <GovernmentSourcesView onBack={() => handleViewChange(AppView.HOME)} onNavigate={handleViewChange} />;
               default:
                 return <Home onNavigate={handleViewChange} />;
             }

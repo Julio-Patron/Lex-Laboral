@@ -8,6 +8,7 @@ export const VIEW_PATHS: Record<AppView, string> = {
   [AppView.CONSULTAS]: '/consultas',
   [AppView.TERMS]: '/terminos',
   [AppView.PRIVACY]: '/privacidad',
+  [AppView.SOURCES]: '/fuentes-oficiales',
 };
 
 const PATH_VIEW_MAP = new Map<string, AppView>(

@@ -26,6 +26,8 @@ import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
+import { GovernmentDisclaimerBanner } from './GovernmentDisclaimerBanner';
+import { GovernmentSourcesModal } from './GovernmentSourcesModal';
 
 const LazyBreakdownChart = React.lazy(() =>
   import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
@@ -35,6 +37,7 @@ export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
   onOpenImss?: () => void;
 }> = ({ notify, onOpenImss }) => {
+  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const dismissalOptions: Array<{ value: DismissalType; label: string }> = [
     { value: 'injustificado', label: 'Despido' },
@@ -235,11 +238,14 @@ export const LaborCalculator: React.FC<{
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.rect(0, 0, 210, 40, 'F');
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('LEXLABORAL', 20, 25);
-      doc.setFontSize(10);
-      doc.text('DICTAMEN TÉCNICO DE LIQUIDACIÓN LABORAL', 20, 32);
+      doc.text('LEXLABORAL', 20, 23);
+      doc.setFontSize(9);
+      doc.text('ESTIMACIÓN INFORMATIVA DE LIQUIDACIÓN Y FINIQUITO', 20, 30);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NO OFICIAL', 20, 36);
       
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFontSize(12);
@@ -274,7 +280,28 @@ export const LaborCalculator: React.FC<{
         headStyles: { fillColor: goldColor, textColor: [0, 0, 0] },
       });
 
-      doc.save(`LexLaboral_Dictamen_${new Date().getTime()}.pdf`);
+      const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 200;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, finalY, 180, 40, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text('DESLINDE DE RESPONSABILIDAD Y FUENTES GUBERNAMENTALES:', 20, finalY + 7);
+
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(71, 85, 105);
+      const disclaimerLines = [
+        '1. Lex Laboral es privada e independiente; NO representa al IMSS, INFONAVIT ni al Gobierno de México.',
+        '2. Este reporte es una estimación orientativa basada en la Ley Federal del Trabajo y no constituye resolución oficial.',
+        '3. Fuentes de información gubernamental oficiales (.gob.mx):',
+        '   - Ley Federal del Trabajo: https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf',
+        '   - Salarios Mínimos (CONASAMI): https://www.gob.mx/conasami',
+        '   - Portal oficial del Gobierno de México: https://www.gob.mx/',
+      ];
+      doc.text(disclaimerLines, 20, finalY + 13);
+
+      doc.save(`LexLaboral_Finiquito_${new Date().getTime()}.pdf`);
       notify("PDF generado con éxito", "success");
     } catch (error) {
       notify("Error al generar PDF", "error");
@@ -288,7 +315,7 @@ export const LaborCalculator: React.FC<{
   return (
     <WorkspacePage>
       <WorkspaceHeader
-        eyebrow="Calculadora laboral"
+        eyebrow="Calculadora laboral informativa"
         title="Liquidación y finiquito"
         description="Calcula finiquito, indemnización y total estimado en una sola vista."
         icon={<Calculator size={28} />}
@@ -311,6 +338,11 @@ export const LaborCalculator: React.FC<{
             </div>
           </div>
         }
+      />
+
+      <GovernmentDisclaimerBanner
+        onOpenSources={() => setIsSourcesModalOpen(true)}
+        className="mb-5"
       />
 
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
@@ -658,6 +690,12 @@ export const LaborCalculator: React.FC<{
             answer: 'No. Funciona como una estimación técnica útil para análisis preliminar, pero cada caso debe revisarse con sus hechos, documentos y estrategia jurídica específica.',
           },
         ]}
+      />
+
+      <GovernmentSourcesModal
+        isOpen={isSourcesModalOpen}
+        onClose={() => setIsSourcesModalOpen(false)}
+        categoryFilter="labor"
       />
     </WorkspacePage>
   );

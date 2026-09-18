@@ -35,16 +35,34 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
         <section>
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
             <span className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold">02</span>
-            Naturaleza de los Servicios y Parámetros Laborales 2026
+            Naturaleza de los Servicios y Deslinde Gubernamental
           </h2>
           <div className="space-y-4">
-            <p>Lex Laboral provee herramientas de cálculo laboral y de seguridad social basadas en la legislación mexicana vigente (Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT), con soporte para cálculo de liquidaciones, finiquitos, cuotas obrero-patronales y proyecciones de pensión bajo las leyes de 1973 y 1997.</p>
-            <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-2xl shadow-sm my-6">
-              <p className="text-amber-900 font-bold mb-2 flex items-center gap-2 italic uppercase tracking-wider text-xs">
-                ⚠️ DESLINDE DE RESPONSABILIDAD CRÍTICO (DISCLAIMER)
+            <p><strong>2.1. Alcance:</strong> Lex Laboral provee herramientas de cálculo laboral y de seguridad social basadas en la legislación mexicana vigente (Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT), con soporte para cálculo de liquidaciones, finiquitos, cuotas obrero-patronales y proyecciones de pensión bajo las leyes de 1973 y 1997.</p>
+            
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-2xl shadow-sm my-6 space-y-3">
+              <p className="text-amber-900 font-bold flex items-center gap-2 italic uppercase tracking-wider text-xs">
+                ⚠️ DESLINDE DE RESPONSABILIDAD Y NO AFILIACIÓN GUBERNAMENTAL
               </p>
-              <p className="text-sm leading-6"><strong>LA PLATAFORMA NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL.</strong> Los resultados y documentos emitidos son estimaciones matemáticas e informativas que deben ser evaluadas por un abogado o profesional legal antes de utilizarse en procedimientos judiciales o acuerdos laborales formales. lexlaboral.com.mx no se responsabiliza por resoluciones o decisiones adoptadas a partir del uso de la aplicación.</p>
+              <p className="text-sm leading-6 text-amber-950">
+                <strong>LA PLATAFORMA NO REPRESENTA A NINGUNA ENTIDAD PÚBLICA NI GUBERNAMENTAL.</strong> Lex Laboral es un software de desarrollo privado e independiente. No está asociada, autorizada, respaldada ni patrocinada por el <strong>Instituto Mexicano del Seguro Social (IMSS)</strong>, el <strong>Instituto del Fondo Nacional de la Vivienda para los Trabajadores (INFONAVIT)</strong>, la <strong>Secretaría del Trabajo y Previsión Social (STPS)</strong>, el <strong>Servicio de Administración Tributaria (SAT)</strong> ni el Gobierno de México.
+              </p>
+              <p className="text-sm leading-6 text-amber-950">
+                <strong>NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL NI RESOLUCIÓN OFICIAL.</strong> Los resultados y documentos generados son exclusivamente estimaciones matemáticas de carácter didáctico e informativo. Para trámites vinculantes o determinaciones oficiales, el usuario debe acudir a los organismos gubernamentales correspondientes. lexlaboral.com.mx no se responsabiliza por decisiones adoptadas a partir del uso de la aplicación.
+              </p>
             </div>
+
+            <p><strong>2.2. Fuentes Normativas Oficiales (.gob.mx):</strong> Toda la formulación matemática se sustenta en normativas y leyes federales públicas de los Estados Unidos Mexicanos disponibles en:</p>
+            <ul className="list-disc pl-6 space-y-1.5 text-xs text-slate-700">
+              <li><strong>Ley Federal del Trabajo (LFT):</strong> <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf</a></li>
+              <li><strong>Ley del Seguro Social (LSS):</strong> <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf</a></li>
+              <li><strong>Portal Oficial IMSS:</strong> <a href="https://www.imss.gob.mx/" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">www.imss.gob.mx</a></li>
+              <li><strong>Ley del INFONAVIT:</strong> <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LINFONAVIT.pdf" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">diputados.gob.mx/LeyesBiblio/pdf/LINFONAVIT.pdf</a></li>
+              <li><strong>Portal Oficial INFONAVIT:</strong> <a href="https://portalmx.infonavit.org.mx/" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">portalmx.infonavit.org.mx</a></li>
+              <li><strong>Salarios Mínimos (CONASAMI):</strong> <a href="https://www.gob.mx/conasami" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">gob.mx/conasami</a></li>
+              <li><strong>Valor UMA (INEGI):</strong> <a href="https://www.inegi.org.mx/temas/uma/" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">inegi.org.mx/temas/uma</a></li>
+              <li><strong>Portal del Gobierno de México:</strong> <a href="https://www.gob.mx/" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline">gob.mx</a></li>
+            </ul>
           </div>
         </section>
 

@@ -17,6 +17,8 @@ import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 import { calculatePension73, calculatePension97, type PensionInput } from '../lib/calculators/pension';
+import { GovernmentDisclaimerBanner } from './GovernmentDisclaimerBanner';
+import { GovernmentSourcesModal } from './GovernmentSourcesModal';
 
 type PensionRegime = '1973' | '1997';
 
@@ -27,6 +29,7 @@ const LazyBreakdownChart = React.lazy(() =>
 export const PensionCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
+  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
   const resultsRef = React.useRef<HTMLDivElement>(null);
 
   const [regime, setRegime] = useState<PensionRegime>('1973');
@@ -153,11 +156,14 @@ export const PensionCalculator: React.FC<{
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.rect(0, 0, 210, 40, 'F');
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('LEXLABORAL', 20, 25);
-      doc.setFontSize(10);
-      doc.text('ESTIMACIÓN DE PENSIÓN IMSS', 20, 32);
+      doc.text('LEXLABORAL', 20, 23);
+      doc.setFontSize(9);
+      doc.text('ESTIMACIÓN DE PENSIÓN IMSS', 20, 30);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NO OFICIAL', 20, 36);
 
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFontSize(12);
@@ -198,6 +204,28 @@ export const PensionCalculator: React.FC<{
         headStyles: { fillColor: goldColor, textColor: [0, 0, 0] },
       });
 
+      const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 200;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, finalY, 180, 40, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text('AVISO LEGAL, DESLINDE GUBERNAMENTAL Y FUENTES OFICIALES:', 20, finalY + 7);
+
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(71, 85, 105);
+      const disclaimerLines = [
+        '1. Lex Laboral es una herramienta de cálculo de iniciativa privada e independiente.',
+        '2. NO representa ni está afiliada al Instituto Mexicano del Seguro Social (IMSS) ni a la CONSAR.',
+        '3. Esta proyección es de carácter orientativo. La resolución vinculante sólo puede ser emitida por el IMSS.',
+        '4. Fuentes oficiales gubernamentales (.gob.mx):',
+        '   - Portal IMSS Pensiones: https://www.imss.gob.mx/pensiones',
+        '   - CONSAR: https://www.gob.mx/consar',
+        '   - Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+      ];
+      doc.text(disclaimerLines, 20, finalY + 13);
+
       doc.save(`LexLaboral_Pension_${new Date().getTime()}.pdf`);
       notify("PDF generado con éxito", "success");
     } catch (error) {
@@ -208,9 +236,9 @@ export const PensionCalculator: React.FC<{
   return (
     <WorkspacePage>
       <WorkspaceHeader
-        eyebrow="Calculadora de Pensiones"
+        eyebrow="Calculadora informativa"
         title="Estimaciones IMSS"
-        description="Calcula el estimado de tu pensión mensual bajo el régimen de 1973 o 1997."
+        description="Calcula el estimado orientativo de tu pensión mensual bajo el régimen de 1973 o 1997. Herramienta independiente no oficial."
         icon={<Building size={28} />}
         actions={
           <div className="w-full space-y-2 sm:min-w-[16rem] lg:w-auto">
@@ -234,6 +262,11 @@ export const PensionCalculator: React.FC<{
             </div>
           </div>
         }
+      />
+
+      <GovernmentDisclaimerBanner
+        onOpenSources={() => setIsSourcesModalOpen(true)}
+        className="mb-5"
       />
 
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
@@ -524,6 +557,12 @@ export const PensionCalculator: React.FC<{
             answer: 'Para la Ley 73 necesitas un mínimo de 500 semanas. Para la Ley 97, en 2026 requieres 875 semanas.',
           }
         ]}
+      />
+
+      <GovernmentSourcesModal
+        isOpen={isSourcesModalOpen}
+        onClose={() => setIsSourcesModalOpen(false)}
+        categoryFilter="pension"
       />
     </WorkspacePage>
   );

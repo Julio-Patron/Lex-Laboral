@@ -11,7 +11,8 @@ import {
   Smartphone,
   ExternalLink,
   Mail,
-  Globe
+  Globe,
+  ShieldAlert
 } from 'lucide-react';
 import { getPathForView } from '../lib/routes';
 import { SEOContentSection } from './SEOContentSection';
@@ -111,6 +112,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             >
               Fundamentador
             </a>
+            <a 
+              href={getPathForView(AppView.SOURCES)} 
+              onClick={(e) => handleNavClick(e, AppView.SOURCES)}
+              className="text-amber-400 font-semibold hover:text-amber-300 transition-colors"
+            >
+              Fuentes Oficiales
+            </a>
           </nav>
 
           <button
@@ -142,9 +150,43 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </span>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto font-normal leading-relaxed">
-            Calculadoras oficiales de liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. 100% gratuito y sin registro.
+            Calculadoras laborales de estimación para liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. Herramienta privada e independiente, 100% gratuita y sin registro.
           </p>
 
+        </div>
+      </section>
+
+      {/* Prominent Government Disclaimer Banner */}
+      <section className="pt-8 pb-2 mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 sm:p-6 backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 sm:mt-0">
+                <ShieldAlert size={22} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    Iniciativa Privada · No Oficial
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm font-bold text-white mt-1">
+                  Deslinde de Representación Gubernamental
+                </p>
+                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed max-w-2xl">
+                  Lex Laboral <strong>NO representa ni está afiliada</strong> al IMSS, INFONAVIT, STPS ni al Gobierno de México. Ofrece estimaciones y proyecciones basadas en normativas federales públicas.
+                </p>
+              </div>
+            </div>
+            <a
+              href={getPathForView(AppView.SOURCES)}
+              onClick={(e) => handleNavClick(e, AppView.SOURCES)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/20 px-4 py-2 text-xs font-bold text-amber-300 transition-all hover:bg-amber-500/30 active:scale-95"
+            >
+              <span>Fuentes oficiales (.gob.mx)</span>
+              <ExternalLink size={13} />
+            </a>
+          </div>
         </div>
       </section>
 
@@ -234,6 +276,10 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           ]}
           faqs={[
             {
+              question: '¿Esta aplicación pertenece al gobierno o al IMSS?',
+              answer: 'No. Lex Laboral es una herramienta de iniciativa privada e independiente. No representa ni está afiliada al IMSS, INFONAVIT, STPS ni al Gobierno de México. Todos los cálculos son estimaciones informativas basadas en leyes federales públicas (LFT, LSS, INFONAVIT).'
+            },
+            {
               question: '¿Tiene algún costo usar las calculadoras?',
               answer: 'No, todas las herramientas son 100% gratuitas y sin anuncios.'
             },
@@ -297,6 +343,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             >
               <span>Términos</span>
               <ExternalLink size={11} />
+            </a>
+            <a 
+              href={getPathForView(AppView.SOURCES)}
+              onClick={(e) => handleNavClick(e, AppView.SOURCES)}
+              className="text-amber-400 font-semibold hover:text-amber-300 transition-colors flex items-center gap-1"
+            >
+              <span>Fuentes oficiales</span>
             </a>
           </div>
         </div>

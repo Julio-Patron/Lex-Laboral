@@ -23,6 +23,8 @@ import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
 import { calculateSocialSecurity, calculateAnnualRisk, type SocialSecurityInput, type RiskCalculationInput } from '../lib/calculators/social-security';
+import { GovernmentDisclaimerBanner } from './GovernmentDisclaimerBanner';
+import { GovernmentSourcesModal } from './GovernmentSourcesModal';
 
 const riskPresets = [
   { label: 'Oficina', hint: 'Clase I', value: 0.54355 },
@@ -37,6 +39,7 @@ const formatCurrency = (value: number) =>
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
+  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); 
@@ -152,14 +155,17 @@ export const SocialSecurityCalculator: React.FC<{
     
     const doc = new jsPDF();
     
-    doc.setFontSize(18);
-    doc.text('Cálculo de Cuotas IMSS / INFONAVIT', 14, 22);
+    doc.setFontSize(16);
+    doc.text('Estimación de Cuotas IMSS e INFONAVIT', 14, 20);
+    doc.setFontSize(8);
+    doc.setTextColor(120);
+    doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NO OFICIAL', 14, 26);
     
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`SBC (Salario Base Cotización): $${sbc.toFixed(2)}`, 14, 32);
-    doc.text(`Días Cotizados: ${days}`, 14, 38);
-    doc.text(`Clase de Riesgo: ${riskClass}%`, 14, 44);
+    doc.text(`SBC (Salario Base Cotización): $${sbc.toFixed(2)}`, 14, 33);
+    doc.text(`Días Cotizados: ${days}`, 14, 39);
+    doc.text(`Clase de Riesgo: ${riskClass}%`, 14, 45);
     
     autoTable(doc, {
       startY: 54,
@@ -186,8 +192,30 @@ export const SocialSecurityCalculator: React.FC<{
       headStyles: { fillColor: [40, 40, 40] },
       footStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], fontStyle: 'bold' }
     });
+
+    const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 8 : 220;
+    doc.setFillColor(248, 250, 252);
+    doc.rect(14, finalY, 182, 38, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59);
+    doc.text('AVISO LEGAL, DESLINDE GUBERNAMENTAL Y FUENTES OFICIALES:', 18, finalY + 7);
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105);
+    const disclaimerLines = [
+      '1. Lex Laboral es una herramienta de cálculo de iniciativa privada e independiente.',
+      '2. NO representa ni está afiliada al Instituto Mexicano del Seguro Social (IMSS) ni al INFONAVIT.',
+      '3. Los resultados son estimaciones informativas y no sustituyen las cédulas oficiales emitidas por el SUA o IDSE.',
+      '4. Fuentes oficiales gubernamentales (.gob.mx):',
+      '   - Instituto Mexicano del Seguro Social: https://www.imss.gob.mx/',
+      '   - INFONAVIT: https://portalmx.infonavit.org.mx/',
+      '   - Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+    ];
+    doc.text(disclaimerLines, 18, finalY + 12);
     
-    doc.save('Cuotas_IMSS.pdf');
+    doc.save('LexLaboral_Cuotas_IMSS.pdf');
     notify('PDF generado correctamente', 'success');
   };
 
@@ -207,10 +235,15 @@ export const SocialSecurityCalculator: React.FC<{
   return (
     <WorkspacePage>
       <WorkspaceHeader
-        eyebrow="Calculadora IMSS"
+        eyebrow="Calculadora informativa"
         title="IMSS e INFONAVIT"
-        description="Proyecta cuotas y reparto patrón-trabajador con vigencia 2026."
+        description="Proyecta cuotas y reparto patrón-trabajador con vigencia 2026. Herramienta independiente no oficial."
         icon={<ShieldCheck size={28} />}
+      />
+
+      <GovernmentDisclaimerBanner
+        onOpenSources={() => setIsSourcesModalOpen(true)}
+        className="mb-5"
       />
 
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
@@ -531,6 +564,12 @@ export const SocialSecurityCalculator: React.FC<{
             answer: 'No. Es una herramienta de apoyo técnico para estimación y revisión. La determinación final depende de la integración salarial, movimientos afiliatorios y circunstancias concretas del patrón.',
           },
         ]}
+      />
+
+      <GovernmentSourcesModal
+        isOpen={isSourcesModalOpen}
+        onClose={() => setIsSourcesModalOpen(false)}
+        categoryFilter="social_security"
       />
     </WorkspacePage>
   );

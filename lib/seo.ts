@@ -76,6 +76,13 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
     description: 'Aviso de privacidad y protección de datos personales de Lex Laboral conforme a la LFPDPPP.',
     path: getPathForView(AppView.PRIVACY),
   },
+  [AppView.SOURCES]: {
+    title: `Fuentes Oficiales de Información Gubernamental y Deslinde | ${SITE_NAME}`,
+    description: 'Consulta los enlaces oficiales (.gob.mx) de las leyes federales (LFT, LSS, INFONAVIT) y el deslinde de no representación gubernamental de Lex Laboral.',
+    path: getPathForView(AppView.SOURCES),
+    ogTitle: 'Fuentes Oficiales y Deslinde Gubernamental — Lex Laboral',
+    ogDescription: 'Transparencia normativa: acceso a leyes federales públicas y deslinde de no representación gubernamental.',
+  },
 };
 
 /**
@@ -166,6 +173,7 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
     [AppView.CONSULTAS]: ['Inicio', 'Fundamentador Jurídico'],
     [AppView.TERMS]: ['Inicio', 'Términos'],
     [AppView.PRIVACY]: ['Inicio', 'Privacidad'],
+    [AppView.SOURCES]: ['Inicio', 'Fuentes Oficiales'],
   };
 
   const breadcrumbSchema = {
