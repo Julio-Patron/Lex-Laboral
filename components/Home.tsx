@@ -150,7 +150,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </span>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto font-normal leading-relaxed">
-            Calculadoras laborales de estimación para liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. Herramienta privada e independiente, 100% gratuita y sin registro.
+            Neutralidad técnica radical: la misma precisión algorítmica para un director de RH, un trabajador o un abogado en conciliación. Herramienta privada e independiente, 100% gratuita y sin registro.
           </p>
 
         </div>

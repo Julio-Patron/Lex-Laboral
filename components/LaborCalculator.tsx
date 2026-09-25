@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Settings2,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,6 +72,36 @@ export const LaborCalculator: React.FC<{
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [showErrors, setShowErrors] = useState(false);
+  const [calcMode, setCalcMode] = useState<'express' | 'forensic'>('express');
+
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const scenarioStr = params.get('scenario');
+      if (scenarioStr) {
+        const state = JSON.parse(atob(scenarioStr));
+        if (state.calcMode) setCalcMode(state.calcMode);
+        if (state.baseSalary) setBaseSalary(state.baseSalary);
+        if (state.salaryPeriod) setSalaryPeriod(state.salaryPeriod);
+        if (state.startDate) setStartDate(state.startDate);
+        if (state.endDate) setEndDate(state.endDate);
+        if (state.yearsOfService) setYearsOfService(state.yearsOfService);
+        if (state.daysOfService) setDaysOfService(state.daysOfService);
+        if (state.dismissalType) setDismissalType(state.dismissalType);
+        if (state.vacationDays) setVacationDays(state.vacationDays);
+        if (state.vacationPremium) setVacationPremium(state.vacationPremium);
+        if (state.aguinaldoDays) setAguinaldoDays(state.aguinaldoDays);
+        
+        // Clean URL after loading to avoid confusion
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        notify("Escenario cargado exitosamente", "success");
+      }
+    } catch (e) {
+      console.error("Error loading scenario", e);
+    }
+  }, []);
 
   React.useEffect(() => {
     if (baseSalary > 0) {
@@ -224,6 +255,31 @@ export const LaborCalculator: React.FC<{
     ].filter(d => d.value > 0);
   }, [results]);
 
+  const handleShareScenario = () => {
+    if (!results) return;
+    try {
+      const state = {
+        calcMode,
+        baseSalary,
+        salaryPeriod,
+        startDate,
+        endDate,
+        yearsOfService,
+        daysOfService,
+        dismissalType,
+        vacationDays,
+        vacationPremium,
+        aguinaldoDays
+      };
+      const encoded = btoa(JSON.stringify(state));
+      const url = `${window.location.origin}${window.location.pathname}?scenario=${encoded}`;
+      navigator.clipboard.writeText(url);
+      notify("Enlace del escenario copiado al portapapeles", "success");
+    } catch (e) {
+      notify("No se pudo generar el enlace", "error");
+    }
+  };
+
   const handleExportPDF = async () => {
     if (!results) return;
     try {
@@ -234,26 +290,41 @@ export const LaborCalculator: React.FC<{
       const doc = new jsPDF();
       const primaryColor: [number, number, number] = [30, 41, 59];
       const goldColor: [number, number, number] = [212, 175, 55];
+      const folio = `LEX-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${new Date().getFullYear()}`;
 
+      // Cabecera superior
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(0, 0, 210, 40, 'F');
+      doc.rect(0, 0, 210, 45, 'F');
+      
+      // Sello de validez (visual algorítmico)
+      doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
+      doc.setLineWidth(0.5);
+      doc.circle(185, 22.5, 12, 'S');
+      doc.setFontSize(5);
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(20);
+      doc.text('VALIDADO', 178, 22);
+      doc.text('ALGORITMO', 177, 25);
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
       doc.text('LEXLABORAL', 20, 23);
       doc.setFontSize(9);
-      doc.text('ESTIMACIÓN INFORMATIVA DE LIQUIDACIÓN Y FINIQUITO', 20, 30);
+      doc.text('DICTAMEN TÉCNICO INFORMATIVO DE LIQUIDACIÓN Y FINIQUITO', 20, 31);
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
-      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NO OFICIAL', 20, 36);
+      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NEUTRALIDAD TÉCNICA APLICADA', 20, 37);
       
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setFontSize(12);
-      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 50);
-      doc.text(`Tipo: ${dismissalType.toUpperCase().replace('_', ' ')}`, 20, 50);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Folio Único: ${folio}`, 145, 55);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 60);
+      doc.text(`Tipo de Caso: ${dismissalType.toUpperCase().replace('_', ' ')}`, 20, 55);
 
       autoTable(doc, {
-        startY: 60,
+        startY: 65,
         head: [['Concepto', 'Valor']],
         body: [
           ['Fecha de Ingreso', startDate || 'No especificada'],
@@ -357,10 +428,20 @@ export const LaborCalculator: React.FC<{
                     <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Cálculo inmediato</p>
                   </div>
                 </div>
-                <button type="button" onClick={loadExampleCase} className="ui-secondary-action shrink-0">
-                  <Sparkles size={14} />
-                  Ejemplo
-                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex bg-slate-100 p-1 rounded-lg">
+                    <button type="button" onClick={() => setCalcMode('express')} className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all ${calcMode === 'express' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
+                      Exprés
+                    </button>
+                    <button type="button" onClick={() => setCalcMode('forensic')} className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all ${calcMode === 'forensic' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
+                      Forense
+                    </button>
+                  </div>
+                  <button type="button" onClick={loadExampleCase} className="ui-secondary-action shrink-0">
+                    <Sparkles size={14} />
+                    Ejemplo
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-5">
@@ -406,22 +487,28 @@ export const LaborCalculator: React.FC<{
                 </div>
 
                 <div className="ui-form-grid">
-                  <div className="space-y-3">
-                    <label htmlFor="startDateInput" className="ui-label flex items-center gap-2">
-                      <Calendar size={12} className="text-legal-gold" /> Fecha de ingreso
-                    </label>
-                    <input id="startDateInput" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ui-input" />
-                  </div>
-                  <div className="space-y-3">
-                    <label htmlFor="endDateInput" className="ui-label flex items-center gap-2">
-                      <Calendar size={12} className="text-legal-gold" /> Fecha de baja
-                    </label>
-                    <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
-                  </div>
+                  {calcMode === 'forensic' && (
+                    <>
+                      <div className="space-y-3">
+                        <label htmlFor="startDateInput" className="ui-label flex items-center gap-2">
+                          <Calendar size={12} className="text-legal-gold" /> Fecha de ingreso
+                        </label>
+                        <input id="startDateInput" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ui-input" />
+                      </div>
+                      <div className="space-y-3">
+                        <label htmlFor="endDateInput" className="ui-label flex items-center gap-2">
+                          <Calendar size={12} className="text-legal-gold" /> Fecha de baja
+                        </label>
+                        <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
+                      </div>
+                    </>
+                  )}
                 </div>
-                <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
-                  Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
-                </p>
+                {calcMode === 'forensic' && (
+                  <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
+                    Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
+                  </p>
+                )}
 
                 <div className="ui-subtle-block space-y-4 p-4">
                   <div className="flex items-start gap-3">
@@ -466,16 +553,18 @@ export const LaborCalculator: React.FC<{
                   )}
                 </div>
 
-                <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
-                  <div className="flex items-center gap-3">
-                    <Settings2 size={16} />
-                    <span className="text-xs font-bold uppercase tracking-[0.2em]">Más opciones</span>
-                  </div>
-                  <ChevronDown size={16} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                </button>
+                {calcMode === 'forensic' && (
+                  <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
+                    <div className="flex items-center gap-3">
+                      <Settings2 size={16} />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em]">Más opciones</span>
+                    </div>
+                    <ChevronDown size={16} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
 
                 <AnimatePresence>
-                  {showAdvanced && (
+                  {calcMode === 'forensic' && showAdvanced && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block grid grid-cols-1 gap-4 overflow-hidden p-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="laborAguinaldoDays" className="ui-label">Aguinaldo anual en días</label>
@@ -542,9 +631,12 @@ export const LaborCalculator: React.FC<{
                           ))}
                         </div>
                       </div>
-                      <div className="flex shrink-0 gap-3">
-                        <button type="button" onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
-                          <FileDown size={18} /> <span>PDF</span>
+                      <div className="flex shrink-0 gap-2 sm:gap-3">
+                        <button type="button" onClick={handleShareScenario} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
+                          <Share2 size={16} /> <span className="hidden sm:inline">Compartir</span>
+                        </button>
+                        <button type="button" onClick={handleExportPDF} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
+                          <FileDown size={16} /> <span className="hidden sm:inline">PDF</span>
                         </button>
                         <button
                           type="button"
@@ -584,15 +676,26 @@ export const LaborCalculator: React.FC<{
                       <div className="space-y-4 overflow-visible p-5 sm:p-6">
                         <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
                         {[
-                          { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo },
-                          { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations },
-                          { key: 'indemnity90', label: 'Indemnización 90 días', val: results.indemnity90, f: results.formulas.indemnity90 },
-                          { key: 'indemnity20', label: 'Indemnización 20 días/año', val: results.indemnity20, f: results.formulas.indemnity20 },
-                          { key: 'seniorityPremium', label: 'Prima de Antigüedad', val: results.seniorityPremium, f: results.formulas.seniorityPremium },
+                          { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo, art: 'Art. 87 LFT' },
+                          { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations, art: 'Art. 76 LFT' },
+                          { key: 'indemnity90', label: 'Indemnización 90 días', val: results.indemnity90, f: results.formulas.indemnity90, art: 'Art. 48 LFT' },
+                          { key: 'indemnity20', label: 'Indemnización 20 días/año', val: results.indemnity20, f: results.formulas.indemnity20, art: 'Art. 50 LFT' },
+                          { key: 'seniorityPremium', label: 'Prima de Antigüedad', val: results.seniorityPremium, f: results.formulas.seniorityPremium, art: 'Art. 162 LFT' },
                         ].filter(i => i.val > 0).map(item => (
-                          <div key={item.key} className="group">
+                          <div key={item.key} className="group relative">
                             <div className="mb-2 flex items-start justify-between gap-3">
-                              <span className="min-w-0 text-xs font-bold text-slate-700">{item.label}</span>
+                              <span className="min-w-0 text-xs font-bold text-slate-700 flex items-center gap-2">
+                                {item.label}
+                                <span className="relative group/tooltip flex items-center justify-center">
+                                  <Info size={14} className="text-slate-400 hover:text-legal-gold cursor-help" />
+                                  <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 w-max max-w-[200px] opacity-0 transition-opacity group-hover/tooltip:opacity-100">
+                                    <div className="rounded bg-slate-800 px-2 py-1 text-[10px] text-white shadow-lg">
+                                      Fundamento: {item.art}
+                                    </div>
+                                    <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+                                  </div>
+                                </span>
+                              </span>
                               <span className={`shrink-0 text-sm font-serif font-bold ${item.key === 'isr' ? 'text-red-700' : 'text-slate-900'}`}>
                                 {item.key === 'isr' ? '-' : ''}${item.val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                               </span>
@@ -629,28 +732,48 @@ export const LaborCalculator: React.FC<{
                     )}
                   </WorkspacePanel>
 
-                  <div className="grid gap-4 md:grid-cols-1">
-                    <button
-                      onClick={handleImssNextStep}
-                      className="group w-full min-w-0 rounded-lg border border-slate-200/80 bg-white p-5 text-left shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)] transition-all hover:-translate-y-0.5 sm:p-6"
-                    >
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <Scale className="text-emerald-600" size={20} />
-                          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">IMSS</span>
+                  <div className="mt-8 pt-8 border-t border-slate-200">
+                    <div className="mb-5">
+                      <h4 className="text-sm font-extrabold text-slate-900 uppercase tracking-widest text-center">Siguientes Pasos (Imparcial)</h4>
+                      <p className="mt-1 text-[11px] text-slate-500 text-center">Selecciona una ruta de acción según tu perfil</p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {/* Ruta Trabajador */}
+                      <button type="button" onClick={() => notify("Función en desarrollo: Guía de conciliación", "info")} className="group relative flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md">
+                        <div className="rounded-lg bg-blue-100 p-2 text-blue-700">
+                          <User size={20} />
                         </div>
-                        <h4 className="mt-4 text-lg font-bold text-slate-950">
-                          Abrir IMSS
-                        </h4>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
-                          Revisa cuotas e impacto patronal para completar el análisis del caso.
-                        </p>
-                        <div className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">
-                          Continuar
-                          <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                        <div>
+                          <h5 className="font-bold text-slate-900 text-sm">Trabajador</h5>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600">Guía técnica para conciliación y comparación contra ofrecimiento patronal.</p>
                         </div>
-                      </div>
-                    </button>
+                        <ArrowRight size={16} className="mt-auto text-blue-600 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
+                      </button>
+                      
+                      {/* Ruta Patrón / RH */}
+                      <button type="button" onClick={handleImssNextStep} className="group relative flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50/50 hover:shadow-md">
+                        <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700">
+                          <Briefcase size={20} />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-slate-900 text-sm">Patrón / RH</h5>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600">Calcular impacto de cuotas IMSS asociadas al caso o evaluar contingencia.</p>
+                        </div>
+                        <ArrowRight size={16} className="mt-auto text-emerald-600 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
+                      </button>
+
+                      {/* Ruta Profesional */}
+                      <button type="button" onClick={handleExportPDF} className="group relative flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-legal-gold/50 hover:bg-amber-50/50 hover:shadow-md">
+                        <div className="rounded-lg bg-amber-100 p-2 text-amber-700">
+                          <Scale size={20} />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-slate-900 text-sm">Profesional</h5>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600">Exportar dictamen forense técnico en PDF con fundamentación de artículos LFT.</p>
+                        </div>
+                        <FileDown size={16} className="mt-auto text-amber-600 opacity-0 transition-all group-hover:translate-y-1 group-hover:opacity-100" />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
