@@ -71,7 +71,6 @@ export const LaborCalculator: React.FC<{
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [showErrors, setShowErrors] = useState(false);
-  const [calcMode, setCalcMode] = useState<'express' | 'forensic'>('express');
 
   React.useEffect(() => {
     try {
@@ -79,7 +78,6 @@ export const LaborCalculator: React.FC<{
       const scenarioStr = params.get('scenario');
       if (scenarioStr) {
         const state = JSON.parse(atob(scenarioStr));
-        if (state.calcMode) setCalcMode(state.calcMode);
         if (state.baseSalary) setBaseSalary(state.baseSalary);
         if (state.salaryPeriod) setSalaryPeriod(state.salaryPeriod);
         if (state.startDate) setStartDate(state.startDate);
@@ -258,7 +256,6 @@ export const LaborCalculator: React.FC<{
     if (!results) return;
     try {
       const state = {
-        calcMode,
         baseSalary,
         salaryPeriod,
         startDate,
@@ -424,20 +421,10 @@ export const LaborCalculator: React.FC<{
                     <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">Cálculo inmediato</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex bg-slate-100 p-1 rounded-lg">
-                    <button type="button" onClick={() => setCalcMode('express')} className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all ${calcMode === 'express' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
-                      Exprés
-                    </button>
-                    <button type="button" onClick={() => setCalcMode('forensic')} className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all ${calcMode === 'forensic' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
-                      Forense
-                    </button>
-                  </div>
-                  <button type="button" onClick={loadExampleCase} className="ui-secondary-action shrink-0">
-                    <Sparkles size={14} />
-                    Ejemplo
-                  </button>
-                </div>
+                <button type="button" onClick={loadExampleCase} className="ui-secondary-action shrink-0">
+                  <Sparkles size={14} />
+                  Ejemplo
+                </button>
               </div>
 
               <div className="space-y-5">
@@ -483,28 +470,22 @@ export const LaborCalculator: React.FC<{
                 </div>
 
                 <div className="ui-form-grid">
-                  {calcMode === 'forensic' && (
-                    <>
-                      <div className="space-y-3">
-                        <label htmlFor="startDateInput" className="ui-label flex items-center gap-2">
-                          <Calendar size={12} className="text-legal-gold" /> Fecha de ingreso
-                        </label>
-                        <input id="startDateInput" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ui-input" />
-                      </div>
-                      <div className="space-y-3">
-                        <label htmlFor="endDateInput" className="ui-label flex items-center gap-2">
-                          <Calendar size={12} className="text-legal-gold" /> Fecha de baja
-                        </label>
-                        <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
-                      </div>
-                    </>
-                  )}
+                  <div className="space-y-3">
+                    <label htmlFor="startDateInput" className="ui-label flex items-center gap-2">
+                      <Calendar size={12} className="text-legal-gold" /> Fecha de ingreso
+                    </label>
+                    <input id="startDateInput" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="ui-input" />
+                  </div>
+                  <div className="space-y-3">
+                    <label htmlFor="endDateInput" className="ui-label flex items-center gap-2">
+                      <Calendar size={12} className="text-legal-gold" /> Fecha de baja
+                    </label>
+                    <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
+                  </div>
                 </div>
-                {calcMode === 'forensic' && (
-                  <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
-                    Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
-                  </p>
-                )}
+                <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
+                  Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
+                </p>
 
                 <div className="ui-subtle-block space-y-4 p-4">
                   <div className="flex items-start gap-3">
@@ -549,18 +530,16 @@ export const LaborCalculator: React.FC<{
                   )}
                 </div>
 
-                {calcMode === 'forensic' && (
-                  <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
-                    <div className="flex items-center gap-3">
-                      <Settings2 size={16} />
-                      <span className="text-xs font-bold uppercase tracking-[0.2em]">Más opciones</span>
-                    </div>
-                    <ChevronDown size={16} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                  </button>
-                )}
+                <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="ui-subtle-block flex w-full items-center justify-between p-4 text-slate-600 transition-all hover:bg-slate-100">
+                  <div className="flex items-center gap-3">
+                    <Settings2 size={16} />
+                    <span className="text-xs font-bold uppercase tracking-[0.2em]">Más opciones</span>
+                  </div>
+                  <ChevronDown size={16} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                </button>
 
                 <AnimatePresence>
-                  {calcMode === 'forensic' && showAdvanced && (
+                  {showAdvanced && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ui-subtle-block grid grid-cols-1 gap-4 overflow-hidden p-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="laborAguinaldoDays" className="ui-label">Aguinaldo anual en días</label>
