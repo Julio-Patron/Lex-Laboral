@@ -17,8 +17,6 @@ import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 import { calculatePension73, calculatePension97, type PensionInput } from '../lib/calculators/pension';
-import { GovernmentDisclaimerBanner } from './GovernmentDisclaimerBanner';
-import { GovernmentSourcesModal } from './GovernmentSourcesModal';
 
 type PensionRegime = '1973' | '1997';
 
@@ -29,7 +27,6 @@ const LazyBreakdownChart = React.lazy(() =>
 export const PensionCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
-  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
   const resultsRef = React.useRef<HTMLDivElement>(null);
 
   const [regime, setRegime] = useState<PensionRegime>('1973');
@@ -262,11 +259,6 @@ export const PensionCalculator: React.FC<{
             </div>
           </div>
         }
-      />
-
-      <GovernmentDisclaimerBanner
-        onOpenSources={() => setIsSourcesModalOpen(true)}
-        className="mb-5"
       />
 
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
@@ -559,11 +551,7 @@ export const PensionCalculator: React.FC<{
         ]}
       />
 
-      <GovernmentSourcesModal
-        isOpen={isSourcesModalOpen}
-        onClose={() => setIsSourcesModalOpen(false)}
-        categoryFilter="pension"
-      />
+
     </WorkspacePage>
   );
 };

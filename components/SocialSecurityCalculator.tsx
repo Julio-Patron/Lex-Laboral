@@ -23,8 +23,6 @@ import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
 import { calculateSocialSecurity, calculateAnnualRisk, type SocialSecurityInput, type RiskCalculationInput } from '../lib/calculators/social-security';
-import { GovernmentDisclaimerBanner } from './GovernmentDisclaimerBanner';
-import { GovernmentSourcesModal } from './GovernmentSourcesModal';
 
 const riskPresets = [
   { label: 'Oficina', hint: 'Clase I', value: 0.54355 },
@@ -39,7 +37,6 @@ const formatCurrency = (value: number) =>
 export const SocialSecurityCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
 }> = ({ notify }) => {
-  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const [sbc, setSbc] = useState<number>(0);
   const [riskClass, setRiskClass] = useState<number>(0); 
@@ -239,11 +236,6 @@ export const SocialSecurityCalculator: React.FC<{
         title="IMSS e INFONAVIT"
         description="Proyecta cuotas y reparto patrón-trabajador con vigencia 2026. Herramienta independiente no oficial."
         icon={<ShieldCheck size={28} />}
-      />
-
-      <GovernmentDisclaimerBanner
-        onOpenSources={() => setIsSourcesModalOpen(true)}
-        className="mb-5"
       />
 
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
@@ -566,11 +558,7 @@ export const SocialSecurityCalculator: React.FC<{
         ]}
       />
 
-      <GovernmentSourcesModal
-        isOpen={isSourcesModalOpen}
-        onClose={() => setIsSourcesModalOpen(false)}
-        categoryFilter="social_security"
-      />
+
     </WorkspacePage>
   );
 };

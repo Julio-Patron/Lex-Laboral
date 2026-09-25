@@ -27,8 +27,7 @@ import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
-import { GovernmentDisclaimerBanner } from './GovernmentDisclaimerBanner';
-import { GovernmentSourcesModal } from './GovernmentSourcesModal';
+
 
 const LazyBreakdownChart = React.lazy(() =>
   import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
@@ -38,7 +37,7 @@ export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
   onOpenImss?: () => void;
 }> = ({ notify, onOpenImss }) => {
-  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
+
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const dismissalOptions: Array<{ value: DismissalType; label: string }> = [
     { value: 'injustificado', label: 'Despido' },
@@ -411,10 +410,7 @@ export const LaborCalculator: React.FC<{
         }
       />
 
-      <GovernmentDisclaimerBanner
-        onOpenSources={() => setIsSourcesModalOpen(true)}
-        className="mb-5"
-      />
+
 
       <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
           {/* Inputs Section */}
@@ -815,11 +811,7 @@ export const LaborCalculator: React.FC<{
         ]}
       />
 
-      <GovernmentSourcesModal
-        isOpen={isSourcesModalOpen}
-        onClose={() => setIsSourcesModalOpen(false)}
-        categoryFilter="labor"
-      />
+
     </WorkspacePage>
   );
 };
