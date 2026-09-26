@@ -29,9 +29,7 @@ import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from '
 import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
 
 
-const LazyBreakdownChart = React.lazy(() =>
-  import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
-);
+
 
 export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
@@ -239,19 +237,7 @@ export const LaborCalculator: React.FC<{
     }, 100);
   };
 
-  const chartData = useMemo(() => {
-    if (!results) return [];
-    return [
-      { name: 'Aguinaldo', value: results.aguinaldo, color: '#94a3b8' },
-      { name: 'Vacaciones', value: results.vacations, color: '#64748b' },
-      { name: 'Prima Vac.', value: results.vacationPremium, color: '#475569' },
-      { name: 'Indemnización 90', value: results.indemnity90, color: '#d4af37' },
-      { name: 'Indemnización 20', value: results.indemnity20, color: '#b8962e' },
-      { name: 'Prima Antig.', value: results.seniorityPremium, color: '#1e293b' },
-      { name: 'Horas Extras', value: results.overtime, color: '#0f172a' },
-      { name: 'Retención ISR', value: results.isr, color: '#991b1b' },
-    ].filter(d => d.value > 0);
-  }, [results]);
+
 
   const handleShareScenario = () => {
     if (!results) return;
@@ -654,16 +640,7 @@ export const LaborCalculator: React.FC<{
                     </div>
 
 
-                    <div className="grid grid-cols-1 md:grid-cols-2">
-                      <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
-                        <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
-                        <div className="h-[280px]">
-                          <React.Suspense fallback={<div className="h-full rounded-2xl bg-slate-50" />}>
-                            <LazyBreakdownChart data={chartData} />
-                          </React.Suspense>
-                        </div>
-                      </div>
-
+                    <div className="flex flex-col">
                       <div className="space-y-4 overflow-visible p-5 sm:p-6">
                         <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
                         {[

@@ -21,9 +21,7 @@ import { calculatePension73, calculatePension97, type PensionInput } from '../li
 
 type PensionRegime = '1973' | '1997';
 
-const LazyBreakdownChart = React.lazy(() =>
-  import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
-);
+
 
 export const PensionCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
@@ -133,15 +131,7 @@ export const PensionCalculator: React.FC<{
     }, 100);
   };
 
-  const chartData = useMemo(() => {
-    if (!results || results.regimeUsed !== '1973') return [];
 
-    return [
-      { name: 'Cuantía Básica', value: results.basicAmount, color: '#94a3b8' },
-      { name: 'Incrementos Anuales', value: results.annualIncrementsAmount, color: '#64748b' },
-      { name: 'Asignaciones Familiares', value: results.familyAllowancesAmount, color: '#d4af37' },
-    ].filter(d => d.value > 0);
-  }, [results]);
 
   const handleExportPDF = async () => {
     if (!results) return;
@@ -469,17 +459,7 @@ export const PensionCalculator: React.FC<{
                   </div>
 
 
-                  <div className={`grid grid-cols-1 ${results.regimeUsed === '1973' ? 'md:grid-cols-2' : ''}`}>
-                    {results.regimeUsed === '1973' && (
-                    <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
-                      <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
-                      <div className="h-[280px]">
-                        <React.Suspense fallback={<div className="h-full rounded-2xl bg-slate-50" />}>
-                          <LazyBreakdownChart data={chartData} />
-                        </React.Suspense>
-                      </div>
-                    </div>
-                    )}
+                  <div className="flex flex-col">
 
                     <div className="space-y-4 overflow-visible p-5 sm:p-6">
                       <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
