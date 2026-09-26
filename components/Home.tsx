@@ -137,9 +137,10 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           
           {/* Hero Brand Logo as Main Title */}
           <div className="max-w-[280px] sm:max-w-[420px] md:max-w-[480px] mx-auto mb-6 select-none">
+            <h1 className="sr-only">Lex Laboral: Herramientas Jurídicas Laborales en México</h1>
             <img 
               src="/assets/logo.webp" 
-              alt="Lex Laboral" 
+              alt="Lex Laboral Logo" 
               className="w-full h-auto object-contain drop-shadow-[0_10px_30px_rgba(212,175,55,0.15)]"
               loading="eager"
             />

@@ -26,7 +26,7 @@ export const WorkspaceHeader: React.FC<{
       <div className="flex min-w-0 items-start gap-3 sm:gap-4">
         <div className="ui-icon-chip mt-1 shrink-0">{icon}</div>
         <div className="min-w-0">
-          <h2 className="text-balance break-words font-serif text-3xl font-bold text-slate-950 sm:text-4xl lg:text-[2.65rem]">{title}</h2>
+          <h1 className="text-balance break-words font-serif text-3xl font-bold text-slate-950 sm:text-4xl lg:text-[2.65rem]">{title}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 md:text-[15px]">{description}</p>
         </div>
       </div>
