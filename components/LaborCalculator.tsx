@@ -63,7 +63,7 @@ export const LaborCalculator: React.FC<{
   const [aguinaldoDays, setAguinaldoDays] = useState<number>(15);
   const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showResultDetails, setShowResultDetails] = useState(false);
+
   const [expandedBreakdown, setExpandedBreakdown] = useState<string | null>(null);
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
@@ -196,7 +196,6 @@ export const LaborCalculator: React.FC<{
     setMinWage(MEXICO_LABOR_DEFAULTS_2026.minWage);
     setUmaValue(MEXICO_LABOR_DEFAULTS_2026.uma);
     setShowErrors(false);
-    setShowResultDetails(false);
     setExpandedBreakdown(null);
     setResults(exampleResult);
     setIsEditing(false);
@@ -228,7 +227,6 @@ export const LaborCalculator: React.FC<{
     };
 
     const result = calculateLaborSettlement(input);
-    setShowResultDetails(false);
     setExpandedBreakdown(null);
     setResults(result);
     setIsEditing(false);
@@ -645,7 +643,7 @@ export const LaborCalculator: React.FC<{
                         </button>
                         <button
                           type="button"
-                          onClick={() => { setResults(null); setShowResultDetails(false); setIsEditing(true); }}
+                          onClick={() => { setResults(null); setIsEditing(true); }}
                           aria-label="Reiniciar cálculo laboral"
                           title="Reiniciar cálculo"
                           className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
@@ -655,19 +653,7 @@ export const LaborCalculator: React.FC<{
                       </div>
                     </div>
 
-                    <div className="border-b border-slate-100 bg-white p-4 sm:p-5">
-                      <button
-                        type="button"
-                        onClick={() => setShowResultDetails((visible) => !visible)}
-                        aria-expanded={showResultDetails}
-                        className="flex w-full items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:bg-slate-100"
-                      >
-                        <span>{showResultDetails ? 'Ocultar composición y desglose' : 'Ver composición y desglose'}</span>
-                        <ChevronDown size={16} className={`shrink-0 transition-transform ${showResultDetails ? 'rotate-180' : ''}`} />
-                      </button>
-                    </div>
 
-                    {showResultDetails && (
                     <div className="grid grid-cols-1 md:grid-cols-2">
                       <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
                         <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
@@ -734,52 +720,10 @@ export const LaborCalculator: React.FC<{
                         </div>
                       </div>
                     </div>
-                    )}
+
                   </WorkspacePanel>
 
-                  <div className="mt-8 pt-8 border-t border-slate-200">
-                    <div className="mb-5">
-                      <h4 className="text-sm font-extrabold text-slate-900 uppercase tracking-widest text-center">Siguientes Pasos (Imparcial)</h4>
-                      <p className="mt-1 text-[11px] text-slate-500 text-center">Selecciona una ruta de acción según tu perfil</p>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      {/* Ruta Trabajador */}
-                      <button type="button" onClick={() => notify("Función en desarrollo: Guía de conciliación", "info")} className="group relative flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md">
-                        <div className="rounded-lg bg-blue-100 p-2 text-blue-700">
-                          <User size={20} />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-slate-900 text-sm">Trabajador</h5>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-600">Guía técnica para conciliación y comparación contra ofrecimiento patronal.</p>
-                        </div>
-                        <ArrowRight size={16} className="mt-auto text-blue-600 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-                      </button>
-                      
-                      {/* Ruta Patrón / RH */}
-                      <button type="button" onClick={handleImssNextStep} className="group relative flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50/50 hover:shadow-md">
-                        <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700">
-                          <Briefcase size={20} />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-slate-900 text-sm">Patrón / RH</h5>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-600">Calcular impacto de cuotas IMSS asociadas al caso o evaluar contingencia.</p>
-                        </div>
-                        <ArrowRight size={16} className="mt-auto text-emerald-600 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-                      </button>
 
-                      {/* Ruta Profesional */}
-                      <button type="button" onClick={handleExportPDF} className="group relative flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-legal-gold/50 hover:bg-amber-50/50 hover:shadow-md">
-                        <div className="rounded-lg bg-amber-100 p-2 text-amber-700">
-                          <Scale size={20} />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-slate-900 text-sm">Profesional</h5>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-600">Exportar dictamen forense técnico en PDF con fundamentación de artículos LFT.</p>
-                        </div>
-                        <FileDown size={16} className="mt-auto text-amber-600 opacity-0 transition-all group-hover:translate-y-1 group-hover:opacity-100" />
-                      </button>
-                    </div>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

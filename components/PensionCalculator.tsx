@@ -38,7 +38,7 @@ export const PensionCalculator: React.FC<{
 
   // Advanced options
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showResultDetails, setShowResultDetails] = useState(false);
+
   const [hasSpouse, setHasSpouse] = useState(false);
   const [childrenCount, setChildrenCount] = useState<number>(0);
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
@@ -90,7 +90,7 @@ export const PensionCalculator: React.FC<{
       setChildrenCount(0);
     }
     setShowAdvanced(false);
-    setShowResultDetails(false);
+
     setResults(exampleResult);
     setIsEditing(false);
     notify('Ejemplo calculado para pensiones', 'success');
@@ -121,7 +121,7 @@ export const PensionCalculator: React.FC<{
       return;
     }
 
-    setShowResultDetails(false);
+
     setResults(result);
     setIsEditing(false);
 
@@ -252,7 +252,7 @@ export const PensionCalculator: React.FC<{
                   onClick={() => {
                     setRegime(r);
                     setResults(null);
-                    setShowResultDetails(false);
+                
                     setIsEditing(true);
                   }}
                   aria-pressed={regime === r}
@@ -446,7 +446,7 @@ export const PensionCalculator: React.FC<{
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setResults(null); setShowResultDetails(false); setIsEditing(true); }}
+                        onClick={() => { setResults(null); setIsEditing(true); }}
                         aria-label="Reiniciar cálculo de pensión"
                         title="Reiniciar cálculo"
                         className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
@@ -468,19 +468,7 @@ export const PensionCalculator: React.FC<{
                     </div>
                   </div>
 
-                  <div className="border-b border-slate-100 bg-white p-4 sm:p-5">
-                    <button
-                      type="button"
-                      onClick={() => setShowResultDetails((visible) => !visible)}
-                      aria-expanded={showResultDetails}
-                      className="flex w-full items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:bg-slate-100"
-                    >
-                      <span>{showResultDetails ? 'Ocultar detalle del cálculo' : 'Ver detalle del cálculo'}</span>
-                      <ChevronDown size={16} className={`shrink-0 transition-transform ${showResultDetails ? 'rotate-180' : ''}`} />
-                    </button>
-                  </div>
 
-                  {showResultDetails && (
                   <div className={`grid grid-cols-1 ${results.regimeUsed === '1973' ? 'md:grid-cols-2' : ''}`}>
                     {results.regimeUsed === '1973' && (
                     <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
@@ -554,7 +542,7 @@ export const PensionCalculator: React.FC<{
 
                     </div>
                   </div>
-                  )}
+
                 </WorkspacePanel>
               </motion.div>
             )}

@@ -55,7 +55,7 @@ export const SocialSecurityCalculator: React.FC<{
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showResultDetails, setShowResultDetails] = useState(false);
+
   const [isEditing, setIsEditing] = useState(true);
 
   const [results, setResults] = useState<{
@@ -103,7 +103,7 @@ export const SocialSecurityCalculator: React.FC<{
     setShowAdvanced(false);
     setMinWage(MEXICO_LABOR_DEFAULTS_2026.minWage);
     setUmaValue(MEXICO_LABOR_DEFAULTS_2026.uma);
-    setShowResultDetails(false);
+
     setResults(calculateSocialSecurity(exampleInput));
     setIsEditing(false);
     notify('Ejemplo calculado para IMSS e INFONAVIT', 'success');
@@ -132,7 +132,7 @@ export const SocialSecurityCalculator: React.FC<{
 
     const input: SocialSecurityInput = { sbc, riskClass, days, umaValue, minWage };
     const results = calculateSocialSecurity(input);
-    setShowResultDetails(false);
+
     setResults(results);
     setIsEditing(false);
 
@@ -484,17 +484,8 @@ export const SocialSecurityCalculator: React.FC<{
                       <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-900">Desglose de cuotas</h4>
                       <div className="flex items-center gap-2">
                         <button type="button" onClick={handleExport} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-legal-950" aria-label="Exportar PDF"><Download size={20} /></button>
-                        <button
-                          type="button"
-                          onClick={() => setShowResultDetails((visible) => !visible)}
-                          aria-expanded={showResultDetails}
-                          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700 transition-colors hover:bg-slate-100"
-                        >
-                          {showResultDetails ? 'Ocultar' : 'Ver conceptos'}
-                        </button>
                       </div>
                     </div>
-                    {showResultDetails && (
                     <>
                     <div className="space-y-3 p-4 lg:hidden">
                       {contributionRows.map((row, index, rows) => (
@@ -556,7 +547,7 @@ export const SocialSecurityCalculator: React.FC<{
                       </table>
                     </div>
                     </>
-                    )}
+
                   </WorkspacePanel>
                 </motion.div>
               )}
