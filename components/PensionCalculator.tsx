@@ -9,7 +9,8 @@ import {
   FileDown,
   Info,
   Building,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,6 +43,7 @@ export const PensionCalculator: React.FC<{
   const [childrenCount, setChildrenCount] = useState<number>(0);
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
+  const [isEditing, setIsEditing] = useState(true);
 
   const [results, setResults] = useState<{
     monthlyPension: number;
@@ -90,6 +92,7 @@ export const PensionCalculator: React.FC<{
     setShowAdvanced(false);
     setShowResultDetails(false);
     setResults(exampleResult);
+    setIsEditing(false);
     notify('Ejemplo calculado para pensiones', 'success');
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
@@ -120,6 +123,7 @@ export const PensionCalculator: React.FC<{
 
     setShowResultDetails(false);
     setResults(result);
+    setIsEditing(false);
 
     notify("Cálculo realizado exitosamente", "success");
     setTimeout(() => {
@@ -249,6 +253,7 @@ export const PensionCalculator: React.FC<{
                     setRegime(r);
                     setResults(null);
                     setShowResultDetails(false);
+                    setIsEditing(true);
                   }}
                   aria-pressed={regime === r}
                   className={`ui-segmented-option ${regime === r ? 'ui-segmented-option-active' : ''}`}
@@ -261,9 +266,18 @@ export const PensionCalculator: React.FC<{
         }
       />
 
-      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
-        <div className="min-w-0 space-y-5 lg:col-span-5">
-          <WorkspacePanel className="space-y-5 p-5 sm:p-6">
+      <div className="flex min-w-0 flex-col gap-5 lg:gap-8">
+        <div className="min-w-0 w-full lg:max-w-4xl lg:mx-auto">
+          <AnimatePresence mode="wait">
+            {isEditing ? (
+              <motion.div
+                key="inputs"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-5 overflow-hidden"
+              >
+                <WorkspacePanel className="space-y-5 p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3 text-slate-900">
               <div className="flex items-center gap-3">
                 <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
@@ -365,9 +379,35 @@ export const PensionCalculator: React.FC<{
               </button>
             </div>
           </WorkspacePanel>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="summary"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <WorkspacePanel className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="ui-icon-chip bg-emerald-100/50 border border-emerald-200"><CheckCircle2 size={18} className="text-emerald-700" /></div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">Datos capturados ({regime})</h3>
+                      <p className="mt-1 text-xs font-medium text-slate-500">
+                         Edad: <strong className="text-slate-700">{age} años</strong> • Semanas: <strong className="text-slate-700">{weeks}</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setIsEditing(true)} className="ui-secondary-action shrink-0">
+                    Editar datos
+                  </button>
+                </WorkspacePanel>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div ref={resultsRef} className="min-w-0 lg:col-span-7">
+        <div ref={resultsRef} className="min-w-0 w-full lg:max-w-5xl lg:mx-auto">
           <AnimatePresence mode="wait">
             {!results ? (
               <WorkspaceEmpty
@@ -406,7 +446,7 @@ export const PensionCalculator: React.FC<{
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setResults(null); setShowResultDetails(false); }}
+                        onClick={() => { setResults(null); setShowResultDetails(false); setIsEditing(true); }}
                         aria-label="Reiniciar cálculo de pensión"
                         title="Reiniciar cálculo"
                         className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
