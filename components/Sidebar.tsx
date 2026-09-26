@@ -12,6 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Shield,
+  Scale,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -126,6 +127,15 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, on
             >
               <FileText size={15} />
               <span className={isCollapsed ? 'md:sr-only' : ''}>Términos</span>
+            </button>
+            {!isCollapsed && <span className="text-slate-700 text-xs">•</span>}
+            <button 
+              onClick={() => onChangeView(AppView.SOURCES)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 transition-colors hover:text-amber-300"
+              title="Fuentes Oficiales"
+            >
+              <Scale size={15} />
+              <span className={isCollapsed ? 'md:sr-only' : ''}>Fuentes</span>
             </button>
         </div>
       </div>

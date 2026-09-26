@@ -9,7 +9,8 @@ import {
   FileDown,
   Info,
   Building,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,9 +21,7 @@ import { calculatePension73, calculatePension97, type PensionInput } from '../li
 
 type PensionRegime = '1973' | '1997';
 
-const LazyBreakdownChart = React.lazy(() =>
-  import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
-);
+
 
 export const PensionCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
@@ -37,11 +36,12 @@ export const PensionCalculator: React.FC<{
 
   // Advanced options
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showResultDetails, setShowResultDetails] = useState(false);
+
   const [hasSpouse, setHasSpouse] = useState(false);
   const [childrenCount, setChildrenCount] = useState<number>(0);
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
+  const [isEditing, setIsEditing] = useState(true);
 
   const [results, setResults] = useState<{
     monthlyPension: number;
@@ -88,8 +88,9 @@ export const PensionCalculator: React.FC<{
       setChildrenCount(0);
     }
     setShowAdvanced(false);
-    setShowResultDetails(false);
+
     setResults(exampleResult);
+    setIsEditing(false);
     notify('Ejemplo calculado para pensiones', 'success');
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
@@ -118,8 +119,9 @@ export const PensionCalculator: React.FC<{
       return;
     }
 
-    setShowResultDetails(false);
+
     setResults(result);
+    setIsEditing(false);
 
     notify("Cálculo realizado exitosamente", "success");
     setTimeout(() => {
@@ -129,15 +131,7 @@ export const PensionCalculator: React.FC<{
     }, 100);
   };
 
-  const chartData = useMemo(() => {
-    if (!results || results.regimeUsed !== '1973') return [];
 
-    return [
-      { name: 'Cuantía Básica', value: results.basicAmount, color: '#94a3b8' },
-      { name: 'Incrementos Anuales', value: results.annualIncrementsAmount, color: '#64748b' },
-      { name: 'Asignaciones Familiares', value: results.familyAllowancesAmount, color: '#d4af37' },
-    ].filter(d => d.value > 0);
-  }, [results]);
 
   const handleExportPDF = async () => {
     if (!results) return;
@@ -153,11 +147,14 @@ export const PensionCalculator: React.FC<{
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.rect(0, 0, 210, 40, 'F');
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('LEXLABORAL', 20, 25);
-      doc.setFontSize(10);
-      doc.text('ESTIMACIÓN DE PENSIÓN IMSS', 20, 32);
+      doc.text('LEXLABORAL', 20, 23);
+      doc.setFontSize(9);
+      doc.text('ESTIMACIÓN DE PENSIÓN IMSS', 20, 30);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NO OFICIAL', 20, 36);
 
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFontSize(12);
@@ -198,6 +195,28 @@ export const PensionCalculator: React.FC<{
         headStyles: { fillColor: goldColor, textColor: [0, 0, 0] },
       });
 
+      const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 200;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, finalY, 180, 40, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text('AVISO LEGAL, DESLINDE GUBERNAMENTAL Y FUENTES OFICIALES:', 20, finalY + 7);
+
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(71, 85, 105);
+      const disclaimerLines = [
+        '1. Lex Laboral es una herramienta de cálculo de iniciativa privada e independiente.',
+        '2. NO representa ni está afiliada al Instituto Mexicano del Seguro Social (IMSS) ni a la CONSAR.',
+        '3. Esta proyección es de carácter orientativo. La resolución vinculante sólo puede ser emitida por el IMSS.',
+        '4. Fuentes oficiales gubernamentales (.gob.mx):',
+        '   - Portal IMSS Pensiones: https://www.imss.gob.mx/pensiones',
+        '   - CONSAR: https://www.gob.mx/consar',
+        '   - Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+      ];
+      doc.text(disclaimerLines, 20, finalY + 13);
+
       doc.save(`LexLaboral_Pension_${new Date().getTime()}.pdf`);
       notify("PDF generado con éxito", "success");
     } catch (error) {
@@ -208,9 +227,9 @@ export const PensionCalculator: React.FC<{
   return (
     <WorkspacePage>
       <WorkspaceHeader
-        eyebrow="Calculadora de Pensiones"
+        eyebrow="Calculadora informativa"
         title="Estimaciones IMSS"
-        description="Calcula el estimado de tu pensión mensual bajo el régimen de 1973 o 1997."
+        description="Calcula el estimado orientativo de tu pensión mensual bajo el régimen de 1973 o 1997. Herramienta independiente no oficial."
         icon={<Building size={28} />}
         actions={
           <div className="w-full space-y-2 sm:min-w-[16rem] lg:w-auto">
@@ -223,7 +242,8 @@ export const PensionCalculator: React.FC<{
                   onClick={() => {
                     setRegime(r);
                     setResults(null);
-                    setShowResultDetails(false);
+                
+                    setIsEditing(true);
                   }}
                   aria-pressed={regime === r}
                   className={`ui-segmented-option ${regime === r ? 'ui-segmented-option-active' : ''}`}
@@ -236,9 +256,18 @@ export const PensionCalculator: React.FC<{
         }
       />
 
-      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
-        <div className="min-w-0 space-y-5 lg:col-span-5">
-          <WorkspacePanel className="space-y-5 p-5 sm:p-6">
+      <div className="flex min-w-0 flex-col gap-5 lg:gap-8">
+        <div className="min-w-0 w-full lg:max-w-4xl lg:mx-auto">
+          <AnimatePresence mode="wait">
+            {isEditing ? (
+              <motion.div
+                key="inputs"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-5 overflow-hidden"
+              >
+                <WorkspacePanel className="space-y-5 p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3 text-slate-900">
               <div className="flex items-center gap-3">
                 <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
@@ -340,9 +369,35 @@ export const PensionCalculator: React.FC<{
               </button>
             </div>
           </WorkspacePanel>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="summary"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <WorkspacePanel className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="ui-icon-chip bg-emerald-100/50 border border-emerald-200"><CheckCircle2 size={18} className="text-emerald-700" /></div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">Datos capturados ({regime})</h3>
+                      <p className="mt-1 text-xs font-medium text-slate-500">
+                         Edad: <strong className="text-slate-700">{age} años</strong> • Semanas: <strong className="text-slate-700">{weeks}</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setIsEditing(true)} className="ui-secondary-action shrink-0">
+                    Editar datos
+                  </button>
+                </WorkspacePanel>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div ref={resultsRef} className="min-w-0 lg:col-span-7">
+        <div ref={resultsRef} className="min-w-0 w-full lg:max-w-5xl lg:mx-auto">
           <AnimatePresence mode="wait">
             {!results ? (
               <WorkspaceEmpty
@@ -381,7 +436,7 @@ export const PensionCalculator: React.FC<{
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setResults(null); setShowResultDetails(false); }}
+                        onClick={() => { setResults(null); setIsEditing(true); }}
                         aria-label="Reiniciar cálculo de pensión"
                         title="Reiniciar cálculo"
                         className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
@@ -403,30 +458,8 @@ export const PensionCalculator: React.FC<{
                     </div>
                   </div>
 
-                  <div className="border-b border-slate-100 bg-white p-4 sm:p-5">
-                    <button
-                      type="button"
-                      onClick={() => setShowResultDetails((visible) => !visible)}
-                      aria-expanded={showResultDetails}
-                      className="flex w-full items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:bg-slate-100"
-                    >
-                      <span>{showResultDetails ? 'Ocultar detalle del cálculo' : 'Ver detalle del cálculo'}</span>
-                      <ChevronDown size={16} className={`shrink-0 transition-transform ${showResultDetails ? 'rotate-180' : ''}`} />
-                    </button>
-                  </div>
 
-                  {showResultDetails && (
-                  <div className={`grid grid-cols-1 ${results.regimeUsed === '1973' ? 'md:grid-cols-2' : ''}`}>
-                    {results.regimeUsed === '1973' && (
-                    <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
-                      <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
-                      <div className="h-[280px]">
-                        <React.Suspense fallback={<div className="h-full rounded-2xl bg-slate-50" />}>
-                          <LazyBreakdownChart data={chartData} />
-                        </React.Suspense>
-                      </div>
-                    </div>
-                    )}
+                  <div className="flex flex-col">
 
                     <div className="space-y-4 overflow-visible p-5 sm:p-6">
                       <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
@@ -489,7 +522,7 @@ export const PensionCalculator: React.FC<{
 
                     </div>
                   </div>
-                  )}
+
                 </WorkspacePanel>
               </motion.div>
             )}
@@ -525,6 +558,8 @@ export const PensionCalculator: React.FC<{
           }
         ]}
       />
+
+
     </WorkspacePage>
   );
 };

@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Settings2,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from 'lucide-react';
 import { NotificationType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,14 +28,14 @@ import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
 
-const LazyBreakdownChart = React.lazy(() =>
-  import('./BreakdownChart').then((module) => ({ default: module.BreakdownChart }))
-);
+
+
 
 export const LaborCalculator: React.FC<{
   notify: (m: string, t?: NotificationType) => void;
   onOpenImss?: () => void;
 }> = ({ notify, onOpenImss }) => {
+
   const resultsRef = React.useRef<HTMLDivElement>(null);
   const dismissalOptions: Array<{ value: DismissalType; label: string }> = [
     { value: 'injustificado', label: 'Despido' },
@@ -60,7 +61,7 @@ export const LaborCalculator: React.FC<{
   const [aguinaldoDays, setAguinaldoDays] = useState<number>(15);
   const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showResultDetails, setShowResultDetails] = useState(false);
+
   const [expandedBreakdown, setExpandedBreakdown] = useState<string | null>(null);
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
@@ -68,6 +69,35 @@ export const LaborCalculator: React.FC<{
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [showErrors, setShowErrors] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
+
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const scenarioStr = params.get('scenario');
+      if (scenarioStr) {
+        const state = JSON.parse(atob(scenarioStr));
+        if (state.baseSalary) setBaseSalary(state.baseSalary);
+        if (state.salaryPeriod) setSalaryPeriod(state.salaryPeriod);
+        if (state.startDate) setStartDate(state.startDate);
+        if (state.endDate) setEndDate(state.endDate);
+        if (state.yearsOfService) setYearsOfService(state.yearsOfService);
+        if (state.daysOfService) setDaysOfService(state.daysOfService);
+        if (state.dismissalType) setDismissalType(state.dismissalType);
+        if (state.vacationDays) setVacationDays(state.vacationDays);
+        if (state.vacationPremium) setVacationPremium(state.vacationPremium);
+        if (state.aguinaldoDays) setAguinaldoDays(state.aguinaldoDays);
+        
+        // Clean URL after loading to avoid confusion
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        notify("Escenario cargado exitosamente", "success");
+      }
+    } catch (e) {
+      console.error("Error loading scenario", e);
+    }
+  }, []);
 
   React.useEffect(() => {
     if (baseSalary > 0) {
@@ -164,9 +194,9 @@ export const LaborCalculator: React.FC<{
     setMinWage(MEXICO_LABOR_DEFAULTS_2026.minWage);
     setUmaValue(MEXICO_LABOR_DEFAULTS_2026.uma);
     setShowErrors(false);
-    setShowResultDetails(false);
     setExpandedBreakdown(null);
     setResults(exampleResult);
+    setIsEditing(false);
     notify('Ejemplo calculado para liquidación', 'success');
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
@@ -195,9 +225,9 @@ export const LaborCalculator: React.FC<{
     };
 
     const result = calculateLaborSettlement(input);
-    setShowResultDetails(false);
     setExpandedBreakdown(null);
     setResults(result);
+    setIsEditing(false);
     
     notify("Cálculo generado exitosamente", "success");
     setTimeout(() => {
@@ -207,19 +237,31 @@ export const LaborCalculator: React.FC<{
     }, 100);
   };
 
-  const chartData = useMemo(() => {
-    if (!results) return [];
-    return [
-      { name: 'Aguinaldo', value: results.aguinaldo, color: '#94a3b8' },
-      { name: 'Vacaciones', value: results.vacations, color: '#64748b' },
-      { name: 'Prima Vac.', value: results.vacationPremium, color: '#475569' },
-      { name: 'Indemnización 90', value: results.indemnity90, color: '#d4af37' },
-      { name: 'Indemnización 20', value: results.indemnity20, color: '#b8962e' },
-      { name: 'Prima Antig.', value: results.seniorityPremium, color: '#1e293b' },
-      { name: 'Horas Extras', value: results.overtime, color: '#0f172a' },
-      { name: 'Retención ISR', value: results.isr, color: '#991b1b' },
-    ].filter(d => d.value > 0);
-  }, [results]);
+
+
+  const handleShareScenario = () => {
+    if (!results) return;
+    try {
+      const state = {
+        baseSalary,
+        salaryPeriod,
+        startDate,
+        endDate,
+        yearsOfService,
+        daysOfService,
+        dismissalType,
+        vacationDays,
+        vacationPremium,
+        aguinaldoDays
+      };
+      const encoded = btoa(JSON.stringify(state));
+      const url = `${window.location.origin}${window.location.pathname}?scenario=${encoded}`;
+      navigator.clipboard.writeText(url);
+      notify("Enlace del escenario copiado al portapapeles", "success");
+    } catch (e) {
+      notify("No se pudo generar el enlace", "error");
+    }
+  };
 
   const handleExportPDF = async () => {
     if (!results) return;
@@ -231,23 +273,41 @@ export const LaborCalculator: React.FC<{
       const doc = new jsPDF();
       const primaryColor: [number, number, number] = [30, 41, 59];
       const goldColor: [number, number, number] = [212, 175, 55];
+      const folio = `LEX-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${new Date().getFullYear()}`;
 
+      // Cabecera superior
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(0, 0, 210, 40, 'F');
+      doc.rect(0, 0, 210, 45, 'F');
+      
+      // Sello de validez (visual algorítmico)
+      doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
+      doc.setLineWidth(0.5);
+      doc.circle(185, 22.5, 12, 'S');
+      doc.setFontSize(5);
+      doc.setTextColor(255, 255, 255);
+      doc.text('VALIDADO', 178, 22);
+      doc.text('ALGORITMO', 177, 25);
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text('LEXLABORAL', 20, 25);
-      doc.setFontSize(10);
-      doc.text('DICTAMEN TÉCNICO DE LIQUIDACIÓN LABORAL', 20, 32);
+      doc.text('LEXLABORAL', 20, 23);
+      doc.setFontSize(9);
+      doc.text('DICTAMEN TÉCNICO INFORMATIVO DE LIQUIDACIÓN Y FINIQUITO', 20, 31);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NEUTRALIDAD TÉCNICA APLICADA', 20, 37);
       
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setFontSize(12);
-      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 50);
-      doc.text(`Tipo: ${dismissalType.toUpperCase().replace('_', ' ')}`, 20, 50);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Folio Único: ${folio}`, 145, 55);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 60);
+      doc.text(`Tipo de Caso: ${dismissalType.toUpperCase().replace('_', ' ')}`, 20, 55);
 
       autoTable(doc, {
-        startY: 60,
+        startY: 65,
         head: [['Concepto', 'Valor']],
         body: [
           ['Fecha de Ingreso', startDate || 'No especificada'],
@@ -274,7 +334,28 @@ export const LaborCalculator: React.FC<{
         headStyles: { fillColor: goldColor, textColor: [0, 0, 0] },
       });
 
-      doc.save(`LexLaboral_Dictamen_${new Date().getTime()}.pdf`);
+      const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 200;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, finalY, 180, 40, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text('DESLINDE DE RESPONSABILIDAD Y FUENTES GUBERNAMENTALES:', 20, finalY + 7);
+
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(71, 85, 105);
+      const disclaimerLines = [
+        '1. Lex Laboral es privada e independiente; NO representa al IMSS, INFONAVIT ni al Gobierno de México.',
+        '2. Este reporte es una estimación orientativa basada en la Ley Federal del Trabajo y no constituye resolución oficial.',
+        '3. Fuentes de información gubernamental oficiales (.gob.mx):',
+        '   - Ley Federal del Trabajo: https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf',
+        '   - Salarios Mínimos (CONASAMI): https://www.gob.mx/conasami',
+        '   - Portal oficial del Gobierno de México: https://www.gob.mx/',
+      ];
+      doc.text(disclaimerLines, 20, finalY + 13);
+
+      doc.save(`LexLaboral_Finiquito_${new Date().getTime()}.pdf`);
       notify("PDF generado con éxito", "success");
     } catch (error) {
       notify("Error al generar PDF", "error");
@@ -288,7 +369,7 @@ export const LaborCalculator: React.FC<{
   return (
     <WorkspacePage>
       <WorkspaceHeader
-        eyebrow="Calculadora laboral"
+        eyebrow="Calculadora laboral informativa"
         title="Liquidación y finiquito"
         description="Calcula finiquito, indemnización y total estimado en una sola vista."
         icon={<Calculator size={28} />}
@@ -313,10 +394,21 @@ export const LaborCalculator: React.FC<{
         }
       />
 
-      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-8">
+
+
+      <div className="flex min-w-0 flex-col gap-5 lg:gap-8">
           {/* Inputs Section */}
-          <div className="min-w-0 space-y-5 lg:col-span-5">
-            <WorkspacePanel className="space-y-5 p-5 sm:p-6">
+          <div className="min-w-0 w-full lg:max-w-4xl lg:mx-auto">
+            <AnimatePresence mode="wait">
+              {isEditing ? (
+                <motion.div
+                  key="inputs"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-5 overflow-hidden"
+                >
+                  <WorkspacePanel className="space-y-5 p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3 text-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
@@ -336,7 +428,6 @@ export const LaborCalculator: React.FC<{
                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <label htmlFor="laborBaseSalary" className="ui-label px-0">Sueldo bruto por periodo</label>
-                        <p className="mt-1 text-xs leading-5 text-slate-500">Elige si capturas sueldo diario, semanal, quincenal o mensual.</p>
                       </div>
                       <div className="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1">
                         {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
@@ -357,9 +448,7 @@ export const LaborCalculator: React.FC<{
                       <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
                       <input id="laborBaseSalary" type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                    </div>
-                   <p className="px-2 text-xs leading-5 text-slate-500">
-                     Calculamos el salario diario integrado con aguinaldo, vacaciones y prima vacacional.
-                   </p>
+                   
                    {isSdiCalculated && baseSalary > 0 && (
                       <div className="flex items-center justify-between px-2 pt-1">
                         <span className="text-xs font-semibold text-slate-500">SDI integrado</span>
@@ -387,18 +476,13 @@ export const LaborCalculator: React.FC<{
                     <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
                   </div>
                 </div>
-                <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
-                  Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
-                </p>
+
 
                 <div className="ui-subtle-block space-y-4 p-4">
                   <div className="flex items-start gap-3">
                     <Briefcase size={16} className="mt-0.5 shrink-0 text-legal-gold" />
                     <div className="min-w-0">
                       <h4 className="text-sm font-bold text-slate-900">Antigüedad</h4>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
-                        Se calcula con las fechas o puede ajustarse manualmente.
-                      </p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -472,10 +556,36 @@ export const LaborCalculator: React.FC<{
                 </button>
               </div>
             </WorkspacePanel>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="summary"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <WorkspacePanel className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="ui-icon-chip bg-emerald-100/50 border border-emerald-200"><CheckCircle2 size={18} className="text-emerald-700" /></div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900">Datos capturados</h3>
+                        <p className="mt-1 text-xs font-medium text-slate-500">
+                           SDI: <strong className="text-slate-700">${dailySalary.toFixed(2)}</strong> • Antigüedad: <strong className="text-slate-700">{yearsOfService} años, {daysOfService} días</strong>
+                        </p>
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => setIsEditing(true)} className="ui-secondary-action shrink-0">
+                      Editar datos
+                    </button>
+                  </WorkspacePanel>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Results Section */}
-          <div ref={resultsRef} className="min-w-0 lg:col-span-7">
+          <div ref={resultsRef} className="min-w-0 w-full lg:max-w-5xl lg:mx-auto">
             <AnimatePresence mode="wait">
               {!results ? (
                 <WorkspaceEmpty
@@ -510,13 +620,16 @@ export const LaborCalculator: React.FC<{
                           ))}
                         </div>
                       </div>
-                      <div className="flex shrink-0 gap-3">
-                        <button type="button" onClick={handleExportPDF} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
-                          <FileDown size={18} /> <span>PDF</span>
+                      <div className="flex shrink-0 gap-2 sm:gap-3">
+                        <button type="button" onClick={handleShareScenario} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
+                          <Share2 size={16} /> <span className="hidden sm:inline">Compartir</span>
+                        </button>
+                        <button type="button" onClick={handleExportPDF} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
+                          <FileDown size={16} /> <span className="hidden sm:inline">PDF</span>
                         </button>
                         <button
                           type="button"
-                          onClick={() => { setResults(null); setShowResultDetails(false); }}
+                          onClick={() => { setResults(null); setIsEditing(true); }}
                           aria-label="Reiniciar cálculo laboral"
                           title="Reiniciar cálculo"
                           className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
@@ -526,41 +639,31 @@ export const LaborCalculator: React.FC<{
                       </div>
                     </div>
 
-                    <div className="border-b border-slate-100 bg-white p-4 sm:p-5">
-                      <button
-                        type="button"
-                        onClick={() => setShowResultDetails((visible) => !visible)}
-                        aria-expanded={showResultDetails}
-                        className="flex w-full items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-700 transition-colors hover:bg-slate-100"
-                      >
-                        <span>{showResultDetails ? 'Ocultar composición y desglose' : 'Ver composición y desglose'}</span>
-                        <ChevronDown size={16} className={`shrink-0 transition-transform ${showResultDetails ? 'rotate-180' : ''}`} />
-                      </button>
-                    </div>
 
-                    {showResultDetails && (
-                    <div className="grid grid-cols-1 md:grid-cols-2">
-                      <div className="border-b border-slate-100 p-5 sm:p-6 md:border-b-0 md:border-r">
-                        <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Composición</h4>
-                        <div className="h-[280px]">
-                          <React.Suspense fallback={<div className="h-full rounded-2xl bg-slate-50" />}>
-                            <LazyBreakdownChart data={chartData} />
-                          </React.Suspense>
-                        </div>
-                      </div>
-
+                    <div className="flex flex-col">
                       <div className="space-y-4 overflow-visible p-5 sm:p-6">
                         <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
                         {[
-                          { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo },
-                          { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations },
-                          { key: 'indemnity90', label: 'Indemnización 90 días', val: results.indemnity90, f: results.formulas.indemnity90 },
-                          { key: 'indemnity20', label: 'Indemnización 20 días/año', val: results.indemnity20, f: results.formulas.indemnity20 },
-                          { key: 'seniorityPremium', label: 'Prima de Antigüedad', val: results.seniorityPremium, f: results.formulas.seniorityPremium },
+                          { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo, art: 'Art. 87 LFT' },
+                          { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations, art: 'Art. 76 LFT' },
+                          { key: 'indemnity90', label: 'Indemnización 90 días', val: results.indemnity90, f: results.formulas.indemnity90, art: 'Art. 48 LFT' },
+                          { key: 'indemnity20', label: 'Indemnización 20 días/año', val: results.indemnity20, f: results.formulas.indemnity20, art: 'Art. 50 LFT' },
+                          { key: 'seniorityPremium', label: 'Prima de Antigüedad', val: results.seniorityPremium, f: results.formulas.seniorityPremium, art: 'Art. 162 LFT' },
                         ].filter(i => i.val > 0).map(item => (
-                          <div key={item.key} className="group">
+                          <div key={item.key} className="group relative">
                             <div className="mb-2 flex items-start justify-between gap-3">
-                              <span className="min-w-0 text-xs font-bold text-slate-700">{item.label}</span>
+                              <span className="min-w-0 text-xs font-bold text-slate-700 flex items-center gap-2">
+                                {item.label}
+                                <span className="relative group/tooltip flex items-center justify-center">
+                                  <Info size={14} className="text-slate-400 hover:text-legal-gold cursor-help" />
+                                  <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 w-max max-w-[200px] opacity-0 transition-opacity group-hover/tooltip:opacity-100">
+                                    <div className="rounded bg-slate-800 px-2 py-1 text-[10px] text-white shadow-lg">
+                                      Fundamento: {item.art}
+                                    </div>
+                                    <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+                                  </div>
+                                </span>
+                              </span>
                               <span className={`shrink-0 text-sm font-serif font-bold ${item.key === 'isr' ? 'text-red-700' : 'text-slate-900'}`}>
                                 {item.key === 'isr' ? '-' : ''}${item.val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                               </span>
@@ -594,32 +697,10 @@ export const LaborCalculator: React.FC<{
                         </div>
                       </div>
                     </div>
-                    )}
+
                   </WorkspacePanel>
 
-                  <div className="grid gap-4 md:grid-cols-1">
-                    <button
-                      onClick={handleImssNextStep}
-                      className="group w-full min-w-0 rounded-lg border border-slate-200/80 bg-white p-5 text-left shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)] transition-all hover:-translate-y-0.5 sm:p-6"
-                    >
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <Scale className="text-emerald-600" size={20} />
-                          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">IMSS</span>
-                        </div>
-                        <h4 className="mt-4 text-lg font-bold text-slate-950">
-                          Abrir IMSS
-                        </h4>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
-                          Revisa cuotas e impacto patronal para completar el análisis del caso.
-                        </p>
-                        <div className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">
-                          Continuar
-                          <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                        </div>
-                      </div>
-                    </button>
-                  </div>
+
                 </motion.div>
               )}
             </AnimatePresence>
@@ -659,6 +740,8 @@ export const LaborCalculator: React.FC<{
           },
         ]}
       />
+
+
     </WorkspacePage>
   );
 };

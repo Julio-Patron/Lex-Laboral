@@ -11,7 +11,8 @@ import {
   Smartphone,
   ExternalLink,
   Mail,
-  Globe
+  Globe,
+  ShieldAlert
 } from 'lucide-react';
 import { getPathForView } from '../lib/routes';
 import { SEOContentSection } from './SEOContentSection';
@@ -111,6 +112,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             >
               Fundamentador
             </a>
+            <a 
+              href={getPathForView(AppView.SOURCES)} 
+              onClick={(e) => handleNavClick(e, AppView.SOURCES)}
+              className="text-amber-400 font-semibold hover:text-amber-300 transition-colors"
+            >
+              Fuentes Oficiales
+            </a>
           </nav>
 
           <button
@@ -137,16 +145,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
           </div>
 
-          <span className="inline-block font-mono text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1 rounded-full mb-4">
-            Calculadoras Jurídicas Laborales • México 2026
-          </span>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto font-normal leading-relaxed">
-            Calculadoras oficiales de liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. 100% gratuito y sin registro.
-          </p>
 
         </div>
       </section>
+
+
 
       {/* Tools Grid Section */}
       <section className="py-16 sm:py-20 mx-auto max-w-5xl px-4 sm:px-6">
@@ -234,6 +238,10 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           ]}
           faqs={[
             {
+              question: '¿Esta aplicación pertenece al gobierno o al IMSS?',
+              answer: 'No. Lex Laboral es una herramienta de iniciativa privada e independiente. No representa ni está afiliada al IMSS, INFONAVIT, STPS ni al Gobierno de México. Todos los cálculos son estimaciones informativas basadas en leyes federales públicas (LFT, LSS, INFONAVIT).'
+            },
+            {
               question: '¿Tiene algún costo usar las calculadoras?',
               answer: 'No, todas las herramientas son 100% gratuitas y sin anuncios.'
             },
@@ -297,6 +305,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             >
               <span>Términos</span>
               <ExternalLink size={11} />
+            </a>
+            <a 
+              href={getPathForView(AppView.SOURCES)}
+              onClick={(e) => handleNavClick(e, AppView.SOURCES)}
+              className="text-amber-400 font-semibold hover:text-amber-300 transition-colors flex items-center gap-1"
+            >
+              <span>Fuentes oficiales</span>
             </a>
           </div>
         </div>
