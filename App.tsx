@@ -18,7 +18,7 @@ const GovernmentSourcesView = lazy(() => import('./components/GovernmentSourcesV
 
 import { AppView } from './types';
 import type { AppNotification, NotificationType } from './types';
-import { Menu, X } from 'lucide-react';
+import { MobileBottomNav } from './components/MobileBottomNav';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => getViewForPath(window.location.pathname));
@@ -92,7 +92,7 @@ function App() {
 
   const renderView = () => {
     return (
-      <div className="min-h-full w-full animate-fade-in relative">
+      <div className="min-h-full w-full animate-fade-in relative pb-20 md:pb-0">
         <Suspense fallback={
           <div className="h-full w-full min-h-[600px] flex items-center justify-center animate-in fade-in duration-500">
              <div className="flex flex-col items-center">
@@ -145,20 +145,13 @@ function App() {
       {currentView !== AppView.HOME && (
         <>
           {/* Mobile Header */}
-          <div className="z-40 flex shrink-0 items-center justify-between border-b border-white/5 bg-legal-950 px-4 py-3.5 text-white shadow-2xl sm:px-6 md:hidden">
+          <div className="z-40 flex shrink-0 items-center justify-center border-b border-white/5 bg-legal-950 px-4 py-3.5 text-white shadow-2xl md:hidden">
             <div 
               className="flex items-center cursor-pointer"
               onClick={() => handleViewChange(AppView.HOME)}
             >
                <img src="/assets/logo.webp" alt="Lex Laboral" className="h-8 w-auto object-contain" loading="lazy" />
             </div>
-            <button 
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              aria-label={isSidebarOpen ? 'Cerrar navegación' : 'Abrir navegación'}
-              className="rounded-lg bg-white/10 p-2 transition-all hover:bg-white/20"
-            >
-              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
           </div>
 
           {/* Sidebar Overlay for Mobile */}
@@ -174,7 +167,7 @@ function App() {
           <div
             className={`fixed inset-y-0 left-0 z-[70] max-w-[86vw] transform transition-transform duration-300 ease-out md:relative md:max-w-none md:translate-x-0 ${
               isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
+            } hidden md:block`}
             aria-hidden={isMobileSidebarHidden}
             inert={isMobileSidebarHidden}
           >
@@ -196,6 +189,9 @@ function App() {
           {renderView()}
         </div>
       </main>
+
+      <MobileBottomNav currentView={currentView} onChangeView={handleViewChange} />
+
       </div>
     </ErrorBoundary>
   );

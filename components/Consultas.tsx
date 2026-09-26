@@ -149,31 +149,13 @@ export const Consultas: React.FC = () => {
     }
   }, []);
 
-  /**
-   * Debounced search on query change
-   */
-  useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      if (query.trim()) {
-        performSearch(query, selectedNorm);
-      } else {
-        setResults([]);
-        setSearched(false);
-        setSearchMode(null);
-        setResolvedQuery('');
-      }
-    }, 300);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [query, selectedNorm, performSearch]);
+  const handleClear = () => {
+    setQuery('');
+    setResults([]);
+    setSearched(false);
+    setSearchMode(null);
+    setResolvedQuery('');
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -244,7 +226,7 @@ export const Consultas: React.FC = () => {
               {query && (
                 <button
                   type="button"
-                  onClick={() => setQuery('')}
+                  onClick={handleClear}
                   className="absolute right-3 top-3 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                   aria-label="Limpiar consulta"
                 >

@@ -145,13 +145,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
           </div>
 
-          <span className="inline-block font-mono text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1 rounded-full mb-4">
-            Calculadoras Jurídicas Laborales • México 2026
-          </span>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto font-normal leading-relaxed">
-            Calculadoras laborales de estimación para liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. Herramienta privada e independiente, 100% gratuita y sin registro.
-          </p>
 
         </div>
       </section>

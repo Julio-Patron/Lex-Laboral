@@ -432,7 +432,6 @@ export const LaborCalculator: React.FC<{
                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <label htmlFor="laborBaseSalary" className="ui-label px-0">Sueldo bruto por periodo</label>
-                        <p className="mt-1 text-xs leading-5 text-slate-500">Elige si capturas sueldo diario, semanal, quincenal o mensual.</p>
                       </div>
                       <div className="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1">
                         {(['daily', 'weekly', 'biweekly', 'monthly'] as const).map((p) => (
@@ -453,9 +452,7 @@ export const LaborCalculator: React.FC<{
                       <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-500">$</span>
                       <input id="laborBaseSalary" type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                    </div>
-                   <p className="px-2 text-xs leading-5 text-slate-500">
-                     Calculamos el salario diario integrado con aguinaldo, vacaciones y prima vacacional.
-                   </p>
+                   
                    {isSdiCalculated && baseSalary > 0 && (
                       <div className="flex items-center justify-between px-2 pt-1">
                         <span className="text-xs font-semibold text-slate-500">SDI integrado</span>
@@ -483,18 +480,13 @@ export const LaborCalculator: React.FC<{
                     <input id="endDateInput" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ui-input" />
                   </div>
                 </div>
-                <p className="-mt-2 px-1 text-xs leading-5 text-slate-500">
-                  Si no tienes las fechas a la mano, captura la antigüedad directamente abajo.
-                </p>
+
 
                 <div className="ui-subtle-block space-y-4 p-4">
                   <div className="flex items-start gap-3">
                     <Briefcase size={16} className="mt-0.5 shrink-0 text-legal-gold" />
                     <div className="min-w-0">
                       <h4 className="text-sm font-bold text-slate-900">Antigüedad</h4>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
-                        Se calcula con las fechas o puede ajustarse manualmente.
-                      </p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
