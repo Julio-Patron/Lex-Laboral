@@ -637,25 +637,12 @@ export const LaborCalculator: React.FC<{
                   {/* Caminos de Acción */}
                   <div className="mt-8">
                     <h4 className="text-center text-sm font-extrabold uppercase tracking-widest text-slate-900 mb-6">¿Qué deseas hacer ahora?</h4>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <button
-                        type="button"
-                        onClick={handleWhatsAppShare}
-                        className="group relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-green-500/20 bg-green-50/50 p-6 text-center shadow-sm transition-all hover:border-green-500 hover:bg-green-50 hover:shadow-md"
-                      >
-                        <div className="rounded-full bg-green-100 p-3 text-green-600 transition-transform group-hover:scale-110">
-                          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="css-i6dzq1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-slate-900 text-base">Compartir por WhatsApp</h5>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-600 px-4">Genera un enlace viral para que tu cliente, jefe o abogado vea este desglose.</p>
-                        </div>
-                      </button>
-
+                    <div className="flex flex-col items-center gap-4">
+                      {/* Acción Principal */}
                       <button
                         type="button"
                         onClick={() => setIsDocModalOpen(true)}
-                        className="group relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 p-6 text-center shadow-sm transition-all hover:border-legal-gold hover:bg-amber-50 hover:shadow-md"
+                        className="w-full max-w-md group relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 p-6 text-center shadow-sm transition-all hover:border-legal-gold hover:bg-amber-50 hover:shadow-md"
                       >
                         <div className="rounded-full bg-amber-100 p-3 text-amber-600 transition-transform group-hover:scale-110">
                           <FileText size={24} />
@@ -664,6 +651,16 @@ export const LaborCalculator: React.FC<{
                           <h5 className="font-bold text-slate-900 text-base">Descargar Documento</h5>
                           <p className="mt-1 text-xs leading-relaxed text-slate-600 px-4">Elige entre 3 plantillas y descarga en PDF o Word (.docx) listo para firmar.</p>
                         </div>
+                      </button>
+
+                      {/* Acción Secundaria Sutil */}
+                      <button
+                        type="button"
+                        onClick={handleWhatsAppShare}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 mt-2 text-[13px] font-bold text-green-700 bg-green-50 hover:bg-green-100/80 rounded-full transition-colors border border-green-200/50"
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="css-i6dzq1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        Compartir resultado por WhatsApp
                       </button>
                     </div>
                   </div>
