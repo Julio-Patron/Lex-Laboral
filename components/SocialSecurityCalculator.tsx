@@ -404,6 +404,7 @@ export const SocialSecurityCalculator: React.FC<{
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular cuotas</span>
                 </button>
+              </div>
             </WorkspacePanel>
                 </motion.div>
               ) : (
