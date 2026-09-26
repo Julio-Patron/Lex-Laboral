@@ -26,7 +26,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
-import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
+import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput, type LaborSettlementResult } from '../lib/calculators/labor';
+import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
+import { DocumentExportModal } from './DocumentExportModal';
 
 
 
@@ -69,6 +71,8 @@ export const LaborCalculator: React.FC<{
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [showErrors, setShowErrors] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
 
   React.useEffect(() => {
@@ -239,7 +243,7 @@ export const LaborCalculator: React.FC<{
 
 
 
-  const handleShareScenario = () => {
+  const handleWhatsAppShare = () => {
     if (!results) return;
     try {
       const state = {
@@ -256,109 +260,45 @@ export const LaborCalculator: React.FC<{
       };
       const encoded = btoa(JSON.stringify(state));
       const url = `${window.location.origin}${window.location.pathname}?scenario=${encoded}`;
-      navigator.clipboard.writeText(url);
-      notify("Enlace del escenario copiado al portapapeles", "success");
+      const totalStr = `$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+      const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\nAbre este enlace para ver o ajustar los números:\n${url}\n\n_Generado en LexLaboral.com.mx_`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      notify("Abriendo WhatsApp", "success");
     } catch (e) {
       notify("No se pudo generar el enlace", "error");
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleDocumentExport = async (template: 'A' | 'B' | 'C', format: 'pdf' | 'docx', data: { employeeName: string, employerName: string }) => {
     if (!results) return;
+    setIsExporting(true);
     try {
-      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
-        import('jspdf'),
-        import('jspdf-autotable'),
-      ]);
-      const doc = new jsPDF();
-      const primaryColor: [number, number, number] = [30, 41, 59];
-      const goldColor: [number, number, number] = [212, 175, 55];
-      const folio = `LEX-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${new Date().getFullYear()}`;
+      const docData = {
+        employeeName: data.employeeName,
+        employerName: data.employerName,
+        results,
+        dismissalLabel: dismissalLabels[dismissalType],
+        startDate,
+        endDate,
+        yearsOfService,
+        daysOfService,
+        dailySalary,
+        minWage
+      };
 
-      // Cabecera superior
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(0, 0, 210, 45, 'F');
-      
-      // Sello de validez (visual algorítmico)
-      doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
-      doc.setLineWidth(0.5);
-      doc.circle(185, 22.5, 12, 'S');
-      doc.setFontSize(5);
-      doc.setTextColor(255, 255, 255);
-      doc.text('VALIDADO', 178, 22);
-      doc.text('ALGORITMO', 177, 25);
-
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.setFont('helvetica', 'bold');
-      doc.text('LEXLABORAL', 20, 23);
-      doc.setFontSize(9);
-      doc.text('DICTAMEN TÉCNICO INFORMATIVO DE LIQUIDACIÓN Y FINIQUITO', 20, 31);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text('HERRAMIENTA PRIVADA E INDEPENDIENTE · NEUTRALIDAD TÉCNICA APLICADA', 20, 37);
-      
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Folio Único: ${folio}`, 145, 55);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 60);
-      doc.text(`Tipo de Caso: ${dismissalType.toUpperCase().replace('_', ' ')}`, 20, 55);
-
-      autoTable(doc, {
-        startY: 65,
-        head: [['Concepto', 'Valor']],
-        body: [
-          ['Fecha de Ingreso', startDate || 'No especificada'],
-          ['Fecha de Baja', endDate || 'No especificada'],
-          ['Antigüedad', `${yearsOfService} años, ${daysOfService} días`],
-          ['SDI Integrado', `$${dailySalary.toFixed(2)}`],
-          ['Salario Mínimo', `$${minWage.toFixed(2)}`],
-        ],
-        headStyles: { fillColor: primaryColor },
-      });
-
-      autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 10,
-        head: [['Prestación', 'Monto (MXN)', 'Fundamento']],
-        body: [
-          ['Aguinaldo Proporcional', `$${results.aguinaldo.toFixed(2)}`, 'Art. 87 LFT'],
-          ['Vacaciones Proporcionales', `$${results.vacations.toFixed(2)}`, 'Art. 76 LFT'],
-          ['Prima Vacacional', `$${results.vacationPremium.toFixed(2)}`, 'Art. 80 LFT'],
-          ['Indemnización 90 días', `$${results.indemnity90.toFixed(2)}`, 'Art. 48 LFT'],
-          ['Indemnización 20 días/año', `$${results.indemnity20.toFixed(2)}`, 'Art. 50 LFT'],
-          ['Prima de Antigüedad', `$${results.seniorityPremium.toFixed(2)}`, 'Art. 162 LFT'],
-          ['Retención ISR (Estimada)', `-$${results.isr.toFixed(2)}`, 'Art. 95, 96 LISR'],
-        ].filter(r => parseFloat(r[1].replace('$', '').replace('-', '')) > 0),
-        headStyles: { fillColor: goldColor, textColor: [0, 0, 0] },
-      });
-
-      const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 200;
-      doc.setFillColor(248, 250, 252);
-      doc.rect(15, finalY, 180, 40, 'F');
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(30, 41, 59);
-      doc.text('DESLINDE DE RESPONSABILIDAD Y FUENTES GUBERNAMENTALES:', 20, finalY + 7);
-
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(71, 85, 105);
-      const disclaimerLines = [
-        '1. Lex Laboral es privada e independiente; NO representa al IMSS, INFONAVIT ni al Gobierno de México.',
-        '2. Este reporte es una estimación orientativa basada en la Ley Federal del Trabajo y no constituye resolución oficial.',
-        '3. Fuentes de información gubernamental oficiales (.gob.mx):',
-        '   - Ley Federal del Trabajo: https://www.diputados.gob.mx/LeyesBiblio/pdf/LFT.pdf',
-        '   - Salarios Mínimos (CONASAMI): https://www.gob.mx/conasami',
-        '   - Portal oficial del Gobierno de México: https://www.gob.mx/',
-      ];
-      doc.text(disclaimerLines, 20, finalY + 13);
-
-      doc.save(`LexLaboral_Finiquito_${new Date().getTime()}.pdf`);
-      notify("PDF generado con éxito", "success");
+      if (format === 'pdf') {
+        generatePDFDoc(template, docData);
+        notify("PDF generado con éxito", "success");
+      } else {
+        await generateWordDoc(template, docData);
+        notify("Documento Word generado con éxito", "success");
+      }
+      setIsDocModalOpen(false);
     } catch (error) {
-      notify("Error al generar PDF", "error");
+      console.error(error);
+      notify(`Error al generar el documento ${format.toUpperCase()}`, "error");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -621,12 +561,6 @@ export const LaborCalculator: React.FC<{
                         </div>
                       </div>
                       <div className="flex shrink-0 gap-2 sm:gap-3">
-                        <button type="button" onClick={handleShareScenario} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
-                          <Share2 size={16} /> <span className="hidden sm:inline">Compartir</span>
-                        </button>
-                        <button type="button" onClick={handleExportPDF} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-xs font-bold text-white transition-all hover:bg-white/20 active:scale-95">
-                          <FileDown size={16} /> <span className="hidden sm:inline">PDF</span>
-                        </button>
                         <button
                           type="button"
                           onClick={() => { setResults(null); setIsEditing(true); }}
@@ -700,6 +634,39 @@ export const LaborCalculator: React.FC<{
 
                   </WorkspacePanel>
 
+                  {/* Caminos de Acción */}
+                  <div className="mt-8">
+                    <h4 className="text-center text-sm font-extrabold uppercase tracking-widest text-slate-900 mb-6">¿Qué deseas hacer ahora?</h4>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={handleWhatsAppShare}
+                        className="group relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-green-500/20 bg-green-50/50 p-6 text-center shadow-sm transition-all hover:border-green-500 hover:bg-green-50 hover:shadow-md"
+                      >
+                        <div className="rounded-full bg-green-100 p-3 text-green-600 transition-transform group-hover:scale-110">
+                          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="css-i6dzq1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-slate-900 text-base">Compartir por WhatsApp</h5>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600 px-4">Genera un enlace viral para que tu cliente, jefe o abogado vea este desglose.</p>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsDocModalOpen(true)}
+                        className="group relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 p-6 text-center shadow-sm transition-all hover:border-legal-gold hover:bg-amber-50 hover:shadow-md"
+                      >
+                        <div className="rounded-full bg-amber-100 p-3 text-amber-600 transition-transform group-hover:scale-110">
+                          <FileText size={24} />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-slate-900 text-base">Descargar Documento</h5>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-600 px-4">Elige entre 3 plantillas y descarga en PDF o Word (.docx) listo para firmar.</p>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
 
                 </motion.div>
               )}
@@ -707,6 +674,12 @@ export const LaborCalculator: React.FC<{
           </div>
         </div>
       
+      <DocumentExportModal
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        onExport={handleDocumentExport}
+        isExporting={isExporting}
+      />
 
       <SEOContentSection
         title="Calculadora de liquidación y finiquito en México"
