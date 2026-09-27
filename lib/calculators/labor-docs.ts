@@ -43,7 +43,6 @@ export const generateWordDoc = async (template: TemplateType, data: DocData) => 
     // Memoria Técnica
     sections.push(
       new Paragraph({ text: "MEMORIA TÉCNICA DE CÁLCULO Y FUNDAMENTACIÓN LFT", heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
-      new Paragraph({ text: "HERRAMIENTA PRIVADA E INDEPENDIENTE · NO OFICIAL", alignment: AlignmentType.CENTER }),
       new Paragraph({ text: "" }),
       new Paragraph({ text: `Tipo de Caso: ${dismissalLabel}` }),
       new Paragraph({ text: `Fecha de Emisión: ${new Date().toLocaleDateString()}` }),
@@ -78,17 +77,17 @@ export const generateWordDoc = async (template: TemplateType, data: DocData) => 
     sections.push(table);
     sections.push(new Paragraph({ text: "" }));
     sections.push(new Paragraph({ text: `TOTAL NETO ESTIMADO: ${totalAmountStr}`, heading: HeadingLevel.HEADING_2 }));
-    sections.push(new Paragraph({ text: "" }));
-    sections.push(createFooter());
 
   } else if (template === 'B') {
     // Recibo Finiquito
     sections.push(
+      new Paragraph({ text: `BUENO POR: ${totalAmountStr} MXN`, alignment: AlignmentType.RIGHT }),
+      new Paragraph({ text: "" }),
       new Paragraph({ text: "RECIBO DE FINIQUITO Y LIQUIDACIÓN CIRCUNSTANCIADO", heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
       new Paragraph({ text: "" }),
-      new Paragraph({ text: `En la ciudad de ________________________, a los ___ días del mes de ______________ de _____, el/la C. ${nameLabel}, manifiesto expresamente haber recibido de mi patrón ${employerLabel}, la cantidad total neta de ${totalAmountStr} (MXN), mediante (Efectivo/Transferencia/Cheque).` }),
+      new Paragraph({ text: `En la ciudad de ________________________, a los ___ días del mes de ______________ de _____, el/la C. ${nameLabel}, manifiesto expresamente y bajo protesta de decir verdad, haber recibido a mi entera satisfacción de mi patrón, la persona (física/moral) denominada ${employerLabel}, la cantidad total neta de ${totalAmountStr} (MXN), mediante (Efectivo / Transferencia / Cheque).` }),
       new Paragraph({ text: "" }),
-      new Paragraph({ text: "La cantidad mencionada ampara los siguientes conceptos constitucionales y legales correspondientes a mi relación de trabajo:" }),
+      new Paragraph({ text: "Que la cantidad antes mencionada ampara el pago de todas y cada una de las prestaciones a las que tuve derecho derivadas de mi relación laboral conforme al siguiente desglose:" }),
       new Paragraph({ text: "" })
     );
 
@@ -107,13 +106,12 @@ export const generateWordDoc = async (template: TemplateType, data: DocData) => 
     
     sections.push(
       new Paragraph({ text: "CLÁUSULA DE LIBERACIÓN MUTUA", heading: HeadingLevel.HEADING_3 }),
-      new Paragraph({ text: "Con el pago de las cantidades antes descritas, declaro que no se me adeuda cantidad alguna por concepto de salarios, horas extras, aguinaldo, vacaciones, prima vacacional, indemnizaciones, ni ninguna otra prestación derivada de la Ley Federal del Trabajo o contrato. Otorgando el finiquito más amplio que en derecho proceda y no reservándome acción ni derecho alguno en contra del patrón." }),
+      new Paragraph({ text: `Con el pago de las cantidades antes descritas, declaro que no se me adeuda cantidad alguna por concepto de salarios ordinarios o extraordinarios, horas extras, aguinaldo, vacaciones, prima vacacional, prima de antigüedad, indemnizaciones, ni ninguna otra prestación derivada de la Ley Federal del Trabajo o contrato individual aplicable. Otorgo el finiquito más amplio que en derecho proceda, no reservándome acción ni derecho alguno, de ninguna naturaleza, en contra de ${employerLabel}, sus socios, representantes o quien sus derechos represente.` }),
+      new Paragraph({ text: "" }),
       new Paragraph({ text: "" }),
       new Paragraph({ text: "" }),
       new Paragraph({ text: "____________________________________", alignment: AlignmentType.CENTER }),
-      new Paragraph({ text: `Firma y Huella de ${nameLabel}`, alignment: AlignmentType.CENTER }),
-      new Paragraph({ text: "" }),
-      createFooter()
+      new Paragraph({ text: `Firma y Huella de ${nameLabel}`, alignment: AlignmentType.CENTER })
     );
 
   } else if (template === 'C') {
@@ -126,19 +124,18 @@ export const generateWordDoc = async (template: TemplateType, data: DocData) => 
       new Paragraph({ text: `A LA EMPRESA: ${employerLabel}`, heading: HeadingLevel.HEADING_3 }),
       new Paragraph({ text: "PRESENTE.-" }),
       new Paragraph({ text: "" }),
-      new Paragraph({ text: `Por medio de la presente, sirva este conducto para comunicarles formalmente mi RENUNCIA VOLUNTARIA con carácter de irrevocable al puesto de ________________________ que venía desempeñando en esta empresa.` }),
+      new Paragraph({ text: `Por medio del presente escrito y por así convenir a mis intereses particulares, presento formalmente mi RENUNCIA VOLUNTARIA, con carácter de irrevocable, al puesto de ________________________ que venía desempeñando al servicio de ${employerLabel}.` }),
       new Paragraph({ text: "" }),
-      new Paragraph({ text: `Mi renuncia se debe a motivos estrictamente personales que convienen a mis intereses. Manifiesto que durante el tiempo que presté mis servicios para ${employerLabel}, siempre me fueron cubiertos puntualmente mis salarios, así como todas y cada una de las prestaciones a que tuve derecho, reconociendo que no sufrí accidente de trabajo ni enfermedad profesional alguna.` }),
+      new Paragraph({ text: `Hago constar expresamente que durante el tiempo que presté mis servicios me fueron pagados puntual y oportunamente todos mis salarios ordinarios y extraordinarios, así como todas y cada una de las prestaciones a que tuve derecho conforme a la Ley Federal del Trabajo. Asimismo, reconozco que nunca sufrí accidente ni enfermedad de trabajo alguna.` }),
       new Paragraph({ text: "" }),
-      new Paragraph({ text: `Agradezco de antemano la oportunidad que me fue brindada.` }),
+      new Paragraph({ text: `Agradezco de antemano la oportunidad y la confianza que me fue brindada durante el tiempo que laboré para esta empresa.` }),
       new Paragraph({ text: "" }),
       new Paragraph({ text: "ATENTAMENTE", alignment: AlignmentType.CENTER }),
       new Paragraph({ text: "" }),
       new Paragraph({ text: "" }),
-      new Paragraph({ text: "____________________________________", alignment: AlignmentType.CENTER }),
-      new Paragraph({ text: `Firma y Huella de ${nameLabel}`, alignment: AlignmentType.CENTER }),
       new Paragraph({ text: "" }),
-      createFooter()
+      new Paragraph({ text: "____________________________________", alignment: AlignmentType.CENTER }),
+      new Paragraph({ text: `Firma y Huella de ${nameLabel}`, alignment: AlignmentType.CENTER })
     );
   }
 
