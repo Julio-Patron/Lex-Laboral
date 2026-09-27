@@ -32,16 +32,9 @@ dist-ssr/
 *.sw?
 Thumbs.db
 
-# Android build artifacts
-android/.gradle
-android/app/build
-android/capacitor-cordova-android-plugins
-android/build
-
 # Android signing secrets and packaged app bundles
 android/keystore.properties
 android/app/lexlaboral-release.keystore
-android/app/src/main/assets/
 *.apk
 !public/*.apk
 

@@ -46,9 +46,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Initialize Android Project
-        run: npx cap add android
-
       - name: Sync Web Assets to Android
         run: npx cap sync android
 
