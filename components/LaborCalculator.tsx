@@ -30,6 +30,7 @@ import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from '
 import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput, type LaborSettlementResult } from '../lib/calculators/labor';
 import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
 import { DocumentExportModal } from './DocumentExportModal';
+import { OnboardingTooltip } from './OnboardingTooltip';
 
 
 
@@ -747,6 +748,8 @@ export const LaborCalculator: React.FC<{
         onExport={handleDocumentExport}
         isExporting={isExporting}
       />
+
+      <OnboardingTooltip />
 
       <SEOContentSection
         title="Calculadora de liquidación y finiquito en México"
