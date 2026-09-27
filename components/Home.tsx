@@ -132,11 +132,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       </header>
 
       {/* Minimalist Hero Section */}
-      <section className="relative py-16 sm:py-24 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
+      <section className="relative pt-10 pb-12 sm:py-24 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 relative z-10 text-center">
           
           {/* Hero Brand Logo as Main Title */}
-          <div className="max-w-[280px] sm:max-w-[420px] md:max-w-[480px] mx-auto mb-6 select-none">
+          <div className="max-w-[240px] sm:max-w-[420px] md:max-w-[480px] mx-auto mb-5 sm:mb-6 select-none">
             <h1 className="sr-only">Lex Laboral: Herramientas Jurídicas Laborales en México</h1>
             <img 
               src="/assets/logo.webp" 
@@ -146,7 +146,9 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
           </div>
 
-
+          <span className="inline-block font-mono text-[10px] sm:text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full mb-4 sm:mb-5">
+            Calculadoras Jurídicas Laborales • México 2026
+          </span>
 
         </div>
       </section>
@@ -154,40 +156,42 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
 
       {/* Tools Grid Section */}
-      <section className="py-16 sm:py-20 mx-auto max-w-5xl px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section className="py-8 sm:py-20 mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {tools.map((tool) => (
             <a
               key={tool.view}
               href={getPathForView(tool.view)}
               onClick={(event) => handleNavClick(event, tool.view)}
-              className="group flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-7 backdrop-blur-sm transition-all duration-200 hover:border-amber-500/40 hover:bg-slate-900/90"
+              className="group flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-5 sm:p-7 backdrop-blur-sm transition-all duration-200 hover:border-amber-500/40 hover:bg-slate-900/90"
             >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-950">
-                    {tool.icon}
-                  </div>
-                  <span className="text-[10px] font-mono font-medium text-slate-400 border border-slate-800 rounded-md px-2 py-0.5">
-                    {tool.badge}
-                  </span>
+              <div className="flex flex-row sm:flex-col items-start gap-4 sm:gap-0">
+                <div className="flex shrink-0 h-12 w-12 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-950 sm:mb-4">
+                  {tool.icon}
                 </div>
-
-                <h2 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">
-                  {tool.title}
-                </h2>
                 
-                <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                  {tool.summary}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 sm:mb-0 mb-1">
+                    <h2 className="text-base sm:text-lg font-bold text-white group-hover:text-amber-300 transition-colors truncate sm:whitespace-normal">
+                      {tool.title}
+                    </h2>
+                    <span className="hidden sm:inline-block text-[10px] font-mono font-medium text-slate-400 border border-slate-800 rounded-md px-2 py-0.5 shrink-0">
+                      {tool.badge}
+                    </span>
+                  </div>
+                  
+                  <p className="text-[13px] sm:text-xs leading-snug sm:leading-relaxed text-slate-400 sm:mt-2">
+                    {tool.summary}
+                  </p>
+                </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between">
-                <span className="text-xs font-semibold text-amber-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+              <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between">
+                <span className="text-[13px] sm:text-xs font-semibold text-amber-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   {tool.action}
                   <ChevronRight size={13} />
                 </span>
-                <ArrowUpRight size={15} className="text-slate-500 group-hover:text-amber-400 transition-colors" />
+                <ArrowUpRight size={15} className="text-slate-500 group-hover:text-amber-400 transition-colors hidden sm:block" />
               </div>
             </a>
           ))}

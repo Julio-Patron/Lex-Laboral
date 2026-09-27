@@ -56,12 +56,13 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+          className="relative w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         >
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          {/* Header Sticky */}
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Descargar Documento Oficial</h3>
-              <p className="text-xs text-slate-500 mt-1">Generador dual: PDF y Word (.docx)</p>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">Descargar Documento Oficial</h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-1">Generador dual: PDF y Word (.docx)</p>
             </div>
             <button
               onClick={onClose}
@@ -71,14 +72,15 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
             </button>
           </div>
 
-          <div className="p-6">
-            <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500">1. Selecciona la Plantilla</h4>
+          {/* Scrollable Body */}
+          <div className="p-5 sm:p-6 overflow-y-auto">
+            <h4 className="mb-4 text-[11px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">1. Selecciona la Plantilla</h4>
             <div className="grid gap-3 sm:grid-cols-1">
               {templates.map((tpl) => (
                 <button
                   key={tpl.id}
                   onClick={() => setSelectedTemplate(tpl.id)}
-                  className={`flex items-start gap-4 rounded-xl border p-4 text-left transition-all ${
+                  className={`flex items-start gap-3 sm:gap-4 rounded-xl border p-4 text-left transition-all ${
                     selectedTemplate === tpl.id
                       ? 'border-legal-gold bg-amber-50 ring-1 ring-legal-gold/20'
                       : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-slate-50'
@@ -90,10 +92,10 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
                     {selectedTemplate === tpl.id ? <CheckCircle2 size={16} /> : <FileText size={16} />}
                   </div>
                   <div>
-                    <h5 className={`text-sm font-bold ${selectedTemplate === tpl.id ? 'text-slate-900' : 'text-slate-700'}`}>
+                    <h5 className={`text-[13px] sm:text-sm font-bold leading-snug ${selectedTemplate === tpl.id ? 'text-slate-900' : 'text-slate-700'}`}>
                       Plantilla {tpl.id}: {tpl.title}
                     </h5>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">{tpl.description}</p>
+                    <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-slate-500">{tpl.description}</p>
                   </div>
                 </button>
               ))}
@@ -139,20 +141,20 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
               )}
             </AnimatePresence>
 
-            <div className="mt-8">
-              <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500">2. Descargar Documento</h4>
-              <div className="flex gap-4">
+            <div className="mt-6 sm:mt-8">
+              <h4 className="mb-4 text-[11px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">2. Descargar Documento</h4>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pb-4">
                 <button
                   onClick={() => handleExport('pdf')}
                   disabled={isExporting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 sm:py-3.5 text-[13px] sm:text-sm font-bold text-white transition-all hover:bg-slate-800 disabled:opacity-50"
                 >
                   {isExporting ? <span className="animate-pulse">Generando...</span> : <><FileDown size={18} /> Descargar PDF</>}
                 </button>
                 <button
                   onClick={() => handleExport('docx')}
                   disabled={isExporting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-4 py-3 sm:py-3.5 text-[13px] sm:text-sm font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
                 >
                   {isExporting ? <span className="animate-pulse">Generando...</span> : <><Download size={18} /> Descargar Word (.docx)</>}
                 </button>
