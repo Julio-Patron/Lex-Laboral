@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Calculator, MousePointerClick, X, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { track } from '@vercel/analytics';
 
 export const OnboardingTooltip: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -25,6 +26,7 @@ export const OnboardingTooltip: React.FC = () => {
     setIsVisible(false);
     localStorage.setItem('lexlaboral_onboarding_labor', 'true');
     setHasCompleted(true);
+    track('onboarding_completed', { step_reached: step });
   };
 
   const handleNext = () => {

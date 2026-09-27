@@ -31,6 +31,7 @@ import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborS
 import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
 import { DocumentExportModal } from './DocumentExportModal';
 import { OnboardingTooltip } from './OnboardingTooltip';
+import { track } from '@vercel/analytics';
 
 
 
@@ -119,6 +120,11 @@ export const LaborCalculator: React.FC<{
           
           setIsSharedScenario(true);
           notify("Escenario cargado exitosamente", "success");
+          
+          // Tracking PLG: Apertura de link compartido
+          track('open_shared_link', {
+            source: 'whatsapp_or_direct'
+          });
           
           // Auto calcular si ya traemos datos completos
           setTimeout(() => {
@@ -326,6 +332,13 @@ export const LaborCalculator: React.FC<{
       const totalStr = `$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
       const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\n👇 Abre este enlace para ver el desglose exacto o ajustar los números:\n${shareUrl}\n\n_Generado por LexLaboral.com.mx_`;
       
+      // Tracking de PLG: Loop Viral WhatsApp
+      track('share_whatsapp', {
+        type: dismissalType,
+        total_amount: results.total,
+        is_shared_scenario: isSharedScenario
+      });
+
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       setIsOpeningWhatsApp(false);
       
@@ -359,6 +372,15 @@ export const LaborCalculator: React.FC<{
         await generateWordDoc(template, docData);
         notify("Documento Word generado con éxito", "success");
       }
+
+      // Tracking de PLG: Conversión de Documento
+      track('export_document', {
+        template_id: template,
+        format_type: format,
+        type: dismissalType,
+        is_shared_scenario: isSharedScenario
+      });
+
       setIsDocModalOpen(false);
     } catch (error) {
       console.error(error);
