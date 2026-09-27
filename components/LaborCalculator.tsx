@@ -22,6 +22,7 @@ import {
   Share2
 } from 'lucide-react';
 import { NotificationType } from '../types';
+import LZString from 'lz-string';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOContentSection } from './SEOContentSection';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
