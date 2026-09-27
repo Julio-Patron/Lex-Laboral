@@ -60,7 +60,7 @@ export const LaborCalculator: React.FC<{
   const [doubleOvertimeHours, setDoubleOvertimeHours] = useState<number>(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const [expandedBreakdown, setExpandedBreakdown] = useState<string | null>(null);
+  const [, setExpandedBreakdown] = useState<string | null>(null);
   const [tripleOvertimeHours, setTripleOvertimeHours] = useState<number>(0);
   const [hoursPerDay, setHoursPerDay] = useState<number>(8);
   const [dismissalType, setDismissalType] = useState<DismissalType>('injustificado');

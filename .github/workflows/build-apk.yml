@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*' # Disparar al crear tags como v1.4.0
+    branches:
+      - landing-pg
   workflow_dispatch:
     inputs:
       version:
@@ -17,6 +19,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: landing-pg
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
