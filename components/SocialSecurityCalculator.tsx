@@ -1,29 +1,23 @@
 
-import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { 
-  ShieldCheck, 
-  Activity, 
-  Heart, 
-  Baby, 
-  Home, 
-  TrendingUp, 
-  Download, 
-  AlertCircle,
-  Stethoscope,
-  Settings2,
-  Users,
-  Zap,
-  CheckCircle2
+import {
+    Activity,
+    CheckCircle2,
+    Download,
+    Settings2,
+    ShieldCheck,
+    TrendingUp,
+    Zap
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { NotificationType } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
 
-import { SEOContentSection } from './SEOContentSection';
+import { calculateAnnualRisk, calculateSocialSecurity, type RiskCalculationInput, type SocialSecurityInput } from '../lib/calculators/social-security';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
+import { SEOContentSection } from './SEOContentSection';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
-import { calculateSocialSecurity, calculateAnnualRisk, type SocialSecurityInput, type RiskCalculationInput } from '../lib/calculators/social-security';
 
 const riskPresets = [
   { label: 'Oficina', hint: 'Clase I', value: 0.54355 },

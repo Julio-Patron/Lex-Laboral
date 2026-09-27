@@ -1,11 +1,11 @@
 
-import React, { useState, useCallback, useEffect, useRef, Suspense, lazy } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Home } from './components/Home';
 import { NotificationHub } from './components/NotificationHub';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { trackEvent } from './lib/analytics';
-import { updateSEO } from './lib/seo';
 import { getPathForView, getViewForPath } from './lib/routes';
+import { updateSEO } from './lib/seo';
 
 // Lazy loading components
 const Sidebar = lazy(() => import('./components/Sidebar').then(module => ({ default: module.Sidebar })));
@@ -16,9 +16,9 @@ const PensionCalculator = lazy(() => import('./components/PensionCalculator').th
 const Consultas = lazy(() => import('./components/Consultas').then(module => ({ default: module.Consultas })));
 const GovernmentSourcesView = lazy(() => import('./components/GovernmentSourcesView').then(module => ({ default: module.GovernmentSourcesView })));
 
-import { AppView } from './types';
-import type { AppNotification, NotificationType } from './types';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import type { AppNotification, NotificationType } from './types';
+import { AppView } from './types';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>(() => getViewForPath(window.location.pathname));

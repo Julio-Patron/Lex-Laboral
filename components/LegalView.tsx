@@ -1,6 +1,6 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ArrowLeft, Scale, Mail, Globe, ExternalLink, ShieldCheck, FileCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Globe, Mail, Scale, Shield, ShieldCheck } from 'lucide-react';
+import React from 'react';
 import { AppView } from '../types';
 
 interface LegalViewProps {

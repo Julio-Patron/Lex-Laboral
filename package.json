@@ -1,7 +1,7 @@
 {
   "name": "lex-laboral",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -49,6 +49,7 @@
     "tsx": "^4.23.8",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.1.0"
   }
 }

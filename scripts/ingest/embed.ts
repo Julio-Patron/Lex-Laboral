@@ -3,8 +3,8 @@
  * Embeds chunks and saves a LanceDB dataset at data/lance/kb.lance
  */
 
-import * as lancedb from '@lancedb/lancedb';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as lancedb from '@lancedb/lancedb';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { ChunkedArticle } from './chunk';

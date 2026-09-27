@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { calculatePension73, calculatePension97, type PensionInput } from './pension';
 
 describe('Pension Calculator', () => {

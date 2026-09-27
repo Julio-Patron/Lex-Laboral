@@ -1,6 +1,6 @@
+import { Calendar, Download, History as HistoryIcon, Search } from 'lucide-react';
 import React, { useState } from 'react';
-import { History as HistoryIcon, Download, Calendar, Search } from 'lucide-react';
-import { WorkspacePage, WorkspaceHeader, WorkspacePanel } from './ui/Workspace';
+import { WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 export const History: React.FC = () => {
   const [search, setSearch] = useState('');

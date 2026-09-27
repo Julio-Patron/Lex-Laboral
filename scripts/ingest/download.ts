@@ -3,9 +3,9 @@
  * Downloads PDFs from diputados.gob.mx and extracts raw text with pdf-parse
  */
 
-import { PDFParse } from 'pdf-parse';
 import * as fs from 'fs';
 import * as path from 'path';
+import { PDFParse } from 'pdf-parse';
 
 export type NormCode = 'LFT' | 'LSS' | 'R_LSS' | 'INFONAVIT' | 'R_INFONAVIT';
 

@@ -1,5 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
+import React from 'react';
 import { cn } from '../../lib/cn';
 
 export const WorkspacePage: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (

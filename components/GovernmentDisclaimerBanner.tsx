@@ -1,5 +1,5 @@
+import { ExternalLink, ShieldAlert } from 'lucide-react';
 import React from 'react';
-import { ShieldAlert, ExternalLink } from 'lucide-react';
 
 interface GovernmentDisclaimerBannerProps {
   onOpenSources: () => void;

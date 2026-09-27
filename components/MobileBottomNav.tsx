@@ -1,6 +1,6 @@
+import { BookOpen, Calculator, Home, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { AppView } from '../types';
-import { Home, Calculator, ShieldCheck, Scale, BookOpen } from 'lucide-react';
 
 interface MobileBottomNavProps {
   currentView: AppView;

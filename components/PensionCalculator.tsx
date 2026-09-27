@@ -1,23 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Calculator,
-  RefreshCw,
-  Settings2,
-  ChevronDown,
-  TrendingUp,
-  User,
-  FileDown,
-  Info,
-  Building,
-  Sparkles,
-  CheckCircle2
+    Building,
+    CheckCircle2,
+    ChevronDown,
+    FileDown,
+    Info,
+    RefreshCw,
+    Settings2,
+    Sparkles,
+    TrendingUp,
+    User
 } from 'lucide-react';
-import { NotificationType } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
-import { SEOContentSection } from './SEOContentSection';
-import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
-import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
+import React, { useState } from 'react';
 import { calculatePension73, calculatePension97, type PensionInput } from '../lib/calculators/pension';
+import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
+import { NotificationType } from '../types';
+import { SEOContentSection } from './SEOContentSection';
+import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 type PensionRegime = '1973' | '1997';
 

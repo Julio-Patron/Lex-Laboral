@@ -39,7 +39,7 @@ export function sanitizeInput(input: string, maxLength: number = 500): string {
   return sanitized;
 }
 
-export function validateOrigin(req: any, res: any): boolean {
+export function validateOrigin(req: any): boolean {
   // Accept requests from same origin or specified allowed origins
   const origin = req.headers.origin;
   if (!origin) return false;

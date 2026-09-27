@@ -28,4 +28,4 @@ const normalizePath = (pathname: string): string => {
 export const getViewForPath = (pathname: string): AppView =>
   PATH_VIEW_MAP.get(normalizePath(pathname)) || AppView.HOME;
 
-export const isIndexableView = (view: AppView): boolean => true;
+export const isIndexableView = (): boolean => true;

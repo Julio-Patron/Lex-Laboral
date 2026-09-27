@@ -1,6 +1,6 @@
+import { Building2, ExternalLink, ShieldAlert, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { X, ExternalLink, ShieldAlert, Building2 } from 'lucide-react';
-import { GOVERNMENT_SOURCES, OFFICIAL_DISCLAIMER, GovernmentSource } from '../lib/legal-sources';
+import { GOVERNMENT_SOURCES, GovernmentSource, OFFICIAL_DISCLAIMER } from '../lib/legal-sources';
 
 interface GovernmentSourcesModalProps {
   isOpen: boolean;

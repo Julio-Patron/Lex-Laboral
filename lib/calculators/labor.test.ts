@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateSDI, calculateLaborSettlement, type LaborSettlementInput } from './labor';
+import { describe, expect, it } from 'vitest';
+import { calculateLaborSettlement, calculateSDI, type LaborSettlementInput } from './labor';
 
 describe('Labor Calculator', () => {
   describe('calculateSDI', () => {
