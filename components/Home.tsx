@@ -119,14 +119,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               Fuentes Oficiales
             </a>
           </nav>
-
-          <button
-            onClick={(e) => handleNavClick(e, AppView.CALCULATOR)}
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 px-4 py-2 text-xs font-bold text-slate-950 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Calculator size={14} />
-            <span>Calcular</span>
-          </button>
         </div>
       </header>
 
