@@ -119,11 +119,19 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               Fuentes Oficiales
             </a>
           </nav>
+
+          <button
+            onClick={(e) => handleNavClick(e, AppView.CALCULATOR)}
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 px-4 py-2 text-xs font-bold text-slate-950 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Calculator size={14} />
+            <span>Calcular</span>
+          </button>
         </div>
       </header>
 
       {/* Minimalist Hero Section */}
-      <section className="relative pt-10 pb-24 sm:pt-24 sm:pb-48 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
+      <section className="relative pt-10 pb-12 sm:py-24 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 relative z-10 text-center">
           
           {/* Hero Brand Logo as Main Title */}
@@ -137,19 +145,9 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
           </div>
 
-          <span className="inline-block font-mono text-[10px] sm:text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full mb-6 sm:mb-8">
+          <span className="inline-block font-mono text-[10px] sm:text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full mb-4 sm:mb-5">
             Calculadoras Jurídicas Laborales • México 2026
           </span>
-
-          <div className="flex justify-center">
-            <button
-              onClick={(e) => handleNavClick(e, AppView.CALCULATOR)}
-              className="inline-flex items-center gap-3 rounded-xl bg-amber-500 hover:bg-amber-400 px-8 py-3.5 text-sm sm:text-base font-bold text-slate-950 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-            >
-              <Calculator size={18} />
-              <span>Empezar a calcular</span>
-            </button>
-          </div>
 
         </div>
       </section>
