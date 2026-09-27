@@ -225,20 +225,20 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       {/* SEO Section */}
       <section className="pb-16 mx-auto max-w-5xl px-4 sm:px-6">
         <SEOContentSection
-          title="Preguntas Frecuentes — Lex Laboral"
-          intro="Calculadoras jurídicas elaboradas bajo la legislación mexicana vigente."
+          title="Calculadoras de Liquidación, IMSS y Pensiones 2026"
+          intro="Herramientas jurídicas y calculadoras laborales actualizadas con la legislación mexicana. Estimaciones precisas basadas en la Ley Federal del Trabajo, IMSS e INFONAVIT para empleadores, despachos y trabajadores."
           highlights={[
             {
-              title: 'Cálculo de Liquidación LFT',
-              body: 'Indemnización constitucional de 90 días, 20 días por año de servicio, prima de antigüedad de 12 días e ISR Art. 93.'
+              title: 'Liquidación y Finiquito',
+              body: 'Calcula indemnización constitucional de 90 días, 20 días por año, prima de antigüedad e ISR (Art. 93). Descarga memoria técnica de cálculo o recibos de finiquito en PDF y Word.'
             },
             {
               title: 'Cuotas Patronales e IMSS',
-              body: 'Desglose por ramos de seguro: enfermedades, invalidez, retiro, cesantía, vejez e INFONAVIT.'
+              body: 'Simula el impacto de las cuotas obrero-patronales 2026. Desglose detallado por ramos de seguro: enfermedades y maternidad, invalidez y vida, retiro y riesgos de trabajo.'
             },
             {
               title: 'Pensiones Ley 73 y 97',
-              body: 'Estimación mensual según semanas cotizadas y salario promedio.'
+              body: 'Proyecta escenarios de pensión IMSS según tu salario base de cotización, semanas reconocidas y saldo en tu cuenta AFORE.'
             }
           ]}
           faqs={[
