@@ -132,11 +132,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       </header>
 
       {/* Minimalist Hero Section */}
-      <section className="relative py-16 sm:py-24 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
+      <section className="relative pt-10 pb-12 sm:py-24 border-b border-slate-800/60 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_70%)]">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 relative z-10 text-center">
           
           {/* Hero Brand Logo as Main Title */}
-          <div className="max-w-[280px] sm:max-w-[420px] md:max-w-[480px] mx-auto mb-6 select-none">
+          <div className="max-w-[240px] sm:max-w-[420px] md:max-w-[480px] mx-auto mb-5 sm:mb-6 select-none">
             <h1 className="sr-only">Lex Laboral: Herramientas Jurídicas Laborales en México</h1>
             <img 
               src="/assets/logo.webp" 
@@ -146,7 +146,24 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
           </div>
 
+          <span className="inline-block font-mono text-[10px] sm:text-[11px] font-semibold tracking-widest text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full mb-4 sm:mb-5">
+            Calculadoras Jurídicas Laborales • México 2026
+          </span>
 
+          <p className="text-[15px] sm:text-lg text-slate-300 max-w-xl mx-auto font-normal leading-relaxed mb-8">
+            Calculadoras laborales de estimación para liquidación por despido, cuotas obrero-patronales del IMSS e INFONAVIT y proyección de pensión. Herramienta privada e independiente, 100% gratuita y sin registro.
+          </p>
+
+          {/* CTA Principal Movil (Arriba del doblez) */}
+          <div className="flex justify-center sm:hidden">
+            <button
+              onClick={(e) => handleNavClick(e, AppView.CALCULATOR)}
+              className="w-full max-w-xs flex items-center justify-center gap-2 rounded-2xl bg-amber-500 hover:bg-amber-400 px-6 py-4 text-sm font-bold text-slate-950 shadow-[0_8px_30px_rgba(245,158,11,0.25)] transition-all active:scale-[0.98]"
+            >
+              <Calculator size={18} />
+              <span>Iniciar Cálculo Gratuito</span>
+            </button>
+          </div>
 
         </div>
       </section>
