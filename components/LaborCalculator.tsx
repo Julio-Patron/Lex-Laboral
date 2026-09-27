@@ -22,7 +22,7 @@ import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { NotificationType } from '../types';
 import { DocumentExportModal } from './DocumentExportModal';
-
+import { OnboardingTooltip } from './OnboardingTooltip';
 import { SEOContentSection } from './SEOContentSection';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
@@ -761,7 +761,7 @@ export const LaborCalculator: React.FC<{
         isExporting={isExporting}
       />
 
-      
+      <OnboardingTooltip />
 
       <SEOContentSection
         title="Calculadora de liquidación y finiquito en México"
