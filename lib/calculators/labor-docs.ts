@@ -1,8 +1,8 @@
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, BorderStyle, AlignmentType, HeadingLevel, WidthType } from 'docx';
+import { AlignmentType, Document, HeadingLevel, Packer, Paragraph, Table, TableCell, TableRow, WidthType } from 'docx';
 import { saveAs } from 'file-saver';
-import { LaborSettlementResult } from './labor';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { LaborSettlementResult } from './labor';
 
 type TemplateType = 'A' | 'B' | 'C';
 
@@ -25,19 +25,11 @@ const BRANDING_FOOTER = "Documento generado y respaldado por el motor normativo 
 export const generateWordDoc = async (template: TemplateType, data: DocData) => {
   const sections = [];
 
-  const { results, employeeName, employerName, dismissalLabel, startDate, endDate, yearsOfService, daysOfService, dailySalary, minWage } = data;
+  const { results, employeeName, employerName, dismissalLabel, yearsOfService, daysOfService, dailySalary } = data;
   const nameLabel = employeeName || '_________________________';
   const employerLabel = employerName || '_________________________';
   const totalAmountStr = `$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
 
-  const createFooter = () => {
-    return new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({ text: BRANDING_FOOTER, size: 16, color: "888888", italics: true })
-      ]
-    });
-  };
 
   if (template === 'A') {
     // Memoria Técnica

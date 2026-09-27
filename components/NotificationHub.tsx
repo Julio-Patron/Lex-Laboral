@@ -1,7 +1,7 @@
 
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
 import React from 'react';
 import { AppNotification } from '../types';
-import { X, AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react';
 
 interface NotificationHubProps {
   notifications: AppNotification[];

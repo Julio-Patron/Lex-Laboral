@@ -3,13 +3,13 @@
  * Runs: download → parse → chunk → embed → save LanceDB dataset
  */
 
-import { downloadLegalArticles } from './download';
-import { parseArticles } from './parser';
-import { chunkArticles } from './chunk';
-import { embedChunks, saveEmbeddingsToLance } from './embed';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { chunkArticles } from './chunk';
+import { downloadLegalArticles } from './download';
+import { embedChunks, saveEmbeddingsToLance } from './embed';
+import { parseArticles } from './parser';
 
 // Load env vars from backend/.env when running locally
 dotenv.config({ path: path.join(process.cwd(), 'backend', '.env') });

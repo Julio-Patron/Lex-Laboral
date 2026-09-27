@@ -1,19 +1,19 @@
 
-import React from 'react';
 import { motion } from 'framer-motion';
-import { AppView } from '../types';
-import { 
-  Calculator, 
-  ShieldCheck, 
-  Home,
-  BookOpen,
-  ChevronRight,
-  FileText,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Shield,
-  Scale,
+import {
+    BookOpen,
+    Calculator,
+    ChevronRight,
+    FileText,
+    Home,
+    PanelLeftClose,
+    PanelLeftOpen,
+    Scale,
+    Shield,
+    ShieldCheck,
 } from 'lucide-react';
+import React from 'react';
+import { AppView } from '../types';
 
 interface SidebarProps {
   currentView: AppView;
@@ -23,7 +23,7 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
 }
 
-export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, onNewCase, isCollapsed = false, onToggleCollapse }) => {
+export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, isCollapsed = false, onToggleCollapse }) => {
   const navItems = [
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={18} /> },
     { id: AppView.CALCULATOR, label: 'Liquidación y Finiquito', icon: <Calculator size={18} /> },

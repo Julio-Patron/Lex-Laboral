@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  Tooltip 
+import {
+    Cell,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip
 } from 'recharts';
 
 interface ChartData {

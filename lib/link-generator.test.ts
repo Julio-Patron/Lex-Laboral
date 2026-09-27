@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import LZString from 'lz-string';
+import { describe, expect, it } from 'vitest';
 
 describe('Link Generator (lz-string algorithm)', () => {
   it('should perfectly compress and decompress a complex scenario state', () => {

@@ -1,6 +1,6 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, CheckCircle2, Download, FileDown, FileText, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { FileDown, FileText, CheckCircle2, AlertCircle, X, Download } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 type TemplateType = 'A' | 'B' | 'C';
 type ExportFormat = 'pdf' | 'docx';

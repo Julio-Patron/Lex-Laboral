@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateSocialSecurity, calculateAnnualRisk, type SocialSecurityInput } from './social-security';
+import { describe, expect, it } from 'vitest';
+import { calculateAnnualRisk, calculateSocialSecurity, type SocialSecurityInput } from './social-security';
 
 describe('Social Security Calculator', () => {
   describe('calculateSocialSecurity', () => {

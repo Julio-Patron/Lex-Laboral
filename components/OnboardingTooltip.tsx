@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Calculator, MousePointerClick, X, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { track } from '@vercel/analytics';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Calculator, CheckCircle2, FileText, MousePointerClick, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 export const OnboardingTooltip: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);

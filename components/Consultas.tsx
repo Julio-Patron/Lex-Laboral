@@ -3,9 +3,9 @@
  * Search, retrieve and organize articles from Mexican labor laws
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { AlertCircle, Search, TrendingUp, X, Copy, Check, Scale } from 'lucide-react';
-import { WorkspacePage, WorkspaceHeader, WorkspacePanel, WorkspaceEmpty } from './ui/Workspace';
+import { AlertCircle, Check, Copy, Scale, Search, TrendingUp, X } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 type NormFilter = 'LFT' | 'IMSS' | 'INFONAVIT' | 'all';
 
@@ -80,7 +80,6 @@ export const Consultas: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchMode, setSearchMode] = useState<'semantic' | 'local' | null>(null);
   const [copiedFoundation, setCopiedFoundation] = useState(false);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Map UI norm filter to API norm parameter

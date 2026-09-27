@@ -1,8 +1,9 @@
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import type { IncomingMessage, ServerResponse } from 'http';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import type { IncomingMessage, ServerResponse } from 'http';
 
 const readRequestBody = (req: IncomingMessage): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -82,7 +83,39 @@ export default defineConfig(({ mode }) => {
           : false,
         allowedHosts: exposeDevServer ? true : ['localhost', '127.0.0.1']
       },
-      plugins: [localApiSearchPlugin(), react(), tailwindcss()],
+      plugins: [
+        localApiSearchPlugin(), 
+        react(), 
+        tailwindcss(),
+        VitePWA({
+          registerType: 'autoUpdate',
+          workbox: {
+            globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+            maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
+          },
+          includeAssets: ['assets/icon.svg', 'assets/apple-touch-icon.png'],
+          manifest: {
+            name: 'Lex-Laboral',
+            short_name: 'LexLaboral',
+            description: 'Calculadora Laboral y Legal',
+            theme_color: '#0f172a',
+            background_color: '#0f172a',
+            display: 'standalone',
+            icons: [
+              {
+                src: '/assets/icon-192.png',
+                sizes: '192x192',
+                type: 'image/png'
+              },
+              {
+                src: '/assets/icon-512.png',
+                sizes: '512x512',
+                type: 'image/png'
+              }
+            ]
+          }
+        })
+      ],
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),

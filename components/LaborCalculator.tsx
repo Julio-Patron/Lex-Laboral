@@ -1,37 +1,30 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Calculator, 
-  Coins, 
-  Calendar, 
-  Briefcase, 
-  Info, 
-  Download, 
-  RefreshCw, 
-  Scale, 
-  Zap, 
-  AlertCircle,
-  ChevronDown,
-  TrendingUp,
-  FileText,
-  User,
-  FileDown,
-  CheckCircle2,
-  Settings2,
-  Sparkles,
-  ArrowRight,
-  Share2
+import { track } from '@vercel/analytics';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    AlertCircle,
+    Briefcase,
+    Calculator,
+    Calendar,
+    CheckCircle2,
+    ChevronDown,
+    FileText,
+    Info,
+    RefreshCw,
+    Settings2,
+    Sparkles,
+    TrendingUp,
+    User
 } from 'lucide-react';
-import { NotificationType } from '../types';
 import LZString from 'lz-string';
-import { motion, AnimatePresence } from 'framer-motion';
-import { SEOContentSection } from './SEOContentSection';
-import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
-import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
-import { calculateSDI, calculateLaborSettlement, type DismissalType, type LaborSettlementInput, type LaborSettlementResult } from '../lib/calculators/labor';
+import React, { useState } from 'react';
+import { calculateLaborSettlement, calculateSDI, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
 import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
+import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
+import { NotificationType } from '../types';
 import { DocumentExportModal } from './DocumentExportModal';
 import { OnboardingTooltip } from './OnboardingTooltip';
-import { track } from '@vercel/analytics';
+import { SEOContentSection } from './SEOContentSection';
+import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 
 
@@ -390,9 +383,6 @@ export const LaborCalculator: React.FC<{
     }
   };
 
-  const handleImssNextStep = () => {
-    onOpenImss?.();
-  };
 
   return (
     <WorkspacePage>

@@ -1,20 +1,19 @@
-import React from 'react';
-import { AppView } from '../types';
-import { 
-  Calculator, 
-  ShieldCheck, 
-  ChevronRight, 
-  ArrowUpRight, 
-  BookOpen, 
-  Download, 
-  Scale, 
-  Smartphone,
-  ExternalLink,
-  Mail,
-  Globe,
-  ShieldAlert
+import {
+    ArrowUpRight,
+    BookOpen,
+    Calculator,
+    ChevronRight,
+    Download,
+    ExternalLink,
+    Globe,
+    Mail,
+    Scale,
+    ShieldCheck,
+    Smartphone
 } from 'lucide-react';
+import React from 'react';
 import { getPathForView } from '../lib/routes';
+import { AppView } from '../types';
 import { SEOContentSection } from './SEOContentSection';
 
 interface HomeProps {
@@ -207,13 +206,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Aplicación Android Nativa</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Calculadoras sin conexión a internet • Gratuita v1.3.0</p>
+              <p className="text-xs text-slate-400 mt-0.5">Calculadoras sin conexión a internet • Gratuita v1.4.0</p>
             </div>
           </div>
 
           <a
-            href="/LexLaboral-1.3.0-release.apk"
-            download="LexLaboral-1.3.0.apk"
+            href="/LexLaboral-1.4.0-release.apk"
+            download="LexLaboral-1.4.0.apk"
             className="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold px-5 py-2.5 text-xs border border-slate-700 transition-all shrink-0"
           >
             <Download size={15} />

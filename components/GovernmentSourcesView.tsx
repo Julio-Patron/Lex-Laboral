@@ -1,6 +1,6 @@
+import { ArrowLeft, BookOpen, Building2, ExternalLink, Landmark, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
-import { ArrowLeft, ExternalLink, ShieldAlert, BookOpen, Building2, Landmark, CheckCircle2, Home } from 'lucide-react';
-import { GOVERNMENT_SOURCES, OFFICIAL_DISCLAIMER, GovernmentSource } from '../lib/legal-sources';
+import { GOVERNMENT_SOURCES, GovernmentSource, OFFICIAL_DISCLAIMER } from '../lib/legal-sources';
 import { AppView } from '../types';
 
 interface GovernmentSourcesViewProps {
