@@ -84,7 +84,7 @@ export const generateWordDoc = async (template: TemplateType, data: DocData) => 
   } else if (template === 'B') {
     // Recibo Finiquito
     sections.push(
-      new Paragraph({ text: "RECIBO DE FINIQUITO Y LIQUIDACIÓN", heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
+      new Paragraph({ text: "RECIBO DE FINIQUITO Y LIQUIDACIÓN CIRCUNSTANCIADO", heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
       new Paragraph({ text: "" }),
       new Paragraph({ text: `En la ciudad de ________________________, a los ___ días del mes de ______________ de _____, el/la C. ${nameLabel}, manifiesto expresamente haber recibido de mi patrón ${employerLabel}, la cantidad total neta de ${totalAmountStr} (MXN), mediante (Efectivo/Transferencia/Cheque).` }),
       new Paragraph({ text: "" }),
@@ -235,7 +235,7 @@ export const generatePDFDoc = (template: TemplateType, data: DocData) => {
     doc.text(`TOTAL NETO ESTIMADO: ${totalAmountStr}`, 20, finalY);
 
   } else if (template === 'B') {
-    addHeader('RECIBO DE FINIQUITO Y LIQUIDACIÓN');
+    addHeader('RECIBO DE FINIQUITO Y LIQUIDACIÓN CIRCUNSTANCIADO');
     doc.setTextColor(30, 41, 59);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');

@@ -25,13 +25,13 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
   const templates = [
     {
       id: 'A' as TemplateType,
-      title: 'Memoria Técnica de Cálculo y Fundamentación',
+      title: 'Memoria Técnica de Cálculo y Fundamentación LFT',
       description: 'Desglose aritmético detallado, fórmulas y artículos de la LFT aplicados. (No requiere datos extra).',
       requiresExtraData: false,
     },
     {
       id: 'B' as TemplateType,
-      title: 'Recibo de Finiquito y Liquidación',
+      title: 'Recibo de Finiquito y Liquidación Circunstanciado',
       description: 'Declaraciones legales, recibo de prestaciones y cláusula de liberación mutua.',
       requiresExtraData: true,
     },
