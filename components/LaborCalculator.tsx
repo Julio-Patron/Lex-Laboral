@@ -110,31 +110,15 @@ export const LaborCalculator: React.FC<{
     }
   }, []);
 
-  React.useEffect(() => {
-    if (dailySalary > 0 && (yearsOfService > 0 || daysOfService > 0)) {
-      calculate(false);
-    } else {
-      setResults(null);
-    }
-  }, [
-    dailySalary,
-    yearsOfService,
-    daysOfService,
-    vacationDays,
-    vacationPremium,
-    aguinaldoDays,
-    doubleOvertimeHours,
-    tripleOvertimeHours,
-    hoursPerDay,
-    dismissalType,
-    minWage,
-    umaValue
-  ]);
 
-  const calculate = async (showNotification = true) => {
+
+  const calculate = async () => {
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
+      setShowErrors(true);
+      notify("Complete los campos obligatorios para generar el cálculo", "warning");
       return;
     }
+    setShowErrors(false);
 
     const input: LaborSettlementInput = {
       dailySalary,
@@ -156,14 +140,12 @@ export const LaborCalculator: React.FC<{
     setResults(result);
     setIsEditing(false);
     
-    if (showNotification) {
-      notify("Cálculo generado exitosamente", "success");
-      setTimeout(() => {
-        if (typeof resultsRef.current?.scrollIntoView === 'function') {
-          resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    }
+    notify("Cálculo generado exitosamente", "success");
+    setTimeout(() => {
+      if (typeof resultsRef.current?.scrollIntoView === 'function') {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   React.useEffect(() => {
@@ -524,7 +506,7 @@ export const LaborCalculator: React.FC<{
                   )}
                 </AnimatePresence>
                 
-                <button onClick={() => calculate(true)} className="ui-primary-action group w-full justify-center">
+                <button onClick={() => calculate()} className="ui-primary-action group w-full justify-center mt-4">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular pago estimado</span>
