@@ -79,35 +79,64 @@ export const LaborCalculator: React.FC<{
   const [isOpeningWhatsApp, setIsOpeningWhatsApp] = useState(false);
 
   React.useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const scenarioStr = params.get('scenario');
-      if (scenarioStr) {
-        const decompressed = LZString.decompressFromEncodedURIComponent(scenarioStr);
-        if (decompressed) {
-          const state = JSON.parse(decompressed);
-          if (state.baseSalary) setBaseSalary(state.baseSalary);
-          if (state.salaryPeriod) setSalaryPeriod(state.salaryPeriod);
-          if (state.startDate) setStartDate(state.startDate);
-          if (state.endDate) setEndDate(state.endDate);
-          if (state.yearsOfService) setYearsOfService(state.yearsOfService);
-          if (state.daysOfService) setDaysOfService(state.daysOfService);
-          if (state.dismissalType) setDismissalType(state.dismissalType);
-          if (state.vacationDays) setVacationDays(state.vacationDays);
-          if (state.vacationPremium) setVacationPremium(state.vacationPremium);
-          if (state.aguinaldoDays) setAguinaldoDays(state.aguinaldoDays);
+    const loadSharedState = async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Manejo del enlace nuevo corto (Redis Hash)
+        const hash = params.get('s');
+        let stateObj = null;
+
+        if (hash) {
+          const res = await fetch(`/api/link?hash=${hash}`);
+          if (res.ok) {
+            const data = await res.json();
+            stateObj = JSON.parse(data.scenario);
+          }
+        } else {
+          // Fallback: Manejo del enlace viejo (LZString en URL)
+          const scenarioStr = params.get('scenario');
+          if (scenarioStr) {
+            const decompressed = LZString.decompressFromEncodedURIComponent(scenarioStr);
+            if (decompressed) {
+              stateObj = JSON.parse(decompressed);
+            }
+          }
+        }
+
+        if (stateObj) {
+          if (stateObj.baseSalary) setBaseSalary(stateObj.baseSalary);
+          if (stateObj.salaryPeriod) setSalaryPeriod(stateObj.salaryPeriod);
+          if (stateObj.startDate) setStartDate(stateObj.startDate);
+          if (stateObj.endDate) setEndDate(stateObj.endDate);
+          if (stateObj.yearsOfService) setYearsOfService(stateObj.yearsOfService);
+          if (stateObj.daysOfService) setDaysOfService(stateObj.daysOfService);
+          if (stateObj.dismissalType) setDismissalType(stateObj.dismissalType);
+          if (stateObj.vacationDays) setVacationDays(stateObj.vacationDays);
+          if (stateObj.vacationPremium) setVacationPremium(stateObj.vacationPremium);
+          if (stateObj.aguinaldoDays) setAguinaldoDays(stateObj.aguinaldoDays);
           
           setIsSharedScenario(true);
           notify("Escenario cargado exitosamente", "success");
+          
+          // Auto calcular si ya traemos datos completos
+          setTimeout(() => {
+            const computeBtn = document.getElementById("computeLaborBtn");
+            if (computeBtn) computeBtn.click();
+          }, 300);
         }
-        
+
         // Clean URL after loading to avoid confusion
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+        if (hash || params.get('scenario')) {
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        }
+      } catch (e) {
+        console.error("Error loading scenario", e);
       }
-    } catch (e) {
-      console.error("Error loading scenario", e);
-    }
+    };
+
+    loadSharedState();
   }, []);
 
 
@@ -254,7 +283,7 @@ export const LaborCalculator: React.FC<{
 
 
 
-  const handleWhatsAppShare = () => {
+  const handleWhatsAppShare = async () => {
     if (!results) return;
     setIsOpeningWhatsApp(true);
     try {
@@ -270,15 +299,34 @@ export const LaborCalculator: React.FC<{
         vacationPremium,
         aguinaldoDays
       };
-      const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(state));
-      const url = `${window.location.origin}${window.location.pathname}?scenario=${encoded}`;
-      const totalStr = `$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
-      const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\n👇 Abre este enlace para ver el desglose exacto o ajustar los números:\n${url}\n\n_Generado por LexLaboral.com.mx_`;
       
-      setTimeout(() => {
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        setIsOpeningWhatsApp(false);
-      }, 600);
+      const payload = JSON.stringify(state);
+      let shareUrl = '';
+
+      try {
+        const response = await fetch('/api/link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario: payload })
+        });
+        
+        if (response.ok) {
+          const { hash } = await response.json();
+          shareUrl = `${window.location.origin}${window.location.pathname}?s=${hash}`;
+        } else {
+          throw new Error('Fallback to local compression');
+        }
+      } catch (err) {
+        // Fallback: Si el servidor falla o no hay DB, usamos compresión en URL
+        const encoded = LZString.compressToEncodedURIComponent(payload);
+        shareUrl = `${window.location.origin}${window.location.pathname}?scenario=${encoded}`;
+      }
+
+      const totalStr = `$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+      const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\n👇 Abre este enlace para ver el desglose exacto o ajustar los números:\n${shareUrl}\n\n_Generado por LexLaboral.com.mx_`;
+      
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      setIsOpeningWhatsApp(false);
       
     } catch (e) {
       notify("No se pudo generar el enlace", "error");
@@ -506,7 +554,7 @@ export const LaborCalculator: React.FC<{
                   )}
                 </AnimatePresence>
                 
-                <button onClick={() => calculate()} className="ui-primary-action group w-full justify-center mt-4">
+                <button id="computeLaborBtn" onClick={() => calculate()} className="ui-primary-action group w-full justify-center mt-4">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular pago estimado</span>

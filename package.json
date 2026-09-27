@@ -17,6 +17,7 @@
     "@huggingface/transformers": "^4.3.0",
     "@lancedb/lancedb": "^0.39.0",
     "@tailwindcss/vite": "^4.2.1",
+    "@upstash/redis": "^1.39.0",
     "@vercel/analytics": "^2.0.1",
     "docx": "^9.7.2",
     "dotenv": "^17.3.1",
@@ -30,6 +31,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "recharts": "^3.8.0",
+    "string-hash": "^1.1.3",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
@@ -39,6 +41,7 @@
     "@types/file-saver": "^2.0.7",
     "@types/lz-string": "^1.3.34",
     "@types/node": "^22.19.15",
+    "@types/string-hash": "^1.1.3",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^4.1.0",
     "jsdom": "^28.1.0",
