@@ -75,34 +75,96 @@ export const LaborCalculator: React.FC<{
   const [isExporting, setIsExporting] = useState(false);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
+  const [isSharedScenario, setIsSharedScenario] = useState(false);
+  const [isOpeningWhatsApp, setIsOpeningWhatsApp] = useState(false);
 
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const scenarioStr = params.get('scenario');
       if (scenarioStr) {
-        const state = JSON.parse(atob(scenarioStr));
-        if (state.baseSalary) setBaseSalary(state.baseSalary);
-        if (state.salaryPeriod) setSalaryPeriod(state.salaryPeriod);
-        if (state.startDate) setStartDate(state.startDate);
-        if (state.endDate) setEndDate(state.endDate);
-        if (state.yearsOfService) setYearsOfService(state.yearsOfService);
-        if (state.daysOfService) setDaysOfService(state.daysOfService);
-        if (state.dismissalType) setDismissalType(state.dismissalType);
-        if (state.vacationDays) setVacationDays(state.vacationDays);
-        if (state.vacationPremium) setVacationPremium(state.vacationPremium);
-        if (state.aguinaldoDays) setAguinaldoDays(state.aguinaldoDays);
+        const decompressed = LZString.decompressFromEncodedURIComponent(scenarioStr);
+        if (decompressed) {
+          const state = JSON.parse(decompressed);
+          if (state.baseSalary) setBaseSalary(state.baseSalary);
+          if (state.salaryPeriod) setSalaryPeriod(state.salaryPeriod);
+          if (state.startDate) setStartDate(state.startDate);
+          if (state.endDate) setEndDate(state.endDate);
+          if (state.yearsOfService) setYearsOfService(state.yearsOfService);
+          if (state.daysOfService) setDaysOfService(state.daysOfService);
+          if (state.dismissalType) setDismissalType(state.dismissalType);
+          if (state.vacationDays) setVacationDays(state.vacationDays);
+          if (state.vacationPremium) setVacationPremium(state.vacationPremium);
+          if (state.aguinaldoDays) setAguinaldoDays(state.aguinaldoDays);
+          
+          setIsSharedScenario(true);
+          notify("Escenario cargado exitosamente", "success");
+        }
         
         // Clean URL after loading to avoid confusion
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
-        
-        notify("Escenario cargado exitosamente", "success");
       }
     } catch (e) {
       console.error("Error loading scenario", e);
     }
   }, []);
+
+  React.useEffect(() => {
+    if (dailySalary > 0 && (yearsOfService > 0 || daysOfService > 0)) {
+      calculate(false);
+    } else {
+      setResults(null);
+    }
+  }, [
+    dailySalary,
+    yearsOfService,
+    daysOfService,
+    vacationDays,
+    vacationPremium,
+    aguinaldoDays,
+    doubleOvertimeHours,
+    tripleOvertimeHours,
+    hoursPerDay,
+    dismissalType,
+    minWage,
+    umaValue
+  ]);
+
+  const calculate = async (showNotification = true) => {
+    if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
+      return;
+    }
+
+    const input: LaborSettlementInput = {
+      dailySalary,
+      yearsOfService,
+      daysOfService,
+      vacationDays,
+      vacationPremium,
+      aguinaldoDays,
+      doubleOvertimeHours,
+      tripleOvertimeHours,
+      hoursPerDay,
+      dismissalType,
+      minWage,
+      umaValue
+    };
+
+    const result = calculateLaborSettlement(input);
+    setExpandedBreakdown(null);
+    setResults(result);
+    setIsEditing(false);
+    
+    if (showNotification) {
+      notify("Cálculo generado exitosamente", "success");
+      setTimeout(() => {
+        if (typeof resultsRef.current?.scrollIntoView === 'function') {
+          resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  };
 
   React.useEffect(() => {
     if (baseSalary > 0) {
@@ -206,46 +268,13 @@ export const LaborCalculator: React.FC<{
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
-  const calculate = async () => {
-    if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
-      setShowErrors(true);
-      notify("Complete los campos obligatorios para generar el cálculo", "warning");
-      return;
-    }
-    setShowErrors(false);
 
-    const input: LaborSettlementInput = {
-      dailySalary,
-      yearsOfService,
-      daysOfService,
-      vacationDays,
-      vacationPremium,
-      aguinaldoDays,
-      doubleOvertimeHours,
-      tripleOvertimeHours,
-      hoursPerDay,
-      dismissalType,
-      minWage,
-      umaValue
-    };
-
-    const result = calculateLaborSettlement(input);
-    setExpandedBreakdown(null);
-    setResults(result);
-    setIsEditing(false);
-    
-    notify("Cálculo generado exitosamente", "success");
-    setTimeout(() => {
-      if (typeof resultsRef.current?.scrollIntoView === 'function') {
-        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
 
 
 
   const handleWhatsAppShare = () => {
     if (!results) return;
+    setIsOpeningWhatsApp(true);
     try {
       const state = {
         baseSalary,
@@ -259,14 +288,19 @@ export const LaborCalculator: React.FC<{
         vacationPremium,
         aguinaldoDays
       };
-      const encoded = btoa(JSON.stringify(state));
+      const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(state));
       const url = `${window.location.origin}${window.location.pathname}?scenario=${encoded}`;
       const totalStr = `$${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
-      const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\nAbre este enlace para ver o ajustar los números:\n${url}\n\n_Generado en LexLaboral.com.mx_`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-      notify("Abriendo WhatsApp", "success");
+      const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\n👇 Abre este enlace para ver el desglose exacto o ajustar los números:\n${url}\n\n_Generado por LexLaboral.com.mx_`;
+      
+      setTimeout(() => {
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        setIsOpeningWhatsApp(false);
+      }, 600);
+      
     } catch (e) {
       notify("No se pudo generar el enlace", "error");
+      setIsOpeningWhatsApp(false);
     }
   };
 
@@ -419,11 +453,11 @@ export const LaborCalculator: React.FC<{
                 </div>
 
 
-                <div className="ui-subtle-block space-y-4 p-4">
+                <div className="ui-subtle-block space-y-4 p-5 border-l-4 border-l-slate-300 mt-2">
                   <div className="flex items-start gap-3">
-                    <Briefcase size={16} className="mt-0.5 shrink-0 text-legal-gold" />
+                    <Briefcase size={16} className="mt-0.5 shrink-0 text-slate-400" />
                     <div className="min-w-0">
-                      <h4 className="text-sm font-bold text-slate-900">Antigüedad</h4>
+                      <h4 className="text-sm font-bold text-slate-900">Paso 2: Antigüedad</h4>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -489,8 +523,8 @@ export const LaborCalculator: React.FC<{
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                <button onClick={calculate} className="ui-primary-action group">
+                
+                <button onClick={() => calculate(true)} className="ui-primary-action group w-full justify-center">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular pago estimado</span>
@@ -567,7 +601,7 @@ export const LaborCalculator: React.FC<{
                           onClick={() => { setResults(null); setIsEditing(true); }}
                           aria-label="Reiniciar cálculo laboral"
                           title="Reiniciar cálculo"
-                          className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10"
+                          className="rounded-lg bg-white/5 p-3 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
                         >
                           <RefreshCw size={18} />
                         </button>
@@ -658,10 +692,15 @@ export const LaborCalculator: React.FC<{
                       <button
                         type="button"
                         onClick={handleWhatsAppShare}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 mt-2 text-[13px] font-bold text-green-700 bg-green-50 hover:bg-green-100/80 rounded-full transition-colors border border-green-200/50"
+                        disabled={isOpeningWhatsApp}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 mt-2 text-[13px] font-bold text-green-700 bg-green-50 hover:bg-green-100/80 rounded-full transition-colors border border-green-200/50 disabled:opacity-50"
                       >
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="css-i6dzq1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                        Compartir resultado por WhatsApp
+                        {isOpeningWhatsApp ? (
+                          <RefreshCw size={16} className="animate-spin" />
+                        ) : (
+                          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="css-i6dzq1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        )}
+                        {isOpeningWhatsApp ? 'Abriendo...' : 'Compartir resultado por WhatsApp'}
                       </button>
                     </div>
                   </div>
