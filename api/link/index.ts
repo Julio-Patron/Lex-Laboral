@@ -6,12 +6,27 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
 
+// Orígenes permitidos (producción + desarrollo local)
+const ALLOWED_ORIGINS = [
+  'https://lexlaboral.com.mx',
+  'https://www.lexlaboral.com.mx',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
+// Tamaño máximo del payload del escenario (50 KB)
+const MAX_SCENARIO_SIZE = 50 * 1024;
+
 export default async function handler(req: any, res: any) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS restrictivo: solo orígenes autorizados
+  const origin = req.headers?.origin || '';
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+  res.setHeader('Vary', 'Origin');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -30,6 +45,11 @@ export default async function handler(req: any, res: any) {
         return res.status(400).json({ error: 'Falta el payload del escenario' });
       }
 
+      // Validar tamaño del payload para evitar abuso
+      if (typeof scenario === 'string' && scenario.length > MAX_SCENARIO_SIZE) {
+        return res.status(413).json({ error: 'El escenario excede el tamaño máximo permitido' });
+      }
+
       // Generar un hash corto único (6 caracteres)
       const hash = Math.random().toString(36).substring(2, 8);
       
@@ -46,8 +66,8 @@ export default async function handler(req: any, res: any) {
   if (req.method === 'GET') {
     try {
       const { hash } = req.query;
-      if (!hash) {
-        return res.status(400).json({ error: 'Hash no proporcionado' });
+      if (!hash || typeof hash !== 'string' || hash.length > 10) {
+        return res.status(400).json({ error: 'Hash no proporcionado o inválido' });
       }
 
       const scenario = await redis.get(`link:${hash}`);
