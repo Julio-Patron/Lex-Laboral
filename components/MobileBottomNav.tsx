@@ -8,6 +8,10 @@ interface MobileBottomNavProps {
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentView, onChangeView }) => {
+  if (currentView === AppView.HOME) {
+    return null;
+  }
+
   const navItems = [
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={20} /> },
     { id: AppView.CALCULATOR, label: 'Liquidación', icon: <Calculator size={20} /> },

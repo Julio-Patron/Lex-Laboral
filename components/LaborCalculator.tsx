@@ -1,4 +1,4 @@
-import { track } from '@vercel/analytics';
+import { trackEvent } from '../lib/analytics';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
     AlertCircle,
@@ -22,7 +22,7 @@ import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { NotificationType } from '../types';
 import { DocumentExportModal } from './DocumentExportModal';
-
+import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
@@ -115,7 +115,7 @@ export const LaborCalculator: React.FC<{
           notify("Escenario cargado exitosamente", "success");
           
           // Tracking PLG: Apertura de link compartido
-          track('open_shared_link', {
+          trackEvent('open_shared_link', {
             source: 'whatsapp_or_direct'
           });
           
@@ -169,6 +169,11 @@ export const LaborCalculator: React.FC<{
     setResults(result);
     setIsEditing(false);
     
+    trackEvent('calculator_used', {
+      dismissal_type: dismissalType,
+      years_of_service: yearsOfService,
+    });
+
     notify("Cálculo generado exitosamente", "success");
     setTimeout(() => {
       if (typeof resultsRef.current?.scrollIntoView === 'function') {
@@ -326,7 +331,7 @@ export const LaborCalculator: React.FC<{
       const text = `📊 *Memoria de Cálculo Laboral*\n\nRevisa el desglose de Finiquito / Liquidación conforme a la LFT vigente. Total estimado: ${totalStr} MXN.\n\n👇 Abre este enlace para ver el desglose exacto o ajustar los números:\n${shareUrl}\n\n_Generado por LexLaboral.com.mx_`;
       
       // Tracking de PLG: Loop Viral WhatsApp
-      track('share_whatsapp', {
+      trackEvent('share_whatsapp', {
         type: dismissalType,
         total_amount: results.total,
         is_shared_scenario: isSharedScenario
@@ -367,7 +372,7 @@ export const LaborCalculator: React.FC<{
       }
 
       // Tracking de PLG: Conversión de Documento
-      track('export_document', {
+      trackEvent('export_document', {
         template_id: template,
         format_type: format,
         type: dismissalType,
@@ -761,7 +766,7 @@ export const LaborCalculator: React.FC<{
         isExporting={isExporting}
       />
 
-      
+      <AdBanner slot="labor-calculator-banner" />
 
       <SEOContentSection
         title="Calculadora de liquidación y finiquito en México"
@@ -782,15 +787,15 @@ export const LaborCalculator: React.FC<{
         ]}
         faqs={[
           {
-            question: 'Que incluye una liquidacion por despido injustificado en Mexico?',
-            answer: 'Normalmente incluye 3 meses de salario, 20 días por año cuando corresponde, prima de antigüedad y las partes proporcionales del finiquito como aguinaldo, vacaciones y prima vacacional.',
+            question: '¿Qué incluye una liquidación por despido injustificado en México?',
+            answer: 'Normalmente incluye 3 meses de salario (indemnización constitucional), 20 días por año cuando corresponde, prima de antigüedad (12 días por año topada a 2 UMA) y las partes proporcionales del finiquito como aguinaldo, vacaciones y prima vacacional.',
           },
           {
-            question: 'La calculadora laboral de Lex Laboral es gratis?',
+            question: '¿La calculadora laboral de Lex Laboral es gratuita?',
             answer: 'Sí. La calculadora de prestaciones es gratuita y no requiere registro ni plan de pago.',
           },
           {
-            question: 'Este resultado sustituye asesoria legal profesional?',
+            question: '¿Este resultado sustituye asesoría legal profesional?',
             answer: 'No. Funciona como una estimación técnica útil para análisis preliminar, pero cada caso debe revisarse con sus hechos, documentos y estrategia jurídica específica.',
           },
         ]}

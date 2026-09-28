@@ -1,0 +1,3 @@
+# Google AdSense Authorized Digital Sellers (ads.txt) - Lex Laboral
+# Reemplaza 'pub-XXXXXXXXXXXXXXXX' con tu ID de editor de Google AdSense (ca-pub-...)
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0

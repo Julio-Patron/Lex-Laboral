@@ -14,7 +14,9 @@ import {
 import React, { useState } from 'react';
 import { calculatePension73, calculatePension97, type PensionInput } from '../lib/calculators/pension';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
+import { trackEvent } from '../lib/analytics';
 import { NotificationType } from '../types';
+import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
@@ -122,6 +124,12 @@ export const PensionCalculator: React.FC<{
     setResults(result);
     setIsEditing(false);
 
+    trackEvent('pension_calculator_used', {
+      regime: result.regimeUsed,
+      age,
+      weeks,
+    });
+
     notify("Cálculo realizado exitosamente", "success");
     setTimeout(() => {
       if (typeof resultsRef.current?.scrollIntoView === 'function') {
@@ -217,6 +225,7 @@ export const PensionCalculator: React.FC<{
       doc.text(disclaimerLines, 20, finalY + 13);
 
       doc.save(`LexLaboral_Pension_${new Date().getTime()}.pdf`);
+      trackEvent('export_pdf', { tool: 'pension', regime: results.regimeUsed });
       notify("PDF generado con éxito", "success");
     } catch (error) {
       notify("Error al generar PDF", "error");
@@ -528,6 +537,8 @@ export const PensionCalculator: React.FC<{
           </AnimatePresence>
         </div>
       </div>
+
+      <AdBanner slot="pension-calculator-banner" />
 
       <SEOContentSection
         title="Calculadora de Pensiones IMSS (Ley 73 y 97)"
