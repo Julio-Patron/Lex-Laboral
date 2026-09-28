@@ -16,6 +16,8 @@ import { NotificationType } from '../types';
 
 import { calculateAnnualRisk, calculateSocialSecurity, type RiskCalculationInput, type SocialSecurityInput } from '../lib/calculators/social-security';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
+import { trackEvent } from '../lib/analytics';
+import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
 
@@ -130,6 +132,11 @@ export const SocialSecurityCalculator: React.FC<{
     setResults(results);
     setIsEditing(false);
 
+    trackEvent('social_security_used', {
+      risk_class: riskClass,
+      days,
+    });
+
     notify("Cálculo finalizado", "success");
     revealResults();
   };
@@ -212,6 +219,7 @@ export const SocialSecurityCalculator: React.FC<{
     doc.text(disclaimerLines, 18, finalY + 12);
     
     doc.save('LexLaboral_Cuotas_IMSS.pdf');
+    trackEvent('export_pdf', { tool: 'imss' });
     notify('PDF generado correctamente', 'success');
   };
 
@@ -548,7 +556,8 @@ export const SocialSecurityCalculator: React.FC<{
             </AnimatePresence>
           </div>
         </div>
-      
+
+      <AdBanner slot="imss-calculator-banner" />
 
       <SEOContentSection
         title="Calculadora de cuotas IMSS e INFONAVIT"
@@ -569,15 +578,15 @@ export const SocialSecurityCalculator: React.FC<{
         ]}
         faqs={[
           {
-            question: 'Que calcula esta calculadora IMSS?',
+            question: '¿Qué calcula esta calculadora de cuotas IMSS?',
             answer: 'Calcula las cuotas del patrón y del trabajador a partir del salario base de cotización, la UMA, la clase de riesgo, los días cotizados y otros parámetros de seguridad social.',
           },
           {
-            question: 'La calculadora IMSS es gratis?',
+            question: '¿La calculadora IMSS es gratuita?',
             answer: 'Sí. Todas las calculadoras de Lex Laboral son gratuitas y no requieren registro.',
           },
           {
-            question: 'Sirve como determinacion definitiva ante el IMSS?',
+            question: '¿Sirve como determinación definitiva ante el IMSS?',
             answer: 'No. Es una herramienta de apoyo técnico para estimación y revisión. La determinación final depende de la integración salarial, movimientos afiliatorios y circunstancias concretas del patrón.',
           },
         ]}

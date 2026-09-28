@@ -3,7 +3,7 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Home } from './components/Home';
 import { NotificationHub } from './components/NotificationHub';
-import { trackEvent } from './lib/analytics';
+import { initGoogleAnalytics, trackEvent, trackPageView } from './lib/analytics';
 import { getPathForView, getViewForPath } from './lib/routes';
 import { updateSEO } from './lib/seo';
 
@@ -41,9 +41,16 @@ function App() {
 
   const dismissNotification = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
 
-  // SEO: update tags on mount with initial view
+  // Inicializar Google Analytics (GA4) al montar la app
+  useEffect(() => {
+    initGoogleAnalytics();
+  }, []);
+
+  // SEO & Analytics: update tags and track pageview on view change
   useEffect(() => {
     updateSEO(currentView);
+    const path = getPathForView(currentView);
+    trackPageView(path, document.title);
   }, [currentView]);
 
   // Cada herramienta es un recorrido independiente: debe empezar desde su encabezado,
@@ -61,7 +68,7 @@ function App() {
     if (nextPath !== currentPath) {
       window.history.pushState({}, '', nextPath);
     }
-    trackEvent('view_changed', { view });
+    trackEvent('view_changed', { view, path: nextPath });
   }, []);
 
   useEffect(() => {
@@ -89,10 +96,11 @@ function App() {
   }, []);
 
   const isMobileSidebarHidden = isMobileViewport && !isSidebarOpen;
+  const showMobileNav = currentView !== AppView.HOME;
 
   const renderView = () => {
     return (
-      <div className="min-h-full w-full animate-fade-in relative pb-20 md:pb-0">
+      <div className={`min-h-full w-full animate-fade-in relative ${showMobileNav ? 'pb-20 md:pb-0' : ''}`}>
         <Suspense fallback={
           <div className="h-full w-full min-h-[600px] flex items-center justify-center animate-in fade-in duration-500">
              <div className="flex flex-col items-center">
@@ -190,7 +198,9 @@ function App() {
         </div>
       </main>
 
-      <MobileBottomNav currentView={currentView} onChangeView={handleViewChange} />
+      {showMobileNav && (
+        <MobileBottomNav currentView={currentView} onChangeView={handleViewChange} />
+      )}
 
       </div>
     </ErrorBoundary>

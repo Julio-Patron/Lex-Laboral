@@ -10,7 +10,7 @@ import { getPathForView } from './routes';
 
 const SITE_NAME = 'Lex Laboral';
 const BASE_URL = 'https://lexlaboral.com.mx';
-const DEFAULT_OG_IMAGE = `${BASE_URL}/assets/og-image.png`;
+const DEFAULT_OG_IMAGE = `${BASE_URL}/assets/og-image.jpg`;
 const FACEBOOK_PAGE = 'https://www.facebook.com/LexLaboral';
 const CONTACT_EMAIL = 'admin@lexlaboral.com.mx';
 
@@ -279,6 +279,16 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       {
         question: '¿Cómo funciona el fundamentador jurídico de Lex Laboral?',
         answer: 'Utiliza un índice semántico de la Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT para encontrar los artículos aplicables al caso laboral planteado.',
+      },
+    ],
+    [AppView.SOURCES]: [
+      {
+        question: '¿Lex Laboral representa a una entidad gubernamental de México?',
+        answer: 'No. Lex Laboral es un desarrollo privado con fines didácticos e informativos. No forma parte del IMSS, INFONAVIT, STPS ni de ninguna secretaría gubernamental.',
+      },
+      {
+        question: '¿Dónde puedo consultar las leyes laborales oficiales en México?',
+        answer: 'Puedes consultar los textos oficiales vigentes en los portales oficiales del Gobierno de México: Cámara de Diputados (diputados.gob.mx) y Diario Oficial de la Federación (dof.gob.mx).',
       },
     ],
   };

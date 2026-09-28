@@ -5,6 +5,7 @@
 
 import { AlertCircle, Check, Copy, Scale, Search, TrendingUp, X } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
+import { trackEvent } from '../lib/analytics';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 type NormFilter = 'LFT' | 'IMSS' | 'INFONAVIT' | 'all';
@@ -137,6 +138,12 @@ export const Consultas: React.FC = () => {
       setSearchMode(data.mode || 'semantic');
       setResolvedQuery(data.query || searchQuery);
       setCopiedFoundation(false);
+
+      trackEvent('consultas_search', {
+        norm,
+        query_length: searchQuery.trim().length,
+        result_count: data.count || data.results?.length || 0,
+      });
     } catch (err) {
       console.error('Search error:', err);
       setError('No se pudo realizar la búsqueda. Revisa que el servicio esté desplegado e intenta nuevamente.');

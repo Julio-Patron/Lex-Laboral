@@ -12,8 +12,10 @@ import {
     Smartphone
 } from 'lucide-react';
 import React from 'react';
+import { trackEvent } from '../lib/analytics';
 import { getPathForView } from '../lib/routes';
 import { AppView } from '../types';
+import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
 
 interface HomeProps {
@@ -213,6 +215,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           <a
             href="/LexLaboral-1.4.0-release.apk"
             download="LexLaboral-1.4.0.apk"
+            onClick={() => trackEvent('apk_download', { version: '1.4.0' })}
             className="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold px-5 py-2.5 text-xs border border-slate-700 transition-all shrink-0"
           >
             <Download size={15} />
@@ -223,6 +226,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
       {/* SEO Section */}
       <section className="pb-16 mx-auto max-w-5xl px-4 sm:px-6">
+        <AdBanner slot="home-page-banner" />
         <SEOContentSection
           title="Calculadoras de Liquidación, IMSS y Pensiones 2026"
           intro="Herramientas jurídicas y calculadoras laborales actualizadas con la legislación mexicana. Estimaciones precisas basadas en la Ley Federal del Trabajo, IMSS e INFONAVIT para empleadores, despachos y trabajadores."

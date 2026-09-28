@@ -1,5 +1,6 @@
 import { ArrowLeft, BookOpen, Building2, ExternalLink, Landmark, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
+import { trackEvent } from '../lib/analytics';
 import { GOVERNMENT_SOURCES, GovernmentSource, OFFICIAL_DISCLAIMER } from '../lib/legal-sources';
 import { AppView } from '../types';
 
@@ -151,6 +152,7 @@ export const GovernmentSourcesView: React.FC<GovernmentSourcesViewProps> = ({ on
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackEvent('official_source_click', { source_name: source.name, url: source.url })}
                   className="group flex min-h-11 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-900 transition-colors hover:border-amber-500/50 hover:bg-amber-500/10"
                 >
                   <span className="truncate pr-2 font-mono text-[11px] text-slate-600 group-hover:text-slate-900">
