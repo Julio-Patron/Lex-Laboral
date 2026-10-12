@@ -7,6 +7,7 @@ import { AlertCircle, Check, Copy, ExternalLink, Scale, Search, TrendingUp, X } 
 import React, { useCallback, useState } from 'react';
 import { trackEvent } from '../lib/analytics';
 import type { SearchMode, SearchResponse, SearchResult } from '../lib/lexapi/types';
+import { LexApiCredit } from './LexApiCredit';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 type NormFilter = 'LFT' | 'IMSS' | 'INFONAVIT' | 'all';
@@ -140,6 +141,7 @@ export const Consultas: React.FC = () => {
     setSearched(false);
     setSearchMode(null);
     setResolvedQuery('');
+    setError(null);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -190,6 +192,7 @@ export const Consultas: React.FC = () => {
         description="Describe el caso y obtén artículos relevantes de la LFT, Seguro Social e INFONAVIT organizados como fundamento sugerido."
         icon={<Scale size={24} className="text-legal-gold" />}
       />
+      <LexApiCredit className="-mt-3 mb-6 md:-mt-5" />
 
       {/* Search Panel */}
       <WorkspacePanel className="mb-6 p-5 sm:p-6">
@@ -220,7 +223,7 @@ export const Consultas: React.FC = () => {
               )}
             </div>
             <p className="text-xs leading-5 text-slate-500">
-              Puedes escribir hechos breves, una pregunta completa o palabras clave. El sistema busca artículos y arma una base de fundamento.
+              Puedes escribir hechos breves, una pregunta completa o palabras clave. El fundamentador localiza artículos y arma una base normativa.
             </p>
           </div>
 
@@ -232,7 +235,12 @@ export const Consultas: React.FC = () => {
                 <button
                   key={norm}
                   type="button"
-                  onClick={() => setSelectedNorm(norm)}
+                  onClick={() => {
+                    setSelectedNorm(norm);
+                    if (searched && query.trim()) {
+                      performSearch(query, norm);
+                    }
+                  }}
                   className={`min-w-0 rounded-lg px-3 py-2 text-xs font-bold transition-all sm:px-4 ${
                     selectedNorm === norm
                       ? 'bg-slate-950 text-legal-gold shadow-md'
@@ -294,10 +302,10 @@ export const Consultas: React.FC = () => {
                     : 'bg-slate-100 text-slate-700'
               }`}>
                 {searchMode === 'lexapi'
-                  ? 'Corpus normativo vivo'
+                  ? 'Lex API MX'
                   : searchMode === 'semantic'
-                    ? 'Semántico activo'
-                    : 'Índice jurídico activo'}
+                    ? 'Índice semántico'
+                    : 'Índice local'}
               </span>
             )}
           </div>
@@ -320,7 +328,7 @@ export const Consultas: React.FC = () => {
                       Fundamento jurídico sugerido
                     </h3>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      Base generada con los artículos más cercanos a la consulta.
+                      Base generada con los artículos más cercanos a la consulta, con texto y vigencia de Lex API MX.
                     </p>
                   </div>
                 </div>

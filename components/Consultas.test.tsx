@@ -53,6 +53,13 @@ afterEach(() => {
 });
 
 describe('Consultas', () => {
+  it('credits Lex API MX with a visible link', () => {
+    render(<Consultas />);
+    const credits = screen.getAllByRole('link', { name: 'Lex API MX' });
+    expect(credits.length).toBeGreaterThan(0);
+    expect(credits[0]).toHaveAttribute('href', 'https://lexapi.mx');
+  });
+
   it('submits a case and shows the suggested foundation from Lex API MX', async () => {
     const user = userEvent.setup();
     vi.mocked(fetch).mockResolvedValue({
@@ -80,6 +87,7 @@ describe('Consultas', () => {
     expect(screen.getAllByText(/1970-04-01/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/similitud/i)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar fundamento/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Lex API MX' }).length).toBeGreaterThan(0);
 
     expect(fetch).toHaveBeenCalledWith(
       '/api/search',

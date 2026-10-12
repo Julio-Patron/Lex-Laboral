@@ -26,6 +26,7 @@ const riskPresets = [
   { label: 'Comercio', hint: 'Clase II', value: 1.13065 },
   { label: 'Industria', hint: 'Clase III', value: 2.59840 },
   { label: 'Construcción', hint: 'Clase IV', value: 4.65325 },
+  { label: 'Alto riesgo', hint: 'Clase V', value: 7.58875 },
 ];
 
 const formatCurrency = (value: number) =>
@@ -53,6 +54,7 @@ export const SocialSecurityCalculator: React.FC<{
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [isEditing, setIsEditing] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [results, setResults] = useState<{
     employer: {
@@ -80,7 +82,11 @@ export const SocialSecurityCalculator: React.FC<{
   } | null>(null);
 
   const revealResults = () => {
-    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    setTimeout(() => {
+      if (typeof resultsRef.current?.scrollIntoView === 'function') {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const loadExample = () => {
@@ -114,17 +120,21 @@ export const SocialSecurityCalculator: React.FC<{
 
   const calculate = async () => {
     if (sbc <= 0) {
-      notify("El Salario Base de Cotización debe ser un número positivo", "error");
+      setFormError('Captura un salario base de cotización mayor a cero.');
+      notify('El Salario Base de Cotización debe ser un número positivo', 'error');
       return;
     }
     if (sbc < minWage) {
-      notify(`El SBC no puede ser menor al salario mínimo ($${minWage})`, "warning");
+      setFormError(`El SBC no puede ser menor al salario mínimo ($${minWage}).`);
+      notify(`El SBC no puede ser menor al salario mínimo ($${minWage})`, 'warning');
       return;
     }
     if (riskClass === 0) {
-      notify("Por favor, seleccione una Clase de Riesgo", "error");
+      setFormError('Selecciona una clase de riesgo.');
+      notify('Por favor, seleccione una Clase de Riesgo', 'error');
       return;
     }
+    setFormError(null);
 
     const input: SocialSecurityInput = { sbc, riskClass, days, umaValue, minWage };
     const results = calculateSocialSecurity(input);
@@ -401,7 +411,10 @@ export const SocialSecurityCalculator: React.FC<{
                   )}
                 </AnimatePresence>
 
-                <button onClick={calculate} className="ui-primary-action group">
+                {formError && (
+                  <p className="text-xs font-semibold text-amber-800">{formError}</p>
+                )}
+                <button type="button" onClick={calculate} className="ui-primary-action group">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular cuotas</span>

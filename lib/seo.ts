@@ -61,10 +61,10 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
   },
   [AppView.CONSULTAS]: {
     title: `Fundamentador Jurídico Laboral | ${SITE_NAME}`,
-    description: 'Fundamentador jurídico laboral para localizar artículos de la LFT, Seguro Social e INFONAVIT y armar una base normativa sugerida para tu caso.',
+    description: 'Fundamentador jurídico laboral con artículos vigentes de la LFT, Seguro Social e INFONAVIT vía Lex API MX.',
     path: getPathForView(AppView.CONSULTAS),
     ogTitle: 'Fundamentador Jurídico Laboral México',
-    ogDescription: 'Localiza artículos laborales vigentes y genera una base de fundamento jurídico sugerido.',
+    ogDescription: 'Localiza artículos laborales vigentes vía Lex API MX y genera un fundamento jurídico sugerido.',
   },
   [AppView.TERMS]: {
     title: `Términos y Condiciones | ${SITE_NAME}`,

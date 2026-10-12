@@ -28,7 +28,11 @@ export const NotificationHub: React.FC<NotificationHubProps> = ({ notifications,
   };
 
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] flex-col items-end space-y-3 sm:left-auto sm:w-full sm:max-w-sm">
+    <div
+      className="pointer-events-none fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] flex-col items-end space-y-3 md:bottom-4 sm:left-auto sm:w-full sm:max-w-sm"
+      role="status"
+      aria-live="polite"
+    >
       {notifications.map((n) => (
         <div 
           key={n.id}
