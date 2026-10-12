@@ -4,6 +4,9 @@
       "includeFiles": "data/search-index.json"
     }
   },
+  "redirects": [
+    { "source": "/terms.html", "destination": "/terminos", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }

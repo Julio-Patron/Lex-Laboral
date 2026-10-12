@@ -242,7 +242,7 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
       },
       {
         question: '¿Las calculadoras de Lex Laboral son gratuitas?',
-        answer: 'Sí, todas las calculadoras y descargas de la aplicación móvil APK son 100% gratuitas, sin registro previo y sin cobros ocultos.',
+        answer: 'Sí, todas las calculadoras y descargas de la aplicación móvil APK son gratuitas, sin registro previo ni membresías. Pueden mostrarse anuncios para sostener el servicio.',
       },
     ],
     [AppView.CALCULATOR]: [
