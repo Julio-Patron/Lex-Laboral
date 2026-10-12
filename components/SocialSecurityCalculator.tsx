@@ -19,6 +19,7 @@ import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { trackEvent } from '../lib/analytics';
 import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
+import { TermsLimitationsNote } from './TermsLimitationsNote';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel, WorkspaceStat } from './ui/Workspace';
 
 const riskPresets = [
@@ -248,7 +249,7 @@ export const SocialSecurityCalculator: React.FC<{
       <WorkspaceHeader
         eyebrow="Calculadora informativa"
         title="IMSS e INFONAVIT"
-        description="Proyecta cuotas y reparto patrón-trabajador con vigencia 2026. Herramienta independiente no oficial."
+        description="Proyecta cuotas y reparto patrón-trabajador con vigencia 2026."
         icon={<ShieldCheck size={28} />}
       />
 
@@ -461,6 +462,8 @@ export const SocialSecurityCalculator: React.FC<{
                     <WorkspaceStat label="Patrón" value={`$${results.employer.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} />
                     <WorkspaceStat label="Trabajador" value={`$${results.employee.total.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`} emphasis="accent" />
                   </div>
+
+                  <TermsLimitationsNote />
 
                   <WorkspacePanel className="p-5 sm:p-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

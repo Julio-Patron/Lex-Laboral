@@ -24,6 +24,7 @@ import { NotificationType } from '../types';
 import { DocumentExportModal } from './DocumentExportModal';
 import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
+import { TermsLimitationsNote } from './TermsLimitationsNote';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 
@@ -720,6 +721,7 @@ export const LaborCalculator: React.FC<{
                       </div>
                     </div>
 
+                    <TermsLimitationsNote inset />
 
                     <div className="flex flex-col">
                       <div className="space-y-4 overflow-visible p-5 sm:p-6">

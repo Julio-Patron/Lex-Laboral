@@ -253,7 +253,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             },
             {
               question: '¿Tiene algún costo usar las calculadoras?',
-              answer: 'No, todas las herramientas son 100% gratuitas y sin anuncios.'
+              answer: 'No, el uso de las calculadoras es gratuito y no requiere registro ni membresías. Pueden mostrarse anuncios para sostener el servicio.'
             },
             {
               question: '¿Requiere crear una cuenta?',
@@ -307,14 +307,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               <span>Privacidad</span>
               <ExternalLink size={11} />
             </a>
-            <a 
-              href="/terms.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-400 transition-colors flex items-center gap-1"
+            <a
+              href={getPathForView(AppView.TERMS)}
+              onClick={(e) => handleNavClick(e, AppView.TERMS)}
+              className="hover:text-amber-400 transition-colors"
             >
-              <span>Términos</span>
-              <ExternalLink size={11} />
+              Términos
             </a>
             <a 
               href={getPathForView(AppView.SOURCES)}

@@ -32,6 +32,7 @@ describe('LaborCalculator interaction flow', () => {
     expect(screen.getAllByText(/prima vacacional/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /despido injustificado/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /editar datos/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /términos y condiciones/i })).toHaveAttribute('href', '/terminos');
   });
 
   it('warns when calculating with empty salary', async () => {

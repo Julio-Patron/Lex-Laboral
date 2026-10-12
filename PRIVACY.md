@@ -40,4 +40,4 @@ Dado que **Lex Laboral** no almacena información personal en bases de datos ext
 ## Enlaces Públicos
 
 - **Aviso de Privacidad (HTML):** [`public/privacy.html`](file:///C:/Users/52999/Lexlabmovil/Lex-Laboral/public/privacy.html)
-- **Términos y Condiciones (HTML):** [`public/terms.html`](file:///C:/Users/52999/Lexlabmovil/Lex-Laboral/public/terms.html)
+- **Términos y Condiciones:** `/terminos`

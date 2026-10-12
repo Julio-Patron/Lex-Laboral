@@ -17,6 +17,7 @@ import { trackEvent } from '../lib/analytics';
 import { NotificationType } from '../types';
 import { AdBanner } from './AdBanner';
 import { SEOContentSection } from './SEOContentSection';
+import { TermsLimitationsNote } from './TermsLimitationsNote';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 type PensionRegime = '1973' | '1997';
@@ -261,7 +262,7 @@ export const PensionCalculator: React.FC<{
       <WorkspaceHeader
         eyebrow="Calculadora informativa"
         title="Calculadora de pensiones"
-        description="Estima la pensión mensual bajo el régimen de 1973 o 1997. Herramienta independiente no oficial."
+        description="Estima la pensión mensual bajo el régimen de 1973 o 1997."
         icon={<Building size={28} />}
         actions={
           <div className="w-full space-y-2 sm:min-w-[16rem] lg:w-auto">
@@ -481,8 +482,9 @@ export const PensionCalculator: React.FC<{
                     </div>
                   </div>
 
-                  <div className="flex flex-col">
+                  <TermsLimitationsNote inset />
 
+                  <div className="flex flex-col">
                     <div className="space-y-4 overflow-visible p-5 sm:p-6">
                       <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
 
