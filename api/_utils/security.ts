@@ -2,6 +2,13 @@
  * Security utilities for API endpoints
  */
 
+export const ALLOWED_ORIGINS = [
+  'https://lexlaboral.com.mx',
+  'https://www.lexlaboral.com.mx',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
 export function handlePreflight(req: any, res: any): boolean {
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -11,11 +18,14 @@ export function handlePreflight(req: any, res: any): boolean {
 }
 
 export function setCorsHeaders(req: any, res: any): void {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  const origin = typeof req.headers?.origin === 'string' ? req.headers.origin : '';
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Vary', 'Origin');
 }
 
 export function setSecurityHeaders(res: any): void {
@@ -25,31 +35,25 @@ export function setSecurityHeaders(res: any): void {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 }
 
-export function sanitizeInput(input: string, maxLength: number = 500): string {
+export function sanitizeInput(input: string | undefined, maxLength: number = 500): string {
   if (!input || typeof input !== 'string') {
     return '';
   }
-  
-  // Trim whitespace and limit length
-  let sanitized = input.trim().substring(0, maxLength);
-  
-  // Remove potentially dangerous characters but keep accented characters
-  sanitized = sanitized.replace(/[<>\"']/g, '');
-  
-  return sanitized;
+
+  return input.trim().substring(0, maxLength).replace(/[<>"']/g, '');
 }
 
-export function validateOrigin(req: any): boolean {
-  // Accept requests from same origin or specified allowed origins
-  const origin = req.headers.origin;
-  if (!origin) return false;
-  
-  const allowedOrigins = [
-    'https://lexlaboral.com.mx',
-    'https://www.lexlaboral.com.mx',
-    'http://localhost:3000',
-    'http://localhost:5173',
-  ];
-  
-  return !allowedOrigins.includes(origin);
+export function isAllowedOrigin(origin: string | undefined): boolean {
+  return Boolean(origin && ALLOWED_ORIGINS.includes(origin));
+}
+
+export function clientIp(req: { headers?: Record<string, unknown>; socket?: { remoteAddress?: string } }): string {
+  const forwarded = req.headers?.['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    return forwarded.split(',')[0].trim();
+  }
+  if (Array.isArray(forwarded) && forwarded[0]) {
+    return String(forwarded[0]).split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
 }

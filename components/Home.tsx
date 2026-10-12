@@ -54,9 +54,9 @@ const tools = [
     view: AppView.CONSULTAS,
     title: 'Fundamentador Jurídico',
     subtitle: 'LFT, IMSS e INFONAVIT',
-    summary: 'Localiza artículos y arma un fundamento jurídico sugerido para el caso planteado.',
+    summary: 'Localiza artículos vigentes y arma un fundamento jurídico sugerido para el caso planteado.',
     action: 'Fundamentar Caso',
-    badge: 'RAG Jurídico',
+    badge: 'Corpus 2026',
     icon: <BookOpen size={20} className="text-purple-400" />,
   },
 ];
