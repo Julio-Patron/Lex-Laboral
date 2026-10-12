@@ -4,7 +4,6 @@ import {
     CheckCircle2,
     ChevronDown,
     FileDown,
-    Info,
     RefreshCw,
     Settings2,
     Sparkles,
@@ -236,21 +235,18 @@ export const PensionCalculator: React.FC<{
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(30, 41, 59);
-      doc.text('AVISO LEGAL, DESLINDE GUBERNAMENTAL Y FUENTES OFICIALES:', 20, finalY + 7);
+      doc.text('FUENTES OFICIALES:', 20, finalY + 7);
 
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(71, 85, 105);
-      const disclaimerLines = [
-        '1. Lex Laboral es una herramienta de cálculo de iniciativa privada e independiente.',
-        '2. NO representa ni está afiliada al Instituto Mexicano del Seguro Social (IMSS) ni a la CONSAR.',
-        '3. Esta proyección es de carácter orientativo. La resolución vinculante sólo puede ser emitida por el IMSS.',
-        '4. Fuentes oficiales gubernamentales (.gob.mx):',
-        '   - Portal IMSS Pensiones: https://www.imss.gob.mx/pensiones',
-        '   - CONSAR: https://www.gob.mx/consar',
-        '   - Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+      const sourceLines = [
+        'Portal IMSS Pensiones: https://www.imss.gob.mx/pensiones',
+        'CONSAR: https://www.gob.mx/consar',
+        'Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+        'Deslinde gubernamental y limitaciones de cálculo: Términos y Condiciones (lexlaboral.com.mx/terminos).',
       ];
-      doc.text(disclaimerLines, 20, finalY + 13);
+      doc.text(sourceLines, 20, finalY + 13);
 
       doc.save(`LexLaboral_Pension_${new Date().getTime()}.pdf`);
       trackEvent('export_pdf', { tool: 'pension', regime: results.regimeUsed });
@@ -484,19 +480,6 @@ export const PensionCalculator: React.FC<{
                       </button>
                     </div>
                   </div>
-
-                  <div className="border-b border-amber-200 bg-amber-50 p-4 sm:p-5">
-                    <div className="flex items-start gap-3">
-                      <Info size={16} className="mt-0.5 shrink-0 text-orange-500" />
-                      <div>
-                        <span className="text-xs font-bold uppercase tracking-wide text-orange-800">Cálculo estimado</span>
-                        <p className="mt-1 text-xs leading-relaxed text-orange-700/80">
-                          El cálculo oficial debe ser emitido por el IMSS. Esta referencia aplica redondeos y factores simplificados.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
 
                   <div className="flex flex-col">
 

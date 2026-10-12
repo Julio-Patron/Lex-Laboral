@@ -1,7 +1,8 @@
-import { ArrowLeft, BookOpen, Building2, ExternalLink, Landmark, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, BookOpen, Building2, ExternalLink, Landmark } from 'lucide-react';
 import React, { useState } from 'react';
 import { trackEvent } from '../lib/analytics';
-import { GOVERNMENT_SOURCES, GovernmentSource, OFFICIAL_DISCLAIMER } from '../lib/legal-sources';
+import { GOVERNMENT_SOURCES, GovernmentSource } from '../lib/legal-sources';
+import { getPathForView } from '../lib/routes';
 import { AppView } from '../types';
 
 interface GovernmentSourcesViewProps {
@@ -9,7 +10,7 @@ interface GovernmentSourcesViewProps {
   onNavigate?: (view: AppView) => void;
 }
 
-export const GovernmentSourcesView: React.FC<GovernmentSourcesViewProps> = ({ onBack }) => {
+export const GovernmentSourcesView: React.FC<GovernmentSourcesViewProps> = ({ onBack, onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const categories = [
@@ -51,40 +52,27 @@ export const GovernmentSourcesView: React.FC<GovernmentSourcesViewProps> = ({ on
             Marco Normativo y Transparencia
           </p>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-            Fuentes Oficiales y Deslinde Gubernamental
+            Fuentes Oficiales
           </h1>
           <p className="text-sm sm:text-base text-slate-600 max-w-3xl leading-relaxed">
-            Lex Laboral es un desarrollo privado con fines didácticos e informativos. Consulta el deslinde de responsabilidad y los accesos a los portales oficiales del Gobierno de México.
+            Accesos a los portales oficiales del Gobierno de México y a los textos vigentes de las leyes federales que fundamentan las calculadoras.
+          </p>
+          <p className="text-sm text-slate-500 max-w-3xl leading-relaxed">
+            El deslinde gubernamental y las limitaciones de cálculo están en los{' '}
+            <a
+              href={getPathForView(AppView.TERMS)}
+              onClick={(e) => {
+                if (!onNavigate) return;
+                e.preventDefault();
+                onNavigate(AppView.TERMS);
+              }}
+              className="font-semibold text-amber-700 underline hover:text-amber-800"
+            >
+              Términos y Condiciones
+            </a>
+            .
           </p>
         </div>
-
-        {/* Prominent Government Non-Affiliation Disclaimer Box */}
-        <section
-          aria-label="Aviso de No Afiliación Gubernamental"
-          className="rounded-3xl border-2 border-amber-300 bg-amber-50/90 p-6 sm:p-8 shadow-sm"
-        >
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 shadow-md">
-              <ShieldAlert size={28} aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1 space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-amber-200 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-950">
-                  Aviso Legal Obligatorio
-                </span>
-                <span className="text-xs font-bold text-amber-900">
-                  Iniciativa Privada e Independiente
-                </span>
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold text-amber-950">
-                {OFFICIAL_DISCLAIMER.title}
-              </h2>
-              <p className="text-sm leading-relaxed text-amber-900">
-                {OFFICIAL_DISCLAIMER.full}
-              </p>
-            </div>
-          </div>
-        </section>
 
         {/* Public Normative Foundation Info Card */}
         <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-4">

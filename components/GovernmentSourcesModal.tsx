@@ -1,6 +1,6 @@
-import { Building2, ExternalLink, ShieldAlert, X } from 'lucide-react';
+import { Building2, ExternalLink, Landmark, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { GOVERNMENT_SOURCES, GovernmentSource, OFFICIAL_DISCLAIMER } from '../lib/legal-sources';
+import { GOVERNMENT_SOURCES, GovernmentSource } from '../lib/legal-sources';
 
 interface GovernmentSourcesModalProps {
   isOpen: boolean;
@@ -35,14 +35,14 @@ export const GovernmentSourcesModal: React.FC<GovernmentSourcesModalProps> = ({
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-950 px-6 py-4 text-white">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400">
-              <ShieldAlert size={18} />
+              <Landmark size={18} />
             </div>
             <div>
               <h2 id="modal-sources-title" className="text-sm font-bold text-amber-400">
-                Fuentes Oficiales y Deslinde
+                Fuentes Oficiales
               </h2>
               <p className="text-[11px] text-slate-400">
-                Herramienta independiente no gubernamental
+                Leyes y portales gubernamentales (.gob.mx)
               </p>
             </div>
           </div>
@@ -58,18 +58,13 @@ export const GovernmentSourcesModal: React.FC<GovernmentSourcesModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 text-slate-800 text-xs">
-          {/* Disclaimer Box */}
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
-            <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-900">
-              {OFFICIAL_DISCLAIMER.badge}
-            </span>
-            <p className="mt-2 text-xs font-semibold text-amber-950">
-              Lex Laboral es un desarrollo privado e independiente.
-            </p>
-            <p className="mt-1 text-[11px] leading-relaxed text-amber-900">
-              {OFFICIAL_DISCLAIMER.full}
-            </p>
-          </div>
+          <p className="text-[11px] leading-relaxed text-slate-500">
+            El deslinde gubernamental y las limitaciones de cálculo están en los{' '}
+            <a href="/terminos" className="font-semibold text-amber-700 underline hover:text-amber-800">
+              Términos y Condiciones
+            </a>
+            .
+          </p>
 
           {/* Filter options if category is provided */}
           {categoryFilter && (

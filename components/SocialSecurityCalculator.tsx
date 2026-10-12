@@ -212,21 +212,18 @@ export const SocialSecurityCalculator: React.FC<{
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(30, 41, 59);
-    doc.text('AVISO LEGAL, DESLINDE GUBERNAMENTAL Y FUENTES OFICIALES:', 18, finalY + 7);
+    doc.text('FUENTES OFICIALES:', 18, finalY + 7);
 
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    const disclaimerLines = [
-      '1. Lex Laboral es una herramienta de cálculo de iniciativa privada e independiente.',
-      '2. NO representa ni está afiliada al Instituto Mexicano del Seguro Social (IMSS) ni al INFONAVIT.',
-      '3. Los resultados son estimaciones informativas y no sustituyen las cédulas oficiales emitidas por el SUA o IDSE.',
-      '4. Fuentes oficiales gubernamentales (.gob.mx):',
-      '   - Instituto Mexicano del Seguro Social: https://www.imss.gob.mx/',
-      '   - INFONAVIT: https://portalmx.infonavit.org.mx/',
-      '   - Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+    const sourceLines = [
+      'Instituto Mexicano del Seguro Social: https://www.imss.gob.mx/',
+      'INFONAVIT: https://portalmx.infonavit.org.mx/',
+      'Ley del Seguro Social: https://www.diputados.gob.mx/LeyesBiblio/pdf/LSS.pdf',
+      'Deslinde gubernamental y limitaciones de cálculo: Términos y Condiciones (lexlaboral.com.mx/terminos).',
     ];
-    doc.text(disclaimerLines, 18, finalY + 12);
+    doc.text(sourceLines, 18, finalY + 12);
     
     doc.save('LexLaboral_Cuotas_IMSS.pdf');
     trackEvent('export_pdf', { tool: 'imss' });

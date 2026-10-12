@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GOVERNMENT_SOURCES, OFFICIAL_DISCLAIMER } from './legal-sources';
+import { CALCULATOR_LIMITATIONS, GOVERNMENT_SOURCES, OFFICIAL_DISCLAIMER } from './legal-sources';
 
 describe('legal-sources and official disclaimers', () => {
   it('contains an explicit non-affiliation disclaimer stating the app does not represent any government entity', () => {
@@ -8,6 +8,13 @@ describe('legal-sources and official disclaimers', () => {
     expect(OFFICIAL_DISCLAIMER.full).toContain('INFONAVIT');
     expect(OFFICIAL_DISCLAIMER.full).toContain('Gobierno de México');
     expect(OFFICIAL_DISCLAIMER.short).toContain('NO representa ni está afiliada');
+  });
+
+  it('states calculator limitations including IMSS official issuance, rounding and simplified factors', () => {
+    expect(CALCULATOR_LIMITATIONS.imssOfficial).toContain('El cálculo oficial debe ser emitido por el IMSS');
+    expect(CALCULATOR_LIMITATIONS.imssOfficial).toContain('redondeos y factores simplificados');
+    expect(CALCULATOR_LIMITATIONS.full).toContain('INFONAVIT');
+    expect(CALCULATOR_LIMITATIONS.full).toContain('autoridades del trabajo');
   });
 
   it('includes verified government sources with valid .gob.mx or official URLs', () => {

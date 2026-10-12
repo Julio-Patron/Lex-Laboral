@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, Globe, Mail, Scale, Shield, ShieldCheck } from 'lucide-react';
 import React from 'react';
+import { CALCULATOR_LIMITATIONS } from '../lib/legal-sources';
 import { AppView } from '../types';
 
 interface LegalViewProps {
@@ -49,6 +50,9 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
               </p>
               <p className="text-sm leading-6 text-amber-950">
                 <strong>NO CONSTITUYE ASESORÍA LEGAL PROFESIONAL NI RESOLUCIÓN OFICIAL.</strong> Los resultados y documentos generados son exclusivamente estimaciones matemáticas de carácter didáctico e informativo. Para trámites vinculantes o determinaciones oficiales, el usuario debe acudir a los organismos gubernamentales correspondientes. lexlaboral.com.mx no se responsabiliza por decisiones adoptadas a partir del uso de la aplicación.
+              </p>
+              <p className="text-sm leading-6 text-amber-950">
+                <strong>EL CÁLCULO OFICIAL DEBE SER EMITIDO POR LA AUTORIDAD COMPETENTE.</strong> {CALCULATOR_LIMITATIONS.imssOfficial} {CALCULATOR_LIMITATIONS.full}
               </p>
             </div>
 
