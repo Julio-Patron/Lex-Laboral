@@ -154,12 +154,13 @@ function App() {
         <>
           {/* Mobile Header */}
           <div className="z-40 flex shrink-0 items-center justify-center border-b border-white/5 bg-legal-950 px-4 py-3.5 text-white shadow-2xl md:hidden">
-            <div 
-              className="flex items-center cursor-pointer"
+            <button
+              type="button"
+              className="flex items-center"
               onClick={() => handleViewChange(AppView.HOME)}
             >
-               <img src="/assets/logo.webp" alt="Lex Laboral" className="h-8 w-auto object-contain" loading="lazy" />
-            </div>
+               <img src="/assets/logo.webp" alt="Lex Laboral" className="h-8 w-auto object-contain" />
+            </button>
           </div>
 
           {/* Sidebar Overlay for Mobile */}

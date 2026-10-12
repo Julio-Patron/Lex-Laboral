@@ -3,33 +3,14 @@
  * Search, retrieve and organize articles from Mexican labor laws
  */
 
-import { AlertCircle, Check, Copy, Scale, Search, TrendingUp, X } from 'lucide-react';
+import { AlertCircle, Check, Copy, ExternalLink, Scale, Search, TrendingUp, X } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { trackEvent } from '../lib/analytics';
+import type { SearchMode, SearchResponse, SearchResult } from '../lib/lexapi/types';
+import { LexApiCredit } from './LexApiCredit';
 import { WorkspaceEmpty, WorkspaceHeader, WorkspacePage, WorkspacePanel } from './ui/Workspace';
 
 type NormFilter = 'LFT' | 'IMSS' | 'INFONAVIT' | 'all';
-
-interface SearchResult {
-  score: number;
-  snippet: string;
-  metadata: {
-    norm: string;
-    title: string;
-    article: string;
-    book?: string;
-    num: number;
-  };
-}
-
-interface SearchResponse {
-  results: SearchResult[];
-  query?: string;
-  norm?: string;
-  count: number;
-  mode?: 'semantic' | 'local';
-  warning?: string;
-}
 
 const getNormLabel = (norm: string): string => {
   switch (norm) {
@@ -79,7 +60,7 @@ export const Consultas: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchMode, setSearchMode] = useState<'semantic' | 'local' | null>(null);
+  const [searchMode, setSearchMode] = useState<SearchMode | null>(null);
   const [copiedFoundation, setCopiedFoundation] = useState(false);
 
   /**
@@ -128,14 +109,13 @@ export const Consultas: React.FC = () => {
         }),
       });
 
+      const data: SearchResponse = await response.json().catch(() => ({} as SearchResponse));
       if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.message || `Search failed: ${response.status}`);
+        throw new Error(data.message || 'No se pudo realizar la búsqueda. Revisa que el servicio esté desplegado e intenta nuevamente.');
       }
 
-      const data: SearchResponse = await response.json();
       setResults(data.results || []);
-      setSearchMode(data.mode || 'semantic');
+      setSearchMode(data.mode || 'local');
       setResolvedQuery(data.query || searchQuery);
       setCopiedFoundation(false);
 
@@ -146,7 +126,7 @@ export const Consultas: React.FC = () => {
       });
     } catch (err) {
       console.error('Search error:', err);
-      setError('No se pudo realizar la búsqueda. Revisa que el servicio esté desplegado e intenta nuevamente.');
+      setError(err instanceof Error ? err.message : 'No se pudo realizar la búsqueda. Revisa que el servicio esté desplegado e intenta nuevamente.');
       setResults([]);
       setSearchMode(null);
       setResolvedQuery('');
@@ -161,6 +141,7 @@ export const Consultas: React.FC = () => {
     setSearched(false);
     setSearchMode(null);
     setResolvedQuery('');
+    setError(null);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -211,6 +192,7 @@ export const Consultas: React.FC = () => {
         description="Describe el caso y obtén artículos relevantes de la LFT, Seguro Social e INFONAVIT organizados como fundamento sugerido."
         icon={<Scale size={24} className="text-legal-gold" />}
       />
+      <LexApiCredit className="-mt-3 mb-6 md:-mt-5" />
 
       {/* Search Panel */}
       <WorkspacePanel className="mb-6 p-5 sm:p-6">
@@ -241,7 +223,7 @@ export const Consultas: React.FC = () => {
               )}
             </div>
             <p className="text-xs leading-5 text-slate-500">
-              Puedes escribir hechos breves, una pregunta completa o palabras clave. El sistema busca artículos y arma una base de fundamento.
+              Puedes escribir hechos breves, una pregunta completa o palabras clave. El fundamentador localiza artículos y arma una base normativa.
             </p>
           </div>
 
@@ -253,7 +235,12 @@ export const Consultas: React.FC = () => {
                 <button
                   key={norm}
                   type="button"
-                  onClick={() => setSelectedNorm(norm)}
+                  onClick={() => {
+                    setSelectedNorm(norm);
+                    if (searched && query.trim()) {
+                      performSearch(query, norm);
+                    }
+                  }}
                   className={`min-w-0 rounded-lg px-3 py-2 text-xs font-bold transition-all sm:px-4 ${
                     selectedNorm === norm
                       ? 'bg-slate-950 text-legal-gold shadow-md'
@@ -308,11 +295,17 @@ export const Consultas: React.FC = () => {
             </div>
             {searchMode && (
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${
-                searchMode === 'semantic'
+                searchMode === 'lexapi'
                   ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-slate-100 text-slate-700'
+                  : searchMode === 'semantic'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-slate-100 text-slate-700'
               }`}>
-                {searchMode === 'semantic' ? 'Semántico activo' : 'Índice jurídico activo'}
+                {searchMode === 'lexapi'
+                  ? 'Lex API MX'
+                  : searchMode === 'semantic'
+                    ? 'Índice semántico'
+                    : 'Índice local'}
               </span>
             )}
           </div>
@@ -335,7 +328,7 @@ export const Consultas: React.FC = () => {
                       Fundamento jurídico sugerido
                     </h3>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      Base generada con los artículos más cercanos a la consulta.
+                      Base generada con los artículos más cercanos a la consulta, con texto y vigencia de Lex API MX.
                     </p>
                   </div>
                 </div>
@@ -369,6 +362,22 @@ export const Consultas: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-sm leading-6 text-slate-700">{result.snippet}</p>
+                    {(result.sourceUrl || result.validFrom) && (
+                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        {result.sourceUrl && (
+                          <a
+                            href={result.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 font-semibold text-slate-700 underline hover:text-slate-950"
+                          >
+                            {result.sourceName || 'Fuente'}
+                            <ExternalLink size={11} aria-hidden="true" />
+                          </a>
+                        )}
+                        {result.validFrom && <span>Vigente desde {result.validFrom}</span>}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ol>
@@ -402,12 +411,14 @@ export const Consultas: React.FC = () => {
                       {result.metadata.title}
                     </p>
                   </div>
-                  <div className="shrink-0 text-left sm:text-right">
-                    <div className="font-sans text-2xl font-extrabold tabular-nums text-legal-gold">
-                      {result.score.toFixed(1)}%
+                  {searchMode !== 'lexapi' && (
+                    <div className="shrink-0 text-left sm:text-right">
+                      <div className="font-sans text-2xl font-extrabold tabular-nums text-legal-gold">
+                        {result.score.toFixed(1)}%
+                      </div>
+                      <span className="text-xs text-slate-500">similitud</span>
                     </div>
-                    <span className="text-xs text-slate-500">similitud</span>
-                  </div>
+                  )}
                 </div>
 
                 {/* Snippet */}
@@ -423,6 +434,22 @@ export const Consultas: React.FC = () => {
                   {result.metadata.book && (
                     <span>
                       <strong>Libro:</strong> {result.metadata.book}
+                    </span>
+                  )}
+                  {result.sourceUrl && (
+                    <a
+                      href={result.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-slate-600 underline hover:text-slate-900"
+                    >
+                      {result.sourceName || 'Fuente'}
+                      <ExternalLink size={11} aria-hidden="true" />
+                    </a>
+                  )}
+                  {result.validFrom && (
+                    <span>
+                      <strong>Vigencia:</strong> {result.validFrom}
                     </span>
                   )}
                 </div>

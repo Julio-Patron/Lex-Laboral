@@ -43,6 +43,7 @@ export const PensionCalculator: React.FC<{
   const [minWage, setMinWage] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.minWage);
   const [umaValue, setUmaValue] = useState<number>(MEXICO_LABOR_DEFAULTS_2026.uma);
   const [isEditing, setIsEditing] = useState(true);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   const [results, setResults] = useState<{
     monthlyPension: number;
@@ -93,10 +94,40 @@ export const PensionCalculator: React.FC<{
     setResults(exampleResult);
     setIsEditing(false);
     notify('Ejemplo calculado para pensiones', 'success');
-    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    setTimeout(() => {
+      if (typeof resultsRef.current?.scrollIntoView === 'function') {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const calculatePension = () => {
+    if (age < 60) {
+      setFieldError('La edad mínima es 60 años.');
+      notify('La edad mínima es 60 años.', 'warning');
+      return;
+    }
+    if (regime === '1973' && weeks < 500) {
+      setFieldError('Ley 73 requiere al menos 500 semanas reconocidas.');
+      notify('Ley 73 requiere al menos 500 semanas reconocidas.', 'warning');
+      return;
+    }
+    if (regime === '1997' && weeks < 875) {
+      setFieldError('Ley 97 requiere 875 semanas en 2026.');
+      notify('Ley 97 requiere 875 semanas en 2026.', 'warning');
+      return;
+    }
+    if (regime === '1973' && averageSalary <= 0) {
+      setFieldError('Captura el salario promedio de las últimas 250 semanas.');
+      notify('Captura el salario promedio de las últimas 250 semanas.', 'warning');
+      return;
+    }
+    if (regime === '1997' && aforeBalance <= 0) {
+      setFieldError('Captura el saldo acumulado en AFORE.');
+      notify('Captura el saldo acumulado en AFORE.', 'warning');
+      return;
+    }
+
     const input: PensionInput = {
       age,
       weeks,
@@ -108,17 +139,14 @@ export const PensionCalculator: React.FC<{
       umaValue
     };
 
-    let result = null;
-    if (regime === '1973') {
-      result = calculatePension73(input);
-    } else {
-      result = calculatePension97(input);
-    }
+    const result = regime === '1973' ? calculatePension73(input) : calculatePension97(input);
 
     if (!result) {
-      notify("Revisa los parámetros de entrada; faltan datos para realizar el cálculo.", "warning");
+      setFieldError('Revisa edad, semanas y el dato de salario o AFORE del régimen elegido.');
+      notify('Revisa los parámetros de entrada; faltan datos para realizar el cálculo.', 'warning');
       return;
     }
+    setFieldError(null);
 
 
     setResults(result);
@@ -236,8 +264,8 @@ export const PensionCalculator: React.FC<{
     <WorkspacePage>
       <WorkspaceHeader
         eyebrow="Calculadora informativa"
-        title="Estimaciones IMSS"
-        description="Calcula el estimado orientativo de tu pensión mensual bajo el régimen de 1973 o 1997. Herramienta independiente no oficial."
+        title="Calculadora de pensiones"
+        description="Estima la pensión mensual bajo el régimen de 1973 o 1997. Herramienta independiente no oficial."
         icon={<Building size={28} />}
         actions={
           <div className="w-full space-y-2 sm:min-w-[16rem] lg:w-auto">
@@ -370,7 +398,10 @@ export const PensionCalculator: React.FC<{
                 )}
               </AnimatePresence>
 
-              <button onClick={calculatePension} className="ui-primary-action group">
+              {fieldError && (
+                <p className="text-xs font-semibold text-amber-800" role="alert">{fieldError}</p>
+              )}
+              <button type="button" onClick={calculatePension} className="ui-primary-action group">
                 <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                 <span className="tracking-wide">Calcular estimación</span>

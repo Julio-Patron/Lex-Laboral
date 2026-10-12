@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, Home, ShieldCheck } from 'lucide-react';
+import { BookOpen, Calculator, Home, Scale, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { AppView } from '../types';
 
@@ -16,6 +16,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentView, o
     { id: AppView.HOME, label: 'Inicio', icon: <Home size={20} /> },
     { id: AppView.CALCULATOR, label: 'Liquidación', icon: <Calculator size={20} /> },
     { id: AppView.SOCIAL_SECURITY, label: 'IMSS', icon: <ShieldCheck size={20} /> },
+    { id: AppView.PENSION_CALCULATOR, label: 'Pensión', icon: <Scale size={20} /> },
     { id: AppView.CONSULTAS, label: 'Fundamento', icon: <BookOpen size={20} /> },
   ];
 
@@ -26,7 +27,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentView, o
         return (
           <button
             key={item.id}
+            type="button"
             onClick={() => onChangeView(item.id)}
+            aria-current={isActive ? 'page' : undefined}
             className={`flex flex-col items-center justify-center w-full py-1 gap-1 transition-colors ${
               isActive ? 'text-amber-400' : 'text-slate-400 hover:text-slate-200'
             }`}

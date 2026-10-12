@@ -57,6 +57,16 @@ const calculateMonthlyISR = (amount: number): number => {
   return bracket.fixed + ((amount - bracket.lower) * bracket.percent);
 };
 
+export function statutoryVacationDays(completedYears: number): number {
+  const years = Math.max(1, Math.floor(completedYears) || 1);
+  if (years <= 1) return 12;
+  if (years === 2) return 14;
+  if (years === 3) return 16;
+  if (years === 4) return 18;
+  if (years === 5) return 20;
+  return 20 + Math.floor((years - 5) / 5) * 2;
+}
+
 export const calculateSDI = (baseSalary: number, salaryPeriod: 'daily' | 'weekly' | 'biweekly' | 'monthly', aguinaldoDays: number, vacationDays: number, vacationPremium: number): number => {
   if (baseSalary <= 0) return 0;
   
@@ -91,8 +101,14 @@ export const calculateLaborSettlement = (input: LaborSettlementInput): LaborSett
   
   const totalYears = yearsOfService + (daysOfService / 365.25);
   const hourlyRate = dailySalary / hoursPerDay;
-  
-  const proportionOfYear = daysOfService / 365.25;
+
+  // Años cumplidos (0 días restantes) cierran el último año: aguinaldo y vacaciones completos.
+  const proportionOfYear =
+    yearsOfService <= 0 && daysOfService <= 0
+      ? 0
+      : daysOfService <= 0
+        ? 1
+        : Math.min(1, daysOfService / 365.25);
   const aguinaldo = (dailySalary * aguinaldoDays) * proportionOfYear;
   const vacations = (dailySalary * vacationDays) * proportionOfYear;
   const vPremium = vacations * (vacationPremium / 100);

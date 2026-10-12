@@ -53,10 +53,10 @@ const tools = [
   {
     view: AppView.CONSULTAS,
     title: 'Fundamentador Jurídico',
-    subtitle: 'LFT, IMSS e INFONAVIT',
-    summary: 'Localiza artículos y arma un fundamento jurídico sugerido para el caso planteado.',
+    subtitle: 'Lex API MX',
+    summary: 'Localiza artículos vigentes de la LFT, IMSS e INFONAVIT vía Lex API MX y arma un fundamento sugerido.',
     action: 'Fundamentar Caso',
-    badge: 'RAG Jurídico',
+    badge: 'Lex API MX',
     icon: <BookOpen size={20} className="text-purple-400" />,
   },
 ];
@@ -180,7 +180,9 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                       {tool.badge}
                     </span>
                   </div>
-                  
+                  {tool.subtitle ? (
+                    <p className="text-[11px] font-medium text-slate-500">{tool.subtitle}</p>
+                  ) : null}
                   <p className="text-[13px] sm:text-xs leading-snug sm:leading-relaxed text-slate-400 sm:mt-2">
                     {tool.summary}
                   </p>
@@ -320,6 +322,15 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               className="text-amber-400 font-semibold hover:text-amber-300 transition-colors flex items-center gap-1"
             >
               <span>Fuentes oficiales</span>
+            </a>
+            <a
+              href="https://lexapi.mx"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors flex items-center gap-1"
+            >
+              <span>Lex API MX</span>
+              <ExternalLink size={11} />
             </a>
           </div>
         </div>

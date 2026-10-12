@@ -1,13 +1,19 @@
 /**
- * API endpoint for semantic legal search
  * POST /api/search
  *
- * Queries a committed LanceDB dataset (data/lance/kb.lance) using
- * Gemini embeddings and cosine similarity via LanceDB vectorSearch
+ * Prefer Lex API MX (server key). Fall back to LanceDB/Gemini, then the
+ * committed local JSON index.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { clientIp, handlePreflight, sanitizeInput, setCorsHeaders, setSecurityHeaders } from './_utils/security';
+import { adaptArticle } from '../lib/lexapi/adapt';
+import { cacheGet, cacheKey, cacheSet } from '../lib/lexapi/cache';
+import { LexApiHttpError, searchArticles } from '../lib/lexapi/client';
+import { isLaborSlug, uiNormToSlug } from '../lib/lexapi/norms';
+import { allowRequest } from '../lib/lexapi/rate-limit';
+import type { SearchResponse, SearchResult } from '../lib/lexapi/types';
 
 interface LanceRow {
   id: string;
@@ -22,28 +28,6 @@ interface LanceRow {
   vector: number[];
 }
 
-interface SearchResult {
-  score: number;
-  snippet: string;
-  metadata: {
-    norm: string;
-    title: string;
-    article: string;
-    book?: string;
-    num: number;
-  };
-}
-
-interface SearchResponse {
-  results: SearchResult[];
-  query?: string;
-  norm?: string;
-  count: number;
-  mode?: 'semantic' | 'local';
-  warning?: string;
-  message?: string;
-}
-
 const EMBEDDING_MODEL = 'text-embedding-004';
 const LANCE_DIR = path.join(process.cwd(), 'data', 'lance');
 const LANCE_TABLE = 'kb';
@@ -53,37 +37,6 @@ const LOCAL_INDEX_CANDIDATES = [
   path.resolve(process.cwd(), '..', 'data', 'search-index.json'),
   path.resolve(process.cwd(), 'api', '..', 'data', 'search-index.json'),
 ];
-
-function handlePreflight(req: any, res: any): boolean {
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return true;
-  }
-  return false;
-}
-
-function setCorsHeaders(req: any, res: any): void {
-  const origin = req.headers?.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-}
-
-function setSecurityHeaders(res: any): void {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-}
-
-function sanitizeInput(input: string | undefined, maxLength: number = 500): string {
-  if (!input || typeof input !== 'string') {
-    return '';
-  }
-
-  return input.trim().substring(0, maxLength).replace(/[<>"']/g, '');
-}
 
 interface SearchIndexRow {
   id: string;
@@ -391,22 +344,81 @@ function searchLocal(query: string, norm?: string): SearchResult[] {
   }));
 }
 
-export default async function handler(
-  req: any,
-  res: any
+function getLexApiKey(): string | null {
+  const key = process.env.LEX_API_MX_KEY?.trim();
+  return key || null;
+}
+
+function getLexApiBaseUrl(): string {
+  return (process.env.LEX_API_MX_BASE_URL?.trim() || 'https://api.lexapi.mx').replace(/\/$/, '');
+}
+
+function json(res: any, status: number, payload: SearchResponse) {
+  return res.status(status).json(payload);
+}
+
+function respondLocal(
+  res: any,
+  query: string,
+  norm: string | undefined,
+  warning: string
 ) {
-  // Set security headers
+  try {
+    const localResults = searchLocal(query, norm);
+    return json(res, 200, {
+      results: localResults,
+      query,
+      norm: norm || 'all',
+      count: localResults.length,
+      mode: 'local',
+      warning,
+    });
+  } catch (localError) {
+    console.error('Local search error:', localError);
+    return json(res, 503, {
+      results: [],
+      count: 0,
+      query,
+      norm: norm || 'all',
+      message: 'El índice de búsqueda no está disponible en este despliegue.',
+    });
+  }
+}
+
+async function respondSemanticOrLocal(
+  res: any,
+  query: string,
+  norm: string | undefined,
+  warning: string
+) {
+  if (getGeminiApiKey() && fs.existsSync(LANCE_DIR)) {
+    try {
+      const semanticResults = await searchSemantic(query, norm);
+      return json(res, 200, {
+        results: semanticResults,
+        query,
+        norm: norm || 'all',
+        count: semanticResults.length,
+        mode: 'semantic',
+      });
+    } catch (semanticError) {
+      console.error('Semantic search unavailable, falling back to local index:', semanticError);
+    }
+  }
+
+  return respondLocal(res, query, norm, warning);
+}
+
+export default async function handler(req: any, res: any) {
   setSecurityHeaders(res);
   setCorsHeaders(req, res);
 
-  // Handle preflight
   if (handlePreflight(req, res)) {
     return;
   }
 
-  // Only accept POST
   if (req.method !== 'POST') {
-    return res.status(405).json({
+    return json(res, 405, {
       results: [],
       count: 0,
       query: undefined,
@@ -414,17 +426,23 @@ export default async function handler(
     });
   }
 
+  const limit = allowRequest(clientIp(req));
+  if (limit.ok === false) {
+    res.setHeader('Retry-After', String(limit.retryAfterSec));
+    return json(res, 429, {
+      results: [],
+      count: 0,
+      message: 'Has hecho demasiadas consultas. Espera un momento e intenta de nuevo.',
+    });
+  }
+
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const { query, norm } = body as {
-      query?: string;
-      norm?: string;
-    };
-
-    // Validate query
+    const { query, norm } = body as { query?: string; norm?: string };
     const sanitizedQuery = sanitizeInput(query, 500);
+
     if (!sanitizedQuery) {
-      return res.status(400).json({
+      return json(res, 400, {
         results: [],
         count: 0,
         query: '',
@@ -433,50 +451,100 @@ export default async function handler(
       });
     }
 
-    if (getGeminiApiKey() && fs.existsSync(LANCE_DIR)) {
-      try {
-        const semanticResults = await searchSemantic(sanitizedQuery, norm);
-        return res.status(200).json({
-          results: semanticResults,
+    const lexKey = getLexApiKey();
+    if (lexKey) {
+      const key = cacheKey(sanitizedQuery, norm || 'all');
+      const cached = cacheGet(key);
+      if (cached) {
+        return json(res, 200, {
+          results: cached,
           query: sanitizedQuery,
           norm: norm || 'all',
-          count: semanticResults.length,
-          mode: 'semantic',
-        } satisfies SearchResponse);
-      } catch (semanticError) {
-        console.error('Semantic search unavailable, falling back to local index:', semanticError);
+          count: cached.length,
+          mode: 'lexapi',
+        });
+      }
+
+      try {
+        const slug = uiNormToSlug(norm);
+        const remote = await searchArticles({
+          query: sanitizedQuery,
+          norma: slug,
+          apiKey: lexKey,
+          baseUrl: getLexApiBaseUrl(),
+        });
+
+        if (remote.requestId) {
+          console.info('Lex API MX search', { requestId: remote.requestId });
+        }
+
+        const filtered = remote.articles.filter((article) =>
+          slug ? article.norma_slug === slug : isLaborSlug(article.norma_slug)
+        );
+        const results = filtered.map((article, index) => adaptArticle(article, index));
+        cacheSet(key, results);
+
+        return json(res, 200, {
+          results,
+          query: sanitizedQuery,
+          norm: norm || 'all',
+          count: results.length,
+          mode: 'lexapi',
+        });
+      } catch (lexError) {
+        const status = lexError instanceof LexApiHttpError ? lexError.status : 0;
+        const aborted = lexError instanceof Error && lexError.name === 'AbortError';
+
+        if (status === 401 || status === 403) {
+          console.error('Lex API MX auth error', { requestId: (lexError as LexApiHttpError).requestId });
+          return json(res, 503, {
+            results: [],
+            count: 0,
+            query: sanitizedQuery,
+            norm: norm || 'all',
+            message: 'El servicio de consulta normativa no está disponible. Intenta más tarde.',
+          });
+        }
+
+        if (status === 429) {
+          res.setHeader('Retry-After', '60');
+          return json(res, 429, {
+            results: [],
+            count: 0,
+            query: sanitizedQuery,
+            norm: norm || 'all',
+            message: 'Has hecho demasiadas consultas. Espera un momento e intenta de nuevo.',
+          });
+        }
+
+        if (status === 402) {
+          return respondSemanticOrLocal(res, sanitizedQuery, norm, 'credits_exhausted');
+        }
+
+        if (aborted) {
+          return respondSemanticOrLocal(res, sanitizedQuery, norm, 'lexapi_timeout');
+        }
+
+        console.error('Lex API MX search unavailable', {
+          requestId: lexError instanceof LexApiHttpError ? lexError.requestId : undefined,
+        });
+        return respondSemanticOrLocal(res, sanitizedQuery, norm, 'lexapi_unavailable');
       }
     }
 
-    try {
-      const localResults = searchLocal(sanitizedQuery, norm);
-      const warning = !getGeminiApiKey()
+    return respondSemanticOrLocal(
+      res,
+      sanitizedQuery,
+      norm,
+      !getGeminiApiKey()
         ? 'embedding_key_missing'
         : fs.existsSync(LANCE_DIR)
           ? 'semantic_unavailable'
-          : 'semantic_index_missing';
-
-      return res.status(200).json({
-        results: localResults,
-        query: sanitizedQuery,
-        norm: norm || 'all',
-        count: localResults.length,
-        mode: 'local',
-        warning,
-      } satisfies SearchResponse);
-    } catch (localError) {
-      console.error('Local search error:', localError);
-      return res.status(503).json({
-        results: [],
-        count: 0,
-        query: sanitizedQuery,
-        norm: norm || 'all',
-        message: 'El índice de búsqueda no está disponible en este despliegue.',
-      } satisfies SearchResponse);
-    }
+          : 'semantic_index_missing'
+    );
   } catch (error) {
     console.error('Search error:', error);
-    return res.status(500).json({
+    return json(res, 500, {
       results: [],
       count: 0,
       message: 'No se pudo procesar la búsqueda.',

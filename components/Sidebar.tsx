@@ -138,6 +138,16 @@ export const Sidebar = React.memo<SidebarProps>(({ currentView, onChangeView, is
               <span className={isCollapsed ? 'md:sr-only' : ''}>Fuentes</span>
             </button>
         </div>
+        {!isCollapsed && (
+          <a
+            href="https://lexapi.mx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 block px-1 text-[11px] font-semibold text-slate-500 transition-colors hover:text-amber-400"
+          >
+            Corpus: Lex API MX
+          </a>
+        )}
       </div>
     </aside>
   );

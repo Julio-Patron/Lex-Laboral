@@ -10,13 +10,15 @@ interface DocumentExportModalProps {
   onClose: () => void;
   onExport: (template: TemplateType, format: ExportFormat, data: { employeeName: string; employerName: string }) => Promise<void>;
   isExporting: boolean;
+  allowResignationLetter?: boolean;
 }
 
 export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
   isOpen,
   onClose,
   onExport,
-  isExporting
+  isExporting,
+  allowResignationLetter = false,
 }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>('A');
   const [employeeName, setEmployeeName] = useState('');
@@ -43,29 +45,44 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
     }
   ];
 
+  const visibleTemplates = templates.filter((tpl) => tpl.id !== 'C' || allowResignationLetter);
+  const activeTemplate = visibleTemplates.some((tpl) => tpl.id === selectedTemplate)
+    ? selectedTemplate
+    : 'A';
+
   const handleExport = (format: ExportFormat) => {
-    onExport(selectedTemplate, format, { employeeName, employerName });
+    onExport(activeTemplate, format, { employeeName, employerName });
   };
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+      <div
+        className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/60 p-4 pb-24 backdrop-blur-sm md:pb-4"
+        role="presentation"
+        onClick={onClose}
+      >
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-modal-title"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="relative w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          onClick={(event) => event.stopPropagation()}
         >
           {/* Header Sticky */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900">Descargar Documento Oficial</h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1">Generador dual: PDF y Word (.docx)</p>
+              <h3 id="export-modal-title" className="text-base sm:text-lg font-bold text-slate-900">Descargar estimación</h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-1">PDF o Word de trabajo. No sustituye un documento oficial.</p>
             </div>
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Cerrar"
               className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             >
               <X size={20} />
@@ -76,23 +93,23 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
           <div className="p-5 sm:p-6 overflow-y-auto">
             <h4 className="mb-4 text-[11px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">1. Selecciona la Plantilla</h4>
             <div className="grid gap-3 sm:grid-cols-1">
-              {templates.map((tpl) => (
+              {visibleTemplates.map((tpl) => (
                 <button
                   key={tpl.id}
                   onClick={() => setSelectedTemplate(tpl.id)}
                   className={`flex items-start gap-3 sm:gap-4 rounded-xl border p-4 text-left transition-all ${
-                    selectedTemplate === tpl.id
+                    activeTemplate === tpl.id
                       ? 'border-legal-gold bg-amber-50 ring-1 ring-legal-gold/20'
                       : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-slate-50'
                   }`}
                 >
                   <div className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
-                    selectedTemplate === tpl.id ? 'bg-legal-gold text-white' : 'bg-slate-100 text-slate-400'
+                    activeTemplate === tpl.id ? 'bg-legal-gold text-white' : 'bg-slate-100 text-slate-400'
                   }`}>
-                    {selectedTemplate === tpl.id ? <CheckCircle2 size={16} /> : <FileText size={16} />}
+                    {activeTemplate === tpl.id ? <CheckCircle2 size={16} /> : <FileText size={16} />}
                   </div>
                   <div>
-                    <h5 className={`text-[13px] sm:text-sm font-bold leading-snug ${selectedTemplate === tpl.id ? 'text-slate-900' : 'text-slate-700'}`}>
+                    <h5 className={`text-[13px] sm:text-sm font-bold leading-snug ${activeTemplate === tpl.id ? 'text-slate-900' : 'text-slate-700'}`}>
                       Plantilla {tpl.id}: {tpl.title}
                     </h5>
                     <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-slate-500">{tpl.description}</p>
@@ -102,7 +119,7 @@ export const DocumentExportModal: React.FC<DocumentExportModalProps> = ({
             </div>
 
             <AnimatePresence mode="popLayout">
-              {templates.find(t => t.id === selectedTemplate)?.requiresExtraData && (
+              {visibleTemplates.find(t => t.id === activeTemplate)?.requiresExtraData && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}

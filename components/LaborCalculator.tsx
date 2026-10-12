@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import LZString from 'lz-string';
 import React, { useState } from 'react';
-import { calculateLaborSettlement, calculateSDI, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
+import { calculateLaborSettlement, calculateSDI, statutoryVacationDays, type DismissalType, type LaborSettlementInput } from '../lib/calculators/labor';
 import { generatePDFDoc, generateWordDoc } from '../lib/calculators/labor-docs';
 import { MEXICO_LABOR_DEFAULTS_2026 } from '../lib/legal-constants';
 import { NotificationType } from '../types';
@@ -35,21 +35,20 @@ export const LaborCalculator: React.FC<{
 }> = ({ notify, onOpenImss }) => {
 
   const resultsRef = React.useRef<HTMLDivElement>(null);
-  const dismissalOptions: Array<{ value: DismissalType; label: string }> = [
-    { value: 'injustificado', label: 'Despido' },
-    { value: 'renuncia', label: 'Renuncia' },
-    { value: 'rescision_patron', label: 'Rescisión' },
+  const dismissalOptions: Array<{ value: DismissalType; label: string; hint: string }> = [
+    { value: 'injustificado', label: 'Despido injustificado', hint: 'Arts. 48 y 50 LFT' },
+    { value: 'renuncia', label: 'Renuncia voluntaria', hint: 'Sin indemnización constitucional' },
+    { value: 'rescision_patron', label: 'Rescisión del patrón', hint: 'Art. 47 LFT' },
+    { value: 'rescision_trabajador', label: 'Rescisión del trabajador', hint: 'Art. 51 LFT' },
   ];
   const dismissalLabels: Record<DismissalType, string> = {
     injustificado: 'Despido injustificado',
-    renuncia: 'Renuncia',
-    rescision_patron: 'Rescisión por causa imputable al trabajador',
-    rescision_trabajador: 'Rescisión por causa imputable al patrón',
+    renuncia: 'Renuncia voluntaria',
+    rescision_patron: 'Rescisión imputable al trabajador (Art. 47)',
+    rescision_trabajador: 'Rescisión imputable al patrón (Art. 51)',
   };
-  const [dailySalary, setDailySalary] = useState<number>(0);
   const [baseSalary, setBaseSalary] = useState<number>(0);
   const [salaryPeriod, setSalaryPeriod] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('monthly');
-  const [isSdiCalculated, setIsSdiCalculated] = useState(false);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [yearsOfService, setYearsOfService] = useState<number>(0);
@@ -113,26 +112,44 @@ export const LaborCalculator: React.FC<{
           
           setIsSharedScenario(true);
           notify("Escenario cargado exitosamente", "success");
-          
-          // Tracking PLG: Apertura de link compartido
-          trackEvent('open_shared_link', {
-            source: 'whatsapp_or_direct'
-          });
-          
-          // Auto calcular si ya traemos datos completos
-          setTimeout(() => {
-            const computeBtn = document.getElementById("computeLaborBtn");
-            if (computeBtn) computeBtn.click();
-          }, 300);
+          trackEvent('open_shared_link', { source: 'whatsapp_or_direct' });
+
+          const sdi = calculateSDI(
+            Number(stateObj.baseSalary) || 0,
+            stateObj.salaryPeriod || 'monthly',
+            Number(stateObj.aguinaldoDays) || 15,
+            Number(stateObj.vacationDays) || 12,
+            Number(stateObj.vacationPremium) || 25
+          );
+          if (sdi > 0 && (Number(stateObj.yearsOfService) > 0 || Number(stateObj.daysOfService) > 0)) {
+            const result = calculateLaborSettlement({
+              dailySalary: sdi,
+              yearsOfService: Number(stateObj.yearsOfService) || 0,
+              daysOfService: Number(stateObj.daysOfService) || 0,
+              vacationDays: Number(stateObj.vacationDays) || statutoryVacationDays(Number(stateObj.yearsOfService) || 1),
+              vacationPremium: Number(stateObj.vacationPremium) || 25,
+              aguinaldoDays: Number(stateObj.aguinaldoDays) || 15,
+              doubleOvertimeHours: 0,
+              tripleOvertimeHours: 0,
+              hoursPerDay: 8,
+              dismissalType: stateObj.dismissalType || 'injustificado',
+              minWage: MEXICO_LABOR_DEFAULTS_2026.minWage,
+              umaValue: MEXICO_LABOR_DEFAULTS_2026.uma,
+            });
+            setResults(result);
+            setIsEditing(false);
+          }
+        } else if (hash || params.get('scenario')) {
+          notify('No se pudo abrir el escenario. Captura los datos otra vez.', 'error');
         }
 
-        // Clean URL after loading to avoid confusion
         if (hash || params.get('scenario')) {
           const newUrl = window.location.pathname;
           window.history.replaceState({}, document.title, newUrl);
         }
       } catch (e) {
         console.error("Error loading scenario", e);
+        notify('No se pudo abrir el escenario. Captura los datos otra vez.', 'error');
       }
     };
 
@@ -141,10 +158,15 @@ export const LaborCalculator: React.FC<{
 
 
 
-  const calculate = async () => {
+  const dailySalary = React.useMemo(
+    () => calculateSDI(baseSalary, salaryPeriod, aguinaldoDays, vacationDays, vacationPremium),
+    [baseSalary, salaryPeriod, aguinaldoDays, vacationDays, vacationPremium]
+  );
+
+  const applySettlement = (type: DismissalType) => {
     if (dailySalary <= 0 || (yearsOfService <= 0 && daysOfService <= 0)) {
       setShowErrors(true);
-      notify("Complete los campos obligatorios para generar el cálculo", "warning");
+      notify('Complete los campos obligatorios para generar el cálculo', 'warning');
       return;
     }
     setShowErrors(false);
@@ -159,22 +181,22 @@ export const LaborCalculator: React.FC<{
       doubleOvertimeHours,
       tripleOvertimeHours,
       hoursPerDay,
-      dismissalType,
+      dismissalType: type,
       minWage,
-      umaValue
+      umaValue,
     };
 
     const result = calculateLaborSettlement(input);
     setExpandedBreakdown(null);
     setResults(result);
     setIsEditing(false);
-    
+
     trackEvent('calculator_used', {
-      dismissal_type: dismissalType,
+      dismissal_type: type,
       years_of_service: yearsOfService,
     });
 
-    notify("Cálculo generado exitosamente", "success");
+    notify('Cálculo generado exitosamente', 'success');
     setTimeout(() => {
       if (typeof resultsRef.current?.scrollIntoView === 'function') {
         resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -182,20 +204,32 @@ export const LaborCalculator: React.FC<{
     }, 100);
   };
 
-  React.useEffect(() => {
-    if (baseSalary > 0) {
-      let daily = 0;
-      if (salaryPeriod === 'daily') daily = baseSalary;
-      else if (salaryPeriod === 'weekly') daily = baseSalary / 7;
-      else if (salaryPeriod === 'biweekly') daily = baseSalary / 15;
-      else if (salaryPeriod === 'monthly') daily = baseSalary / 30;
+  const calculate = () => applySettlement(dismissalType);
 
-      const factor = 1 + (aguinaldoDays / 365.25) + (vacationDays * (vacationPremium / 100) / 365.25);
-      const sdi = daily * factor;
-      setDailySalary(Math.round(sdi * 100) / 100);
-      setIsSdiCalculated(true);
+  const handleDismissalChange = (type: DismissalType) => {
+    setDismissalType(type);
+    if (results) {
+      const next = calculateLaborSettlement({
+        dailySalary,
+        yearsOfService,
+        daysOfService,
+        vacationDays,
+        vacationPremium,
+        aguinaldoDays,
+        doubleOvertimeHours,
+        tripleOvertimeHours,
+        hoursPerDay,
+        dismissalType: type,
+        minWage,
+        umaValue,
+      });
+      setResults(next);
     }
-  }, [baseSalary, salaryPeriod, aguinaldoDays, vacationDays, vacationPremium]);
+  };
+
+  React.useEffect(() => {
+    setVacationDays(statutoryVacationDays(yearsOfService));
+  }, [yearsOfService]);
 
   React.useEffect(() => {
     if (startDate && endDate) {
@@ -243,12 +277,13 @@ export const LaborCalculator: React.FC<{
   } | null>(null);
 
   const loadExampleCase = () => {
-    const exampleDailySalary = calculateSDI(30000, 'monthly', 15, 12, 25);
+    const vacation = statutoryVacationDays(3);
+    const exampleDailySalary = calculateSDI(30000, 'monthly', 15, vacation, 25);
     const exampleResult = calculateLaborSettlement({
       dailySalary: exampleDailySalary,
       yearsOfService: 3,
       daysOfService: 180,
-      vacationDays: 12,
+      vacationDays: vacation,
       vacationPremium: 25,
       aguinaldoDays: 15,
       doubleOvertimeHours: 0,
@@ -261,13 +296,11 @@ export const LaborCalculator: React.FC<{
 
     setSalaryPeriod('monthly');
     setBaseSalary(30000);
-    setDailySalary(exampleDailySalary);
-    setIsSdiCalculated(true);
     setStartDate('');
     setEndDate('');
     setYearsOfService(3);
     setDaysOfService(180);
-    setVacationDays(12);
+    setVacationDays(vacation);
     setVacationPremium(25);
     setAguinaldoDays(15);
     setDoubleOvertimeHours(0);
@@ -281,7 +314,11 @@ export const LaborCalculator: React.FC<{
     setResults(exampleResult);
     setIsEditing(false);
     notify('Ejemplo calculado para liquidación', 'success');
-    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    setTimeout(() => {
+      if (typeof resultsRef.current?.scrollIntoView === 'function') {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
 
@@ -399,17 +436,24 @@ export const LaborCalculator: React.FC<{
         actions={
           <div className="w-full space-y-2 sm:min-w-[21rem] lg:w-auto">
             <p className="px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Tipo de separación</p>
-            <div className="ui-segmented grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {dismissalOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setDismissalType(option.value)}
+                  onClick={() => handleDismissalChange(option.value)}
                   title={dismissalLabels[option.value]}
                   aria-pressed={dismissalType === option.value}
-                  className={`ui-segmented-option ${dismissalType === option.value ? 'ui-segmented-option-active' : ''}`}
+                  className={`rounded-lg border px-3 py-2 text-left transition-colors ${
+                    dismissalType === option.value
+                      ? 'border-slate-900 bg-slate-950 text-legal-gold'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  }`}
                 >
-                  {option.label}
+                  <span className="block text-xs font-bold leading-4">{option.label}</span>
+                  <span className={`mt-0.5 block text-[10px] font-medium ${dismissalType === option.value ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {option.hint}
+                  </span>
                 </button>
               ))}
             </div>
@@ -432,6 +476,13 @@ export const LaborCalculator: React.FC<{
                   className="space-y-5 overflow-hidden"
                 >
                   <WorkspacePanel className="space-y-5 p-5 sm:p-6">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  calculate();
+                }}
+                className="space-y-5"
+              >
               <div className="flex flex-wrap items-start justify-between gap-3 text-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="ui-icon-chip"><User size={18} className="text-legal-gold" /></div>
@@ -457,12 +508,12 @@ export const LaborCalculator: React.FC<{
                           <button
                             key={p}
                             type="button"
-                            aria-label={`Periodo ${p}`}
+                            aria-label={p === 'daily' ? 'Periodo diario' : p === 'weekly' ? 'Periodo semanal' : p === 'biweekly' ? 'Periodo quincenal' : 'Periodo mensual'}
                             aria-pressed={salaryPeriod === p}
                             onClick={() => setSalaryPeriod(p)}
                             className={`rounded-md px-2 py-1.5 text-[11px] font-extrabold transition-all ${salaryPeriod === p ? 'bg-slate-950 text-legal-gold shadow-sm' : 'text-slate-500 hover:bg-white hover:text-slate-800'}`}
                           >
-                            {p === 'daily' ? 'Día' : p === 'weekly' ? 'Sem' : p === 'biweekly' ? 'Quin' : 'Mes'}
+                            {p === 'daily' ? 'Día' : p === 'weekly' ? 'Semana' : p === 'biweekly' ? 'Quincena' : 'Mes'}
                           </button>
                         ))}
                       </div>
@@ -472,7 +523,7 @@ export const LaborCalculator: React.FC<{
                       <input id="laborBaseSalary" type="number" value={baseSalary || ''} onChange={(e) => setBaseSalary(Number(e.target.value))} className="ui-input-lg w-full pl-10 pr-4" placeholder="0.00" />
                    </div>
                    
-                   {isSdiCalculated && baseSalary > 0 && (
+                   {dailySalary > 0 && (
                       <div className="flex items-center justify-between px-2 pt-1">
                         <span className="text-xs font-semibold text-slate-500">SDI integrado</span>
                         <span className="text-xs font-extrabold text-emerald-700">${dailySalary.toFixed(2)}</span>
@@ -505,7 +556,7 @@ export const LaborCalculator: React.FC<{
                   <div className="flex items-start gap-3">
                     <Briefcase size={16} className="mt-0.5 shrink-0 text-slate-400" />
                     <div className="min-w-0">
-                      <h4 className="text-sm font-bold text-slate-900">Paso 2: Antigüedad</h4>
+                      <h4 className="text-sm font-bold text-slate-900">Antigüedad</h4>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -561,6 +612,18 @@ export const LaborCalculator: React.FC<{
                         <input id="laborVacationDays" type="number" value={vacationDays} onChange={(e) => setVacationDays(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
                       <div className="space-y-2">
+                        <label htmlFor="laborVacationPremium" className="ui-label">Prima vacacional %</label>
+                        <input id="laborVacationPremium" type="number" value={vacationPremium} onChange={(e) => setVacationPremium(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="laborDoubleOvertime" className="ui-label">Horas extra dobles</label>
+                        <input id="laborDoubleOvertime" type="number" value={doubleOvertimeHours || ''} onChange={(e) => setDoubleOvertimeHours(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="laborTripleOvertime" className="ui-label">Horas extra triples</label>
+                        <input id="laborTripleOvertime" type="number" value={tripleOvertimeHours || ''} onChange={(e) => setTripleOvertimeHours(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
+                      </div>
+                      <div className="space-y-2">
                         <label htmlFor="laborMinWage" className="ui-label">Salario mínimo vigente</label>
                         <input id="laborMinWage" type="number" value={minWage} onChange={(e) => setMinWage(Number(e.target.value))} className="ui-input px-4 py-3 text-xs" />
                       </div>
@@ -572,12 +635,13 @@ export const LaborCalculator: React.FC<{
                   )}
                 </AnimatePresence>
                 
-                <button id="computeLaborBtn" onClick={() => calculate()} className="ui-primary-action group w-full justify-center mt-4">
+                <button id="computeLaborBtn" type="submit" className="ui-primary-action group w-full justify-center mt-4">
                   <div className="absolute inset-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
                   <span className="tracking-wide">Calcular pago estimado</span>
                 </button>
               </div>
+              </form>
             </WorkspacePanel>
                 </motion.div>
               ) : (
@@ -660,13 +724,21 @@ export const LaborCalculator: React.FC<{
                     <div className="flex flex-col">
                       <div className="space-y-4 overflow-visible p-5 sm:p-6">
                         <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Desglose</h4>
+                        <p className="mb-4 text-xs leading-5 text-slate-500">
+                          Finiquito ${results.finiquito.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          {' + '}liquidación ${results.liquidacion.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          {' − '}ISR ${results.isr.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          {' = '}total ${results.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                        </p>
                         {[
                           { key: 'aguinaldo', label: 'Aguinaldo', val: results.aguinaldo, f: results.formulas.aguinaldo, art: 'Art. 87 LFT' },
                           { key: 'vacations', label: 'Vacaciones', val: results.vacations, f: results.formulas.vacations, art: 'Art. 76 LFT' },
+                          { key: 'vacationPremium', label: 'Prima vacacional', val: results.vacationPremium, f: results.formulas.vacationPremium, art: 'Art. 80 LFT' },
+                          { key: 'overtime', label: 'Horas extra', val: results.overtime, f: results.formulas.overtime, art: 'Art. 67 LFT' },
                           { key: 'indemnity90', label: 'Indemnización 90 días', val: results.indemnity90, f: results.formulas.indemnity90, art: 'Art. 48 LFT' },
                           { key: 'indemnity20', label: 'Indemnización 20 días/año', val: results.indemnity20, f: results.formulas.indemnity20, art: 'Art. 50 LFT' },
-                          { key: 'seniorityPremium', label: 'Prima de Antigüedad', val: results.seniorityPremium, f: results.formulas.seniorityPremium, art: 'Art. 162 LFT' },
-                        ].filter(i => i.val > 0).map(item => (
+                          { key: 'seniorityPremium', label: 'Prima de antigüedad', val: results.seniorityPremium, f: results.formulas.seniorityPremium, art: 'Art. 162 LFT' },
+                        ].map(item => (
                           <div key={item.key} className="group relative">
                             <div className="mb-2 flex items-start justify-between gap-3">
                               <span className="min-w-0 text-xs font-bold text-slate-700 flex items-center gap-2">
@@ -681,13 +753,17 @@ export const LaborCalculator: React.FC<{
                                   </div>
                                 </span>
                               </span>
-                              <span className={`shrink-0 text-sm font-serif font-bold ${item.key === 'isr' ? 'text-red-700' : 'text-slate-900'}`}>
-                                {item.key === 'isr' ? '-' : ''}${item.val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                              <span className="shrink-0 text-sm font-serif font-bold text-slate-900">
+                                {item.val === 0
+                                  ? 'No aplica'
+                                  : `$${item.val.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                               </span>
                             </div>
-                            <div className="ui-detail-card break-words font-mono whitespace-pre-wrap">
-                              {item.f}
-                            </div>
+                            {item.val > 0 && (
+                              <div className="ui-detail-card break-words font-mono whitespace-pre-wrap">
+                                {item.f}
+                              </div>
+                            )}
                           </div>
                         ))}
                         
@@ -764,6 +840,7 @@ export const LaborCalculator: React.FC<{
         onClose={() => setIsDocModalOpen(false)}
         onExport={handleDocumentExport}
         isExporting={isExporting}
+        allowResignationLetter={dismissalType === 'renuncia'}
       />
 
       <AdBanner slot="labor-calculator-banner" />
