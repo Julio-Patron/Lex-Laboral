@@ -68,7 +68,7 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
   },
   [AppView.TERMS]: {
     title: `Términos y Condiciones | ${SITE_NAME}`,
-    description: 'Términos y condiciones de uso de la plataforma Lex Laboral. Conoce tus derechos y obligaciones como usuario.',
+    description: 'Términos y condiciones de Lex Laboral: deslinde gubernamental, limitaciones de las calculadoras y condiciones de uso.',
     path: getPathForView(AppView.TERMS),
   },
   [AppView.PRIVACY]: {
@@ -77,11 +77,11 @@ const SEO_MAP: Record<AppView, SEOConfig> = {
     path: getPathForView(AppView.PRIVACY),
   },
   [AppView.SOURCES]: {
-    title: `Fuentes Oficiales de Información Gubernamental y Deslinde | ${SITE_NAME}`,
-    description: 'Consulta los enlaces oficiales (.gob.mx) de las leyes federales (LFT, LSS, INFONAVIT) y el deslinde de no representación gubernamental de Lex Laboral.',
+    title: `Fuentes Oficiales de Información Gubernamental | ${SITE_NAME}`,
+    description: 'Consulta los enlaces oficiales (.gob.mx) de las leyes federales (LFT, LSS, INFONAVIT) y los portales del Gobierno de México.',
     path: getPathForView(AppView.SOURCES),
-    ogTitle: 'Fuentes Oficiales y Deslinde Gubernamental — Lex Laboral',
-    ogDescription: 'Transparencia normativa: acceso a leyes federales públicas y deslinde de no representación gubernamental.',
+    ogTitle: 'Fuentes Oficiales — Lex Laboral',
+    ogDescription: 'Acceso a leyes federales públicas y portales oficiales del Gobierno de México.',
   },
 };
 
@@ -281,11 +281,13 @@ function buildSchemas(view: AppView, fullUrl: string, title: string, description
         answer: 'Utiliza un índice semántico de la Ley Federal del Trabajo, Ley del Seguro Social y Ley del INFONAVIT para encontrar los artículos aplicables al caso laboral planteado.',
       },
     ],
-    [AppView.SOURCES]: [
+    [AppView.TERMS]: [
       {
         question: '¿Lex Laboral representa a una entidad gubernamental de México?',
-        answer: 'No. Lex Laboral es un desarrollo privado con fines didácticos e informativos. No forma parte del IMSS, INFONAVIT, STPS ni de ninguna secretaría gubernamental.',
+        answer: 'No. Lex Laboral es un desarrollo privado con fines didácticos e informativos. No forma parte del IMSS, INFONAVIT, STPS ni de ninguna secretaría gubernamental. El deslinde gubernamental y las limitaciones de las calculadoras están en los Términos y Condiciones.',
       },
+    ],
+    [AppView.SOURCES]: [
       {
         question: '¿Dónde puedo consultar las leyes laborales oficiales en México?',
         answer: 'Puedes consultar los textos oficiales vigentes en los portales oficiales del Gobierno de México: Cámara de Diputados (diputados.gob.mx) y Diario Oficial de la Federación (dof.gob.mx).',

@@ -96,3 +96,10 @@ export const OFFICIAL_DISCLAIMER = {
   badge: 'Herramienta Privada e Independiente · No Oficial',
   full: 'Lex Laboral es una herramienta de cálculo de iniciativa privada e independiente y NO representa ni tiene afiliación, autorización, mandato o patrocinio del Instituto Mexicano del Seguro Social (IMSS), el Instituto del Fondo Nacional de la Vivienda para los Trabajadores (INFONAVIT), la Secretaría del Trabajo y Previsión Social (STPS), el Servicio de Administración Tributaria (SAT) ni de ninguna entidad u organismo del Gobierno de México. Las cifras, proyecciones y desgloses que genera son estimaciones informativas y didácticas basadas en leyes y normativas públicas de los Estados Unidos Mexicanos; no constituyen resoluciones oficiales, dictámenes jurídicos vinculantes ni sustituyen la asesoría legal, laboral o contable de un profesional certificado.',
 };
+
+export const CALCULATOR_LIMITATIONS = {
+  title: 'Limitaciones de las calculadoras',
+  imssOfficial:
+    'El cálculo oficial debe ser emitido por el IMSS. Esta referencia aplica redondeos y factores simplificados.',
+  full: 'El cálculo oficial de cuotas obrero-patronales, semanas cotizadas y pensiones corresponde al IMSS. El de aportaciones, saldos y créditos de vivienda corresponde al INFONAVIT. Las resoluciones laborales vinculantes corresponden a las autoridades del trabajo. Las herramientas de Lex Laboral no sustituyen cédulas, resoluciones, dictámenes ni trámites oficiales.',
+};
